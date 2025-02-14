@@ -1,14 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PdfReader } from 'pdfreader';
-import { OpenaiService } from '../openai/openai.service';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as fs from 'fs';
-import * as path from 'path';
-import axios from 'axios';
-import { UploadDto } from './dtos/upload.dto';
-import { ApplicantService } from '../applicant/applicant.service';
-import { JsonObject } from '@prisma/client/runtime/library';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { PdfReader } from "pdfreader";
+import { OpenaiService } from "../openai/openai.service";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as fs from "fs";
+import * as path from "path";
+import axios from "axios";
+import { UploadDto } from "./dtos/upload.dto";
+import { ApplicantService } from "../applicant/applicant.service";
+import { JsonObject } from "@prisma/client/runtime/library";
 
 export interface ICvData {
   firstName: string;
@@ -30,39 +30,39 @@ export interface ICvData {
 export class PdfService {
   constructor(
     private readonly openaiService: OpenaiService,
-    private readonly applicantService: ApplicantService,
+    private readonly applicantService: ApplicantService
   ) {}
-  private readonly companyName = 'Amygdal, Inc.';
+  private readonly companyName = "Amygdal, Inc.";
 
   handlePdfFileUpload(file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('no file uploaded');
+      throw new BadRequestException("no file uploaded");
     }
 
     // validate file type
-    const allowedMimeTypes = ['application/pdf'];
+    const allowedMimeTypes = ["application/pdf"];
     if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException('invalid file type');
+      throw new BadRequestException("invalid file type");
     }
 
     // validate file size (e.g., max 5mb)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      throw new BadRequestException('file is too large!');
+      throw new BadRequestException("file is too large!");
     }
 
-    return { message: 'File uploaded successfully', filePath: file.path };
+    return { message: "File uploaded successfully", filePath: file.path };
   }
 
   async getPdfText(fileBuffer: Buffer): Promise<string> {
     const pdfReader = new PdfReader();
-    let text = '';
+    let text = "";
 
     // Return a Promise that resolves when parsing is complete
     return new Promise((resolve, reject) => {
       pdfReader.parseBuffer(fileBuffer, (err, item) => {
         if (err) {
-          console.error('Error reading PDF:', err);
+          console.error("Error reading PDF:", err);
           reject(err); // Reject promise on error
         } else if (!item) {
           // End of file
@@ -78,6 +78,8 @@ export class PdfService {
     // return { message: 'File uploaded successfully' };
     const pdfText = await this.getPdfText(file.buffer);
     const jsonObject = await this.openaiService.createJsonObject(pdfText);
+    console.log(jsonObject);
+
     const object = JSON.parse(jsonObject) as ICvData;
     console.log(object);
 
@@ -151,29 +153,29 @@ export class PdfService {
     // Try to load the logo from a local file first
     const logoPath = path.join(
       __dirname,
-      '../../../public/agency-logo-dark.png',
+      "../../../public/agency-logo-dark.png"
     );
     let logoData: string | null = null;
 
     if (fs.existsSync(logoPath)) {
-      logoData = fs.readFileSync(logoPath).toString('base64');
+      logoData = fs.readFileSync(logoPath).toString("base64");
     } else {
       // Fallback: load logo from a remote URL
       try {
         const response = await axios.get(
-          'https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k',
-          { responseType: 'arraybuffer' },
+          "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+          { responseType: "arraybuffer" }
         );
-        logoData = Buffer.from(response.data).toString('base64');
+        logoData = Buffer.from(response.data).toString("base64");
       } catch (error) {
-        console.error('Failed to load fallback logo:', error);
+        console.error("Failed to load fallback logo:", error);
       }
     }
 
     // If the logo data was successfully loaded, add it to the PDF.
     if (logoData) {
       // Parameters: (imageData, format, x, y, width, height)
-      doc.addImage(logoData, 'PNG', 10, 10, 30, 30);
+      doc.addImage(logoData, "PNG", 10, 10, 30, 30);
     }
 
     // --- Set initial vertical offset ---
@@ -181,69 +183,69 @@ export class PdfService {
 
     // --- Personal Information ---
     // Name and title
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
-    doc.text('John Doe', 50, 20);
+    doc.text("John Doe", 50, 20);
 
     doc.setFontSize(12);
     doc.setTextColor(100);
-    doc.text('Senior Software Developer', 50, 27);
+    doc.text("Senior Software Developer", 50, 27);
 
     // Contact information
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('📧 john.doe@example.com', 10, 40);
-    doc.text('📱 +1 234 567 890', 10, 45);
-    doc.text('📍 New York, USA', 10, 50);
+    doc.setFont("helvetica", "normal");
+    doc.text("📧 john.doe@example.com", 10, 40);
+    doc.text("📱 +1 234 567 890", 10, 45);
+    doc.text("📍 New York, USA", 10, 50);
 
     // --- Professional Summary Section ---
-    this.addSection(doc, 'Professional Summary', yOffset);
+    this.addSection(doc, "Professional Summary", yOffset);
     yOffset += 10;
     doc.setFontSize(10);
     doc.text(
-      'Experienced software developer with 8+ years in full-stack development.',
+      "Experienced software developer with 8+ years in full-stack development.",
       10,
       yOffset,
-      { maxWidth: 190 },
+      { maxWidth: 190 }
     );
     yOffset += 15;
 
     // --- Work Experience Section ---
-    this.addSection(doc, 'Work Experience', yOffset);
+    this.addSection(doc, "Work Experience", yOffset);
     yOffset += 10;
     this.addExperience(
       doc,
-      'Senior Developer - Tech Corp',
-      '2019-Present',
-      yOffset,
+      "Senior Developer - Tech Corp",
+      "2019-Present",
+      yOffset
     );
     yOffset += 15;
     this.addExperience(
       doc,
-      'Software Engineer - Dev Solutions',
-      '2016-2019',
-      yOffset,
+      "Software Engineer - Dev Solutions",
+      "2016-2019",
+      yOffset
     );
     yOffset += 20;
 
     // --- Education Section ---
-    this.addSection(doc, 'Education', yOffset);
+    this.addSection(doc, "Education", yOffset);
     yOffset += 10;
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Bachelor of Science in Computer Science', 10, yOffset);
-    doc.text('University of Technology, 2012-2016', 10, yOffset + 5);
+    doc.setFont("helvetica", "normal");
+    doc.text("Bachelor of Science in Computer Science", 10, yOffset);
+    doc.text("University of Technology, 2012-2016", 10, yOffset + 5);
 
     // Convert the document to an array buffer and then to a Node Buffer
-    const pdfOutput = doc.output('arraybuffer');
+    const pdfOutput = doc.output("arraybuffer");
     return Buffer.from(pdfOutput);
   }
 
   private addSection(doc: jsPDF, title: string, yOffset: number) {
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.text(title, 10, yOffset);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.setDrawColor(200);
     doc.line(10, yOffset + 2, 200, yOffset + 2);
   }
@@ -252,23 +254,23 @@ export class PdfService {
     doc: jsPDF,
     position: string,
     duration: string,
-    yOffset: number,
+    yOffset: number
   ) {
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.text(position, 10, yOffset);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(100);
     doc.text(duration, 160, yOffset);
     doc.setTextColor(0);
     doc.setFontSize(10);
     doc.text(
-      '- Developed and maintained enterprise applications',
+      "- Developed and maintained enterprise applications",
       10,
       yOffset + 5,
-      { maxWidth: 190 },
+      { maxWidth: 190 }
     );
-    doc.text('- Led team of 5 developers', 10, yOffset + 10, { maxWidth: 190 });
+    doc.text("- Led team of 5 developers", 10, yOffset + 10, { maxWidth: 190 });
   }
 
   // chagpt
@@ -654,33 +656,33 @@ export class PdfService {
     // --- Load Logo ---
     const logoPath = path.join(
       __dirname,
-      '../../../public/agency-logo-dark.png',
+      "../../../public/agency-logo-dark.png"
     );
     let logoData: string | null = null;
 
     if (fs.existsSync(logoPath)) {
-      logoData = fs.readFileSync(logoPath).toString('base64');
+      logoData = fs.readFileSync(logoPath).toString("base64");
     } else {
       try {
         const response = await axios.get(
-          'https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k',
-          { responseType: 'arraybuffer' },
+          "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+          { responseType: "arraybuffer" }
         );
-        logoData = Buffer.from(response.data).toString('base64');
+        logoData = Buffer.from(response.data).toString("base64");
       } catch (error) {
-        console.error('Failed to load fallback logo:', error);
+        console.error("Failed to load fallback logo:", error);
       }
     }
 
     // --- Header Section ---
     if (logoData) {
-      doc.addImage(logoData, 'PNG', margin, margin, 30, 30);
-      doc.setFont('helvetica', 'bold');
+      doc.addImage(logoData, "PNG", margin, margin, 30, 30);
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.text(this.companyName, margin + 40, margin + 15); // Company name next to logo
       yPosition = margin + 40;
     } else {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.text(this.companyName, margin, margin + 10); // Company name alone
       yPosition = margin + 20;
@@ -693,7 +695,7 @@ export class PdfService {
 
     // Contact Information
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     // doc.text(`Email: ${data.email}`, margin, yPosition);
     // doc.text(`Phone: ${data.phone}`, margin + 100, yPosition, {
     //   align: 'left',
@@ -701,55 +703,55 @@ export class PdfService {
     yPosition += 15;
 
     // --- Professional Summary ---
-    doc.setFont('helvetica', 'bold');
-    doc.text('Professional Summary', margin, yPosition);
+    doc.setFont("helvetica", "bold");
+    doc.text("Professional Summary", margin, yPosition);
     yPosition += 8;
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
 
     // Fix overlapping by adjusting yPosition based on text height
     const summaryText = doc.splitTextToSize(
       data.summary,
-      doc.internal.pageSize.getWidth() - margin * 2,
+      doc.internal.pageSize.getWidth() - margin * 2
     );
     doc.text(summaryText, margin, yPosition);
     yPosition += summaryText.length * 6 + 10;
 
     // --- Experience Section ---
-    doc.setFont('helvetica', 'bold');
-    doc.text('Experience', margin, yPosition);
+    doc.setFont("helvetica", "bold");
+    doc.text("Experience", margin, yPosition);
     yPosition += 8;
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
 
     data.experience.forEach((exp) => {
       doc.text(`${exp.position} at ${exp.company}`, margin, yPosition);
       yPosition += 8;
       doc.text(
-        `${exp.startDate} - ${exp.endDate ? exp.endDate : 'Present'}`,
+        `${exp.startDate} - ${exp.endDate ? exp.endDate : "Present"}`,
         margin,
-        yPosition,
+        yPosition
       );
       yPosition += 8;
 
       const expText = doc.splitTextToSize(
         exp.description,
-        doc.internal.pageSize.getWidth() - margin * 2,
+        doc.internal.pageSize.getWidth() - margin * 2
       );
       doc.text(expText, margin, yPosition);
       yPosition += expText.length * 6 + 10; // Adjust for multiline text
     });
 
     // --- Skills Section ---
-    doc.setFont('helvetica', 'bold');
-    doc.text('Skills', margin, yPosition);
+    doc.setFont("helvetica", "bold");
+    doc.text("Skills", margin, yPosition);
     yPosition += 8;
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     data.skills.forEach((skill, index) => {
       doc.text(`• ${skill}`, margin, yPosition + index * 6);
     });
     yPosition += data.skills.length * 6 + 10;
 
     // --- Convert to Buffer ---
-    const pdfOutput = doc.output('arraybuffer');
+    const pdfOutput = doc.output("arraybuffer");
     return Buffer.from(pdfOutput);
   }
 
@@ -998,36 +1000,36 @@ export class PdfService {
     // -------------------------------------------------------------------------
     const logoPath = path.join(
       __dirname,
-      '../../../public/agency-logo-dark.png',
+      "../../../public/agency-logo-dark.png"
     );
     let logoData: string | null = null;
 
     if (fs.existsSync(logoPath)) {
-      logoData = fs.readFileSync(logoPath).toString('base64');
+      logoData = fs.readFileSync(logoPath).toString("base64");
     } else {
       try {
         const response = await axios.get(
-          'https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k',
-          { responseType: 'arraybuffer' },
+          "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+          { responseType: "arraybuffer" }
         );
-        logoData = Buffer.from(response.data).toString('base64');
+        logoData = Buffer.from(response.data).toString("base64");
       } catch (error) {
-        console.error('Failed to load fallback logo:', error);
+        console.error("Failed to load fallback logo:", error);
       }
     }
 
     // -------------------------------------------------------------------------
     // 2. HEADER SECTION (Logo + Company Name)
     // -------------------------------------------------------------------------
-    const companyName = 'My Company, Inc.';
+    const companyName = "My Company, Inc.";
     if (logoData) {
       // Add logo at top-left (x, y, width, height)
-      doc.addImage(logoData, 'PNG', margin, margin, 20, 20);
-      doc.setFont('helvetica', 'bold');
+      doc.addImage(logoData, "PNG", margin, margin, 20, 20);
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.text(companyName, margin + 25, margin + 15);
     } else {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.text(companyName, margin, margin + 10);
     }
@@ -1038,48 +1040,48 @@ export class PdfService {
     // 3. LEFT COLUMN CONTENT (Main CV Data)
     // -------------------------------------------------------------------------
     // Replace hard-coded text with variables
-    const candidateName = 'Elijah Hartley';
-    const candidateTitle = 'Senior Software Developer';
+    const candidateName = "Elijah Hartley";
+    const candidateTitle = "Senior Software Developer";
     const candidateContact =
-      'Florida • (734) 629-8417 • elijah@hartley.com • linkedin.com/in/elijah-hartley';
+      "Florida • (734) 629-8417 • elijah@hartley.com • linkedin.com/in/elijah-hartley";
     const candidateSummary =
-      'Dedicated Node.js Developer with a proven track record of enhancing system efficiency, reducing latency, and improving user experience across various sections. Increased RESTful API performance by 15% through the development and maintenance of critical APIs and boosted customer engagement by 20% in recent roles. Seeking to leverage my knowledge in system architecture and user experience to further contribute to the technological excellence of my next team.';
+      "Dedicated Node.js Developer with a proven track record of enhancing system efficiency, reducing latency, and improving user experience across various sections. Increased RESTful API performance by 15% through the development and maintenance of critical APIs and boosted customer engagement by 20% in recent roles. Seeking to leverage my knowledge in system architecture and user experience to further contribute to the technological excellence of my next team.";
 
     // Experience data as an array of objects
     const experience = [
       {
-        title: 'Node JS Developer @ DataZapp',
-        duration: '01/2024 – Present',
+        title: "Node JS Developer @ DataZapp",
+        duration: "01/2024 – Present",
         description: [
-          'Developed a microservices-based system using Node.js and Express, resulting in a 20% reduction in latency.',
-          'Designed and maintained a suite of RESTful APIs, improving response times by 15% and leading to a 10% increase in productivity across teams.',
+          "Developed a microservices-based system using Node.js and Express, resulting in a 20% reduction in latency.",
+          "Designed and maintained a suite of RESTful APIs, improving response times by 15% and leading to a 10% increase in productivity across teams.",
         ],
       },
       {
-        title: 'NodeJS Developer @ VentureScript',
-        duration: '03/2023 – 12/2023',
+        title: "NodeJS Developer @ VentureScript",
+        duration: "03/2023 – 12/2023",
         description: [
-          'Spearheaded the creation of a real-time chat application using Node.js and WebSockets, resulting in near-instant communication for thousands of users.',
-          'Collaborated with front-end teams to optimize data handling, reducing load times by 25%.',
+          "Spearheaded the creation of a real-time chat application using Node.js and WebSockets, resulting in near-instant communication for thousands of users.",
+          "Collaborated with front-end teams to optimize data handling, reducing load times by 25%.",
         ],
       },
       {
-        title: 'Junior NodeJS Dev',
-        duration: '11/2021 – 03/2023',
+        title: "Junior NodeJS Dev",
+        duration: "11/2021 – 03/2023",
         description: [
-          'Participated in process optimization and agile project planning, contributing to a 15% decrease in overall sprint times.',
-          'Built RESTful APIs using Node.js and Express, focusing on performance tuning and best coding practices.',
+          "Participated in process optimization and agile project planning, contributing to a 15% decrease in overall sprint times.",
+          "Built RESTful APIs using Node.js and Express, focusing on performance tuning and best coding practices.",
         ],
       },
     ];
 
     // Left column: Name and Contact Info
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text(candidateName, leftColumnX, leftColumnY);
     leftColumnY += 8;
 
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(candidateTitle, leftColumnX, leftColumnY);
@@ -1088,40 +1090,40 @@ export class PdfService {
     leftColumnY += 10;
 
     // Summary using autoTable for multi-line handling
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(0);
     autoTable(doc, {
       startY: leftColumnY,
       margin: { left: leftColumnX },
       tableWidth: 95,
-      theme: 'plain',
-      styles: { font: 'helvetica', fontSize: 10 },
+      theme: "plain",
+      styles: { font: "helvetica", fontSize: 10 },
       body: [[candidateSummary]],
     });
     leftColumnY = (doc as any).lastAutoTable.finalY + 10;
 
     // Career Experience Header
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text('CAREER EXPERIENCE', leftColumnX, leftColumnY);
+    doc.text("CAREER EXPERIENCE", leftColumnX, leftColumnY);
     leftColumnY += 8;
 
     // Prepare experience rows for autoTable.
     // Each row will have the position/duration and the description (joined with newlines)
     const expRows = experience.map((exp) => [
       `${exp.title} (${exp.duration})`,
-      exp.description.join('\n'),
+      exp.description.join("\n"),
     ]);
 
     autoTable(doc, {
       startY: leftColumnY,
       margin: { left: leftColumnX },
       tableWidth: 95,
-      head: [['Position & Duration', 'Description']],
+      head: [["Position & Duration", "Description"]],
       body: expRows,
-      theme: 'grid',
-      styles: { font: 'helvetica', fontSize: 10 },
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 10 },
       headStyles: { fillColor: [41, 128, 185] },
     });
     leftColumnY = (doc as any).lastAutoTable.finalY + 10;
@@ -1131,80 +1133,80 @@ export class PdfService {
     // -------------------------------------------------------------------------
     // Skills data
     const skills = [
-      'Node.js',
-      'Express',
-      'RESTful APIs: Design & Maintenance',
-      'Database: MySQL, MongoDB',
-      'DevOps: Docker, AWS',
-      'Version Control: Git, GitHub',
+      "Node.js",
+      "Express",
+      "RESTful APIs: Design & Maintenance",
+      "Database: MySQL, MongoDB",
+      "DevOps: Docker, AWS",
+      "Version Control: Git, GitHub",
     ];
 
     // Education data
     const education = {
-      degree: 'BS in Computer Science',
-      institution: 'University of Florida',
-      period: '2015 – 2019',
+      degree: "BS in Computer Science",
+      institution: "University of Florida",
+      period: "2015 – 2019",
     };
 
     // Certificates data
     const certificates = [
-      'Microsoft Azure Fundamentals',
-      'AWS Certified Cloud Practitioner',
+      "Microsoft Azure Fundamentals",
+      "AWS Certified Cloud Practitioner",
     ];
 
     // Skills
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text('SKILLS', rightColumnX, rightColumnY);
+    doc.text("SKILLS", rightColumnX, rightColumnY);
     rightColumnY += 8;
     const skillsRows = skills.map((skill) => [skill]);
     autoTable(doc, {
       startY: rightColumnY,
       margin: { left: rightColumnX },
-      head: [['Skills']],
+      head: [["Skills"]],
       body: skillsRows,
-      theme: 'plain',
-      styles: { font: 'helvetica', fontSize: 10 },
+      theme: "plain",
+      styles: { font: "helvetica", fontSize: 10 },
     });
     rightColumnY = (doc as any).lastAutoTable.finalY + 10;
 
     // Education
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text('EDUCATION', rightColumnX, rightColumnY);
+    doc.text("EDUCATION", rightColumnX, rightColumnY);
     rightColumnY += 8;
     autoTable(doc, {
       startY: rightColumnY,
       margin: { left: rightColumnX },
-      head: [['Education']],
+      head: [["Education"]],
       body: [
         [education.degree, `${education.institution} (${education.period})`],
       ],
-      theme: 'plain',
-      styles: { font: 'helvetica', fontSize: 10 },
+      theme: "plain",
+      styles: { font: "helvetica", fontSize: 10 },
     });
     rightColumnY = (doc as any).lastAutoTable.finalY + 10;
 
     // Certificates
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text('CERTIFICATES', rightColumnX, rightColumnY);
+    doc.text("CERTIFICATES", rightColumnX, rightColumnY);
     rightColumnY += 8;
     const certRows = certificates.map((cert) => [cert]);
     autoTable(doc, {
       startY: rightColumnY,
       margin: { left: rightColumnX },
-      head: [['Certificates']],
+      head: [["Certificates"]],
       body: certRows,
-      theme: 'plain',
-      styles: { font: 'helvetica', fontSize: 10 },
+      theme: "plain",
+      styles: { font: "helvetica", fontSize: 10 },
     });
     rightColumnY = (doc as any).lastAutoTable.finalY + 10;
 
     // -------------------------------------------------------------------------
     // 5. Convert the document to a Buffer and return
     // -------------------------------------------------------------------------
-    const pdfOutput = doc.output('arraybuffer');
+    const pdfOutput = doc.output("arraybuffer");
     return Buffer.from(pdfOutput);
   }
 
@@ -1219,7 +1221,7 @@ export class PdfService {
         email: body.email,
         phone: body.phone,
         technologies: Array.from(
-          new Set([...pdfData.skills, ...body.technologies]),
+          new Set([...pdfData.skills, ...body.technologies])
         ),
         cvData: JSON.parse(JSON.stringify(pdfData)),
       });
@@ -1230,7 +1232,7 @@ export class PdfService {
         email: body.email,
         phone: body.phone,
         technologies: Array.from(
-          new Set([...pdfData.skills, ...body.technologies]),
+          new Set([...pdfData.skills, ...body.technologies])
         ),
         cvData: JSON.parse(JSON.stringify(pdfData)),
       });
@@ -1240,10 +1242,10 @@ export class PdfService {
 
     console.log({ pdfData, body });
     const cvData: ICvData = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
       summary: pdfData.summary,
       skills: Array.from(new Set([...pdfData.skills, ...body.technologies])),
       experience: pdfData.experience,
