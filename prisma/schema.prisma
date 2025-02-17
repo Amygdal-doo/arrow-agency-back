@@ -13,18 +13,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model applicant {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName     String   @db.VarChar(256)
-  lastName     String   @db.VarChar(256)
-  email        String   @unique(map: "user_email_unique") @db.VarChar(256)
-  phone        String?
-  technologies String[]
-  cvData       Json
+enum Role {
+  USER
+  SUPER_ADMIN
+}
+
+model User {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName String @db.VarChar(256)
+  lastName  String @db.VarChar(256)
+  email     String @unique(map: "user_email_unique") @db.VarChar(256)
+  password  String
+
+  role         Role          @default(USER)
+  refreshToken RefreshToken?
+  applicants   Applicant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email], map: "email_Index")
-  @@index([id], map: "id_Index")
+  @@index([email], map: "user_Email_Index")
+  @@index([id], map: "user_Id_Index")
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @unique @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "refreshtoken_User_Id_Index")
+}
+
+model Applicant {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName    String   @db.VarChar(256)
+  lastName     String   @db.VarChar(256)
+  email        String
+  phone        String?
+  technologies String[]
+  cvData       Json
+  userId       String   @unique @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email], map: "applicant_Email_Index")
+  @@index([id], map: "applicant_Id_Index")
 }
