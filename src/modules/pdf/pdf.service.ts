@@ -6,32 +6,12 @@ import autoTable from "jspdf-autotable";
 import * as fs from "fs";
 import * as path from "path";
 import axios from "axios";
-import { UploadDto } from "./dtos/upload.dto";
 import { ApplicantService } from "../applicant/applicant.service";
-import { JsonObject } from "@prisma/client/runtime/library";
-
-export interface ICvData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  summary: string;
-  skills: string[];
-  experience: Array<{
-    position: string;
-    company: string;
-    startDate: string;
-    endDate?: string;
-    description: string;
-  }>;
-}
+import { ICvData } from "./interfaces/cv-data.interface";
 
 @Injectable()
 export class PdfService {
-  constructor(
-    private readonly openaiService: OpenaiService,
-    private readonly applicantService: ApplicantService
-  ) {}
+  constructor(private readonly openaiService: OpenaiService) {}
   private readonly companyName = "Amygdal, Inc.";
 
   handlePdfFileUpload(file: Express.Multer.File) {
@@ -80,7 +60,13 @@ export class PdfService {
     const jsonObject = await this.openaiService.createJsonObject(pdfText);
     console.log(jsonObject);
 
-    const object = JSON.parse(jsonObject) as ICvData;
+    let object: ICvData;
+    try {
+      object = JSON.parse(jsonObject) as ICvData;
+    } catch (error) {
+      console.error("Failed to parse JSON object:", error);
+      throw new BadRequestException("Invalid JSON format");
+    }
     console.log(object);
 
     return object;
@@ -755,6 +741,113 @@ export class PdfService {
     return Buffer.from(pdfOutput);
   }
 
+  async generateCvPdfAny(data: any): Promise<Buffer> {
+    const doc = new jsPDF();
+    const margin = 15;
+    let yPosition = margin;
+
+    // --- Load Logo ---
+    const logoPath = path.join(
+      __dirname,
+      "../../../public/agency-logo-dark.png"
+    );
+    let logoData: string | null = null;
+
+    if (fs.existsSync(logoPath)) {
+      logoData = fs.readFileSync(logoPath).toString("base64");
+    } else {
+      try {
+        const response = await axios.get(
+          "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+          { responseType: "arraybuffer" }
+        );
+        logoData = Buffer.from(response.data).toString("base64");
+      } catch (error) {
+        console.error("Failed to load fallback logo:", error);
+      }
+    }
+
+    // --- Header Section ---
+    if (logoData) {
+      doc.addImage(logoData, "PNG", margin, margin, 30, 30);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(this.companyName, margin + 40, margin + 15); // Company name next to logo
+      yPosition = margin + 40;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(this.companyName, margin, margin + 10); // Company name alone
+      yPosition = margin + 20;
+    }
+    // const fullName = data.firstName + ' ' + data.lastName;
+    // // Add Name
+    // doc.setFontSize(20);
+    // doc.text(fullName, margin, yPosition);
+    // yPosition += 10;
+
+    // Contact Information
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    // doc.text(`Email: ${data.email}`, margin, yPosition);
+    // doc.text(`Phone: ${data.phone}`, margin + 100, yPosition, {
+    //   align: 'left',
+    // });
+    yPosition += 15;
+
+    // --- Professional Summary ---
+    doc.setFont("helvetica", "bold");
+    doc.text("Professional Summary", margin, yPosition);
+    yPosition += 8;
+    doc.setFont("helvetica", "normal");
+
+    // Fix overlapping by adjusting yPosition based on text height
+    const summaryText = doc.splitTextToSize(
+      data.summary,
+      doc.internal.pageSize.getWidth() - margin * 2
+    );
+    doc.text(summaryText, margin, yPosition);
+    yPosition += summaryText.length * 6 + 10;
+
+    // --- Experience Section ---
+    doc.setFont("helvetica", "bold");
+    doc.text("Experience", margin, yPosition);
+    yPosition += 8;
+    doc.setFont("helvetica", "normal");
+
+    data.experience.forEach((exp) => {
+      doc.text(`${exp.position} at ${exp.company}`, margin, yPosition);
+      yPosition += 8;
+      doc.text(
+        `${exp.startDate} - ${exp.endDate ? exp.endDate : "Present"}`,
+        margin,
+        yPosition
+      );
+      yPosition += 8;
+
+      const expText = doc.splitTextToSize(
+        exp.description,
+        doc.internal.pageSize.getWidth() - margin * 2
+      );
+      doc.text(expText, margin, yPosition);
+      yPosition += expText.length * 6 + 10; // Adjust for multiline text
+    });
+
+    // --- Skills Section ---
+    doc.setFont("helvetica", "bold");
+    doc.text("Skills", margin, yPosition);
+    yPosition += 8;
+    doc.setFont("helvetica", "normal");
+    data.skills.forEach((skill, index) => {
+      doc.text(`• ${skill}`, margin, yPosition + index * 6);
+    });
+    yPosition += data.skills.length * 6 + 10;
+
+    // --- Convert to Buffer ---
+    const pdfOutput = doc.output("arraybuffer");
+    return Buffer.from(pdfOutput);
+  }
+
   //   async generateCVV2(): Promise<Buffer> {
   //     const doc = new jsPDF();
 
@@ -1208,49 +1301,5 @@ export class PdfService {
     // -------------------------------------------------------------------------
     const pdfOutput = doc.output("arraybuffer");
     return Buffer.from(pdfOutput);
-  }
-
-  async generatePdfAndSave(file: Express.Multer.File, body: UploadDto) {
-    const pdfData = await this.savePdfToJson(file);
-
-    const find = await this.applicantService.findByEmail(body.email);
-    if (find) {
-      await this.applicantService.updateByEmail(body.email, {
-        firstName: body.name,
-        lastName: body.surname,
-        email: body.email,
-        phone: body.phone,
-        technologies: Array.from(
-          new Set([...pdfData.skills, ...body.technologies])
-        ),
-        cvData: JSON.parse(JSON.stringify(pdfData)),
-      });
-    } else {
-      const applicant = await this.applicantService.create({
-        firstName: body.name,
-        lastName: body.surname,
-        email: body.email,
-        phone: body.phone,
-        technologies: Array.from(
-          new Set([...pdfData.skills, ...body.technologies])
-        ),
-        cvData: JSON.parse(JSON.stringify(pdfData)),
-      });
-
-      console.log(applicant);
-    }
-
-    console.log({ pdfData, body });
-    const cvData: ICvData = {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      summary: pdfData.summary,
-      skills: Array.from(new Set([...pdfData.skills, ...body.technologies])),
-      experience: pdfData.experience,
-    };
-    const pdfBuffer = await this.generateCvPdf(cvData);
-    return pdfBuffer;
   }
 }
