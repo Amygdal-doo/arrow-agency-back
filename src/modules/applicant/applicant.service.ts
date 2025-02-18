@@ -32,7 +32,12 @@ export class ApplicantService {
   }
 
   async findByUserId(userId: string) {
-    return this.databaseService.applicant.findMany({ where: { userId } });
+    return this.databaseService.applicant.findMany({
+      where: { userId },
+      include: {
+        file: true,
+      },
+    });
   }
 
   async findAll() {

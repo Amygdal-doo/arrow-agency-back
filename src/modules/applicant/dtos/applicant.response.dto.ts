@@ -1,7 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Applicant } from "@prisma/client";
 import { JsonValue } from "@prisma/client/runtime/library";
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
+import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
+import { UserResponseDto } from "src/modules/users/dtos/response/user-response.dto";
 
 export class ApplicantResponseDto implements Applicant {
   @ApiProperty({
@@ -68,6 +70,24 @@ export class ApplicantResponseDto implements Applicant {
   })
   @Expose()
   userId: string;
+
+  @ApiProperty({
+    type: String,
+    description: "Cv file of the applicant",
+    example: FileResponseDto,
+  })
+  @Expose()
+  @Type(() => FileResponseDto)
+  file?: FileResponseDto;
+
+  @ApiProperty({
+    type: UserResponseDto,
+    description: "User of the applicant",
+    example: UserResponseDto,
+  })
+  @Expose()
+  @Type(() => UserResponseDto)
+  user: UserResponseDto;
 
   @ApiProperty({
     type: Date,

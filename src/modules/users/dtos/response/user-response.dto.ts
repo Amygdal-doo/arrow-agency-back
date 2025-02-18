@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Role, User } from "@prisma/client";
-import { Exclude, Expose } from "class-transformer";
+import { Exclude, Expose, Type } from "class-transformer";
+import { ApplicantResponseDto } from "src/modules/applicant/dtos/applicant.response.dto";
+import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
 
 export class UserResponseDto implements User {
   @ApiProperty({
@@ -42,6 +44,22 @@ export class UserResponseDto implements User {
   })
   @Expose()
   role: Role;
+
+  @ApiProperty({
+    type: [ApplicantResponseDto],
+    description: "List of applicant with the user",
+    example: [ApplicantResponseDto],
+  })
+  @Expose()
+  @Type(() => ApplicantResponseDto)
+  applicants: ApplicantResponseDto[];
+
+  @ApiProperty({
+    type: [FileResponseDto],
+    description: "List of files associated with the user",
+    example: [FileResponseDto],
+  })
+  files: FileResponseDto[];
 
   @ApiProperty({
     type: Date,
