@@ -11,6 +11,7 @@ import { UsersModule } from "./modules/users/users.module";
 import { SpacesModule } from "./modules/spaces/spaces.module";
 import { S3_CLIENT_CONFIG } from "./modules/spaces/config/spaces.config";
 import { SpacesService } from "./modules/spaces/spaces.service";
+import { FileModule } from './modules/file/file.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SpacesService } from "./modules/spaces/spaces.service";
     PdfModule,
     ApplicantsModule,
     ApplicantModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],
