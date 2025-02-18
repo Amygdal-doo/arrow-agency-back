@@ -5,12 +5,16 @@ import { PdfService } from "../pdf/pdf.service";
 import { UploadDto } from "../pdf/dtos/upload.dto";
 import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
 import { ICvData } from "../pdf/interfaces/cv-data.interface";
+import { SpacesService } from "../spaces/spaces.service";
+import { IUploadedFile } from "../spaces/interfaces/iuploaded-file.interface";
+import { SpacesDestinationPath } from "../spaces/enums/spaces-folder-name.enum";
 
 @Injectable()
 export class ApplicantService {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly pdfService: PdfService
+    private readonly pdfService: PdfService,
+    private readonly spacesService: SpacesService
   ) {}
 
   // DB Queries
@@ -44,20 +48,6 @@ export class ApplicantService {
   ): Promise<Buffer> {
     const pdfData = await this.pdfService.savePdfToJson(file);
 
-    const newApplicant = await this.create({
-      user: { connect: { id: loggedUserInfo.id } },
-      firstName: body.name,
-      lastName: body.surname,
-      email: body.email,
-      phone: body.phone,
-      technologies: Array.from(
-        new Set([...pdfData.skills, ...body.technologies])
-      ),
-      cvData: JSON.parse(JSON.stringify(pdfData)),
-    });
-
-    console.log({ newApplicant });
-
     console.log({ pdfData, body });
     const cvData: ICvData = {
       firstName: "",
@@ -69,6 +59,41 @@ export class ApplicantService {
       experience: pdfData.experience,
     };
     const pdfBuffer = await this.pdfService.generateCvPdf(cvData);
+
+    let pdfFile: IUploadedFile | null = null;
+    try {
+      if (file) {
+        pdfFile = await this.spacesService.uploadFileBuffer(
+          pdfBuffer,
+          `${body.name}_${body.surname}`,
+          SpacesDestinationPath.PDF
+        );
+      }
+    } catch (error) {
+      throw new BadRequestException("Something went wrong with file upload");
+    }
+
+    const newApplicant = await this.create({
+      user: { connect: { id: loggedUserInfo.id } },
+      firstName: body.name,
+      lastName: body.surname,
+      email: body.email,
+      phone: body.phone,
+      technologies: body.technologies,
+      cvData: JSON.parse(JSON.stringify(pdfData)),
+      file: {
+        create: {
+          name: pdfFile.name,
+          url: pdfFile.url,
+          extension: pdfFile.extension,
+          fileCreatedAt: pdfFile.createdAt,
+          user: {
+            connect: { id: loggedUserInfo.id },
+          },
+        },
+      },
+    });
+    console.log({ newApplicant });
     return pdfBuffer;
   }
 
