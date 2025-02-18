@@ -738,6 +738,8 @@ export class PdfService {
 
     // --- Convert to Buffer ---
     const pdfOutput = doc.output("arraybuffer");
+    console.log({ pdfOutput });
+
     return Buffer.from(pdfOutput);
   }
 

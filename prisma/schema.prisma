@@ -28,6 +28,7 @@ model User {
   role         Role          @default(USER)
   refreshToken RefreshToken?
   applicants   Applicant[]
+  files        File[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -55,12 +56,31 @@ model Applicant {
   phone        String?
   technologies String[]
   cvData       Json
-  userId       String   @unique @db.Uuid
+  userId       String   @db.Uuid
   user         User     @relation(fields: [userId], references: [id])
+  file         File[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([email], map: "applicant_Email_Index")
   @@index([id], map: "applicant_Id_Index")
+}
+
+model File {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url           String
+  name          String
+  extension     String
+  fileCreatedAt DateTime
+  userId        String    @db.Uuid
+  user          User      @relation(fields: [userId], references: [id])
+  applicantId   String   @db.Uuid // Remove @unique so an applicant can have multiple files
+  applicant     Applicant @relation(fields: [applicantId], references: [id])
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id], map: "file_Id_Index")
 }
