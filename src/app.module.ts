@@ -12,6 +12,7 @@ import { SpacesModule } from "./modules/spaces/spaces.module";
 import { S3_CLIENT_CONFIG } from "./modules/spaces/config/spaces.config";
 import { SpacesService } from "./modules/spaces/spaces.service";
 import { FileModule } from './modules/file/file.module';
+import { CvModule } from './modules/cv/cv.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FileModule } from './modules/file/file.module';
     ApplicantsModule,
     ApplicantModule,
     FileModule,
+    CvModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],

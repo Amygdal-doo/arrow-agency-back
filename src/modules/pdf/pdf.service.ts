@@ -850,6 +850,214 @@ export class PdfService {
     return Buffer.from(pdfOutput);
   }
 
+  async generateCvTemplate(data: ICvData): Promise<Buffer> {
+    const doc = new jsPDF();
+    const margin = 15;
+    let yPosition = margin;
+
+    // Load logo (reusing the same logo loading logic from the example)
+    const logoPath = path.join(
+      __dirname,
+      "../../../public/agency-logo-dark.png"
+    );
+    let logoData: string | null = null;
+
+    if (fs.existsSync(logoPath)) {
+      logoData = fs.readFileSync(logoPath).toString("base64");
+    } else {
+      try {
+        const response = await axios.get(
+          "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+          { responseType: "arraybuffer" }
+        );
+        logoData = Buffer.from(response.data).toString("base64");
+      } catch (error) {
+        console.error("Failed to load fallback logo:", error);
+      }
+    }
+
+    // Header Section
+    if (logoData) {
+      doc.addImage(logoData, "PNG", margin, margin, 30, 30);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(this.companyName, margin + 40, margin + 15);
+      yPosition = margin + 40;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(this.companyName, margin, margin + 10);
+      yPosition = margin + 20;
+    }
+
+    // Personal Information
+    const fullName = `${data.firstName} ${data.lastName}`;
+    doc.setFontSize(20);
+    doc.text(fullName, margin, yPosition);
+    yPosition += 15;
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Email: ${data.email}`, margin, yPosition);
+    doc.text(`Phone: ${data.phone}`, margin + 80, yPosition, { align: "left" });
+    yPosition += 15;
+
+    // Professional Summary
+    doc.setFont("helvetica", "bold");
+    doc.text("Professional Summary", margin, yPosition);
+    yPosition += 10;
+    doc.setFont("helvetica", "normal");
+
+    const summaryText = doc.splitTextToSize(
+      data.summary,
+      doc.internal.pageSize.getWidth() - margin * 2
+    );
+    doc.text(summaryText, margin, yPosition);
+    yPosition += summaryText.length * 6 + 15;
+
+    // Experience
+    if (data.experience.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Professional Experience", margin, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      data.experience.forEach((exp) => {
+        doc.text(`${exp.position} at ${exp.company}`, margin, yPosition);
+        yPosition += 8;
+        doc.text(
+          `${exp.startDate} - ${exp.endDate ? exp.endDate : "Present"}`,
+          margin,
+          yPosition
+        );
+        yPosition += 8;
+
+        const expText = doc.splitTextToSize(
+          exp.description,
+          doc.internal.pageSize.getWidth() - margin * 2
+        );
+        doc.text(expText, margin, yPosition);
+        yPosition += expText.length * 6 + 10;
+      });
+    }
+
+    // Projects
+    if (data.projects.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Projects", margin, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      data.projects.forEach((project) => {
+        doc.text(project.name, margin, yPosition);
+        yPosition += 8;
+        const projectText = doc.splitTextToSize(
+          project.description,
+          doc.internal.pageSize.getWidth() - margin * 2
+        );
+        doc.text(projectText, margin, yPosition);
+        yPosition += projectText.length * 6 + 8;
+
+        if (project.url) {
+          doc.text(`URL: ${project.url}`, margin, yPosition);
+          yPosition += 8;
+        }
+        doc.text(
+          `${project.startDate} - ${project.endDate ? project.endDate : "Present"}`,
+          margin,
+          yPosition
+        );
+        yPosition += 10;
+      });
+    }
+
+    // Education
+    if (data.educations.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Education", margin, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      data.educations.forEach((edu) => {
+        doc.text(`${edu.degree} in ${edu.field}`, margin, yPosition);
+        yPosition += 8;
+        doc.text(edu.institution, margin, yPosition);
+        yPosition += 8;
+        doc.text(
+          `${edu.startDate} - ${edu.endDate ? edu.endDate : "Present"}`,
+          margin,
+          yPosition
+        );
+        if (edu.grade) {
+          doc.text(`Grade: ${edu.grade}`, margin + 80, yPosition, {
+            align: "left",
+          });
+        }
+        yPosition += 10;
+      });
+    }
+
+    // Skills
+    if (data.skills.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Skills", margin, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      data.skills.forEach((skill, index) => {
+        doc.text(`• ${skill}`, margin, yPosition + index * 6);
+      });
+      yPosition += data.skills.length * 6 + 15;
+    }
+
+    // Languages
+    if (data.languages.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Languages", margin, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      data.languages.forEach((lang, index) => {
+        doc.text(
+          `• ${lang.name} - ${lang.efficiency}`,
+          margin,
+          yPosition + index * 6
+        );
+      });
+      yPosition += data.languages.length * 6 + 15;
+    }
+
+    // Certificates
+    if (data.certificates.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Certifications", margin, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      data.certificates.forEach((cert) => {
+        doc.text(`${cert.name} - ${cert.issuer}`, margin, yPosition);
+        yPosition += 8;
+        doc.text(`Issued: ${cert.issueDate}`, margin, yPosition);
+        if (cert.expirationDate) {
+          doc.text(`Expires: ${cert.expirationDate}`, margin + 80, yPosition, {
+            align: "left",
+          });
+        }
+        if (cert.url) {
+          doc.text(`URL: ${cert.url}`, margin, yPosition + 8);
+          yPosition += 8;
+        }
+        yPosition += 10;
+      });
+    }
+
+    // Socials and Hobbies can be added similarly if needed
+
+    // Convert to Buffer
+    const pdfOutput = doc.output("arraybuffer");
+    return Buffer.from(pdfOutput);
+  }
+
   //   async generateCVV2(): Promise<Buffer> {
   //     const doc = new jsPDF();
 

@@ -36,6 +36,17 @@ export class ApplicantService {
       where: { userId },
       include: {
         file: true,
+        cv: {
+          include: {
+            experience: true,
+            projects: true,
+            educations: true,
+            certificates: true,
+            languages: true,
+            socials: true,
+            courses: true,
+          },
+        },
       },
     });
   }
@@ -62,8 +73,18 @@ export class ApplicantService {
       summary: pdfData.summary,
       skills: Array.from(new Set([...pdfData.skills, ...body.technologies])),
       experience: pdfData.experience,
+      projects: pdfData.projects,
+      educations: pdfData.educations,
+      certificates: pdfData.certificates,
+      hobies: pdfData.hobies,
+
+      languages: pdfData.languages,
+      socials: pdfData.socials,
+      courses: pdfData.courses,
     };
-    const pdfBuffer = await this.pdfService.generateCvPdf(cvData);
+    // const pdfBuffer = await this.pdfService.generateCvPdf(cvData);
+
+    const pdfBuffer = await this.pdfService.generateCvTemplate(cvData);
 
     let pdfFile: IUploadedFile | null = null;
     try {
@@ -85,7 +106,38 @@ export class ApplicantService {
       email: body.email,
       phone: body.phone,
       technologies: body.technologies,
-      cvData: JSON.parse(JSON.stringify(pdfData)),
+      cv: {
+        create: {
+          firstName: pdfData.firstName,
+          lastName: pdfData.lastName,
+          email: pdfData.email,
+          phone: pdfData.phone,
+          summary: pdfData.summary,
+          skills: pdfData.skills,
+          hobbies: pdfData.hobies,
+          experience: {
+            create: pdfData.experience,
+          },
+          projects: {
+            create: pdfData.projects,
+          },
+          educations: {
+            create: pdfData.educations,
+          },
+          certificates: {
+            create: pdfData.certificates,
+          },
+          languages: {
+            create: pdfData.languages,
+          },
+          socials: {
+            create: pdfData.socials,
+          },
+          courses: {
+            create: pdfData.courses,
+          },
+        },
+      },
       file: {
         create: {
           name: pdfFile.name,
@@ -102,17 +154,45 @@ export class ApplicantService {
     return pdfBuffer;
   }
 
-  async getApplicantCvById(loggedUserInfo: ILoggedUserInfo, id: string) {
-    const applicant = await this.databaseService.applicant.findUnique({
-      where: { id, userId: loggedUserInfo.id },
-    });
+  // async getApplicantCvById(loggedUserInfo: ILoggedUserInfo, applicantId: string) {
+  //   const applicant = await this.databaseService.applicant.findUnique({
+  //     where: { id: applicantId, userId: loggedUserInfo.id },
+  //     include: {
+  //       cv: {
+  //         include: {
+  //           experience: true,
+  //           projects: true,
+  //           educations: true,
+  //           certificates: true,
+  //           languages: true,
+  //           socials: true,
+  //           courses: true,
+  //         },
+  //       },
+  //     }
+  //   });
 
-    if (!applicant) {
-      throw new BadRequestException("Applicant not found");
-    }
+  //   if (!applicant) {
+  //     throw new BadRequestException("Applicant not found");
+  //   }
+  //   const cvData: ICvData = {
+  //     firstName: applicant.firstName,
+  //     lastName: applicant.lastName,
+  //     email: applicant.email,
+  //     phone: applicant.phone,
+  //     hobies: applicant.cv.hobbies,
+  //     summary: applicant.cv.summary,
+  //     skills: applicant.cv.skills,
+  //     experience: applicant.cv.experience,
+  //     projects: applicant.cv.projects,
+  //     educations: applicant.cv.educations,
+  //     certificates: applicant.cv.certificates,
 
-    const pdfBuffer = await this.pdfService.generateCvPdfAny(applicant.cvData);
+  //     languages: applicant.cv.languages,
+  //   }
 
-    return pdfBuffer;
-  }
+  //   const pdfBuffer = await this.pdfService.generateCvTemplate(cv);
+
+  //   return pdfBuffer;
+  // }
 }

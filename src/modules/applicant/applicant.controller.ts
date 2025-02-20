@@ -72,33 +72,33 @@ export class ApplicantController {
     return this.applicantService.findAll();
   }
 
-  @Get("/cv/:id")
-  @ApiOperation({
-    summary: "Generate Pdf file from existing cv",
-    description: "Upload a CV in PDF format",
-  })
-  @ApiBearerAuth("Access Token")
-  @UseFilters(new HttpExceptionFilter())
-  @UseGuards(AccessTokenGuard)
-  @ApiOkResponse({ description: "Pdf File generated" })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
-  async getApplicantCvById(
-    @Param("id") id: string,
-    @UserLogged() loggedUserInfo: ILoggedUserInfo,
-    @Response() res: any
-  ) {
-    const pdfBuffer = await this.applicantService.getApplicantCvById(
-      loggedUserInfo,
-      id
-    );
+  // @Get("/cv/:id")
+  // @ApiOperation({
+  //   summary: "Generate Pdf file from existing cv",
+  //   description: "Upload a CV in PDF format",
+  // })
+  // @ApiBearerAuth("Access Token")
+  // @UseFilters(new HttpExceptionFilter())
+  // @UseGuards(AccessTokenGuard)
+  // @ApiOkResponse({ description: "Pdf File generated" })
+  // @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  // async getApplicantCvById(
+  //   @Param("id") id: string,
+  //   @UserLogged() loggedUserInfo: ILoggedUserInfo,
+  //   @Response() res: any
+  // ) {
+  //   const pdfBuffer = await this.applicantService.getApplicantCvById(
+  //     loggedUserInfo,
+  //     id
+  //   );
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="cv-${id}.pdf"`,
-      "Content-Length": pdfBuffer.length,
-    });
-    res.end(pdfBuffer);
-  }
+  //   res.set({
+  //     "Content-Type": "application/pdf",
+  //     "Content-Disposition": `attachment; filename="cv-${id}.pdf"`,
+  //     "Content-Length": pdfBuffer.length,
+  //   });
+  //   res.end(pdfBuffer);
+  // }
 
   @Post("cv")
   @ApiOperation({

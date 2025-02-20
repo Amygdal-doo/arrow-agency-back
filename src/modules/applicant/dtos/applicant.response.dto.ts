@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Applicant } from "@prisma/client";
 import { JsonValue } from "@prisma/client/runtime/library";
 import { Expose, Type } from "class-transformer";
+import { CvResponseDto } from "src/modules/cv/dtos/responses/cv.response.dto";
 import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
 import { UserResponseDto } from "src/modules/users/dtos/response/user-response.dto";
 
@@ -56,12 +57,12 @@ export class ApplicantResponseDto implements Applicant {
   technologies: string[];
 
   @ApiProperty({
-    type: String,
     description: "CV data of the applicant in JSON format",
-    example: '{"name": "John", "age": 30}',
+    example: CvResponseDto,
   })
   @Expose()
-  cvData: JsonValue;
+  @Type(() => CvResponseDto)
+  cv: CvResponseDto;
 
   @ApiProperty({
     type: String,
@@ -70,6 +71,14 @@ export class ApplicantResponseDto implements Applicant {
   })
   @Expose()
   userId: string;
+
+  @ApiProperty({
+    type: String,
+    description: "User ID of the applicant",
+    example: "ecc5f54d-9ca0-4c45-8ba5-ea58d8b1c440",
+  })
+  @Expose()
+  cvId: string;
 
   @ApiProperty({
     type: String,

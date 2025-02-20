@@ -1,16 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
+import { Injectable } from "@nestjs/common";
+import OpenAI from "openai";
 import {
   ChatCompletionMessageParam,
   ChatCompletionUserMessageParam,
-} from 'openai/resources';
-import { IInstructions } from './interfaces/instructions.interface';
+} from "openai/resources";
+import { IInstructions } from "./interfaces/instructions.interface";
 
-const MODEL = 'gpt-4o-mini';
+const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.7;
 const INSTRUCTIONS = `
     You are gonna be provided with text that i scraped from website/s (mostly software/IT websites) that i using puppeteer exctracted.Now i want you to extract the most valuble info from website so that i can use openai to write a better email.So return in text that you will be able to understand"
   `;
+
+const ICvDatainterface =
+  "interface IExperience {position: string; company: string; startDate: string; endDate?: string; description: string;} interface IProject {name: string; description: string; startDate: string; endDate?: string; url?: string;} interface IEducation {institution: string; degree: string; field: string; startDate: string; endDate?: string; grade?: string;} interface ISocial {name: string; url: string;} interface ICourse {name: string; url: string; startDate: string; endDate?: string;} interface ICvLanguage {name: string; efficiency: string;} interface ICertificate {name: string; issuer: string; issueDate: string; expirationDate?: string; url?: string;} interface ICvData {firstName: string; lastName: string; email: string; phone: string; summary: string; skills: string[]; hobies: string[]; experience: IExperience[]; projects: IProject[]; educations: IEducation[]; certificates: ICertificate[]; languages: ICvLanguage[]; socials: ISocial[]; courses: ICourse[];}";
 // const INSTRUCTIONS_2 = `
 //   You are gonna be provided with textContent in string texts from a web page/s seperated with ';!' (mostly software/IT websites) that i using puppeteer exctracted,
 //    and you will determine the most valuble info from website so that i can use it to write better email."
@@ -28,7 +31,9 @@ const CHAT_INSTRUCTIONS_3 = `
 
 // const CHAT_INSTRUCTIONS_4 = `You are helpfull assistant that will exctract emails, phone numbers from text.Youre response will always be in english even whe you are provided text in other languages."`;
 const CHAT_INSTRUCTIONS_5 =
-  'I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything els youre comments or anything. use this interface as how should the json object look like: interface ICvData {firstName: string;lastName: string;email: string;phone: string;summary: string;skills: string[];experience: Array<{position: string;company: string;startDate: string;endDate?: string;description: string;}>;}';
+  "I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything els youre comments or anything. use this interface as how should the json object look like: interface ICvData {firstName: string;lastName: string;email: string;phone: string;summary: string;skills: string[];experience: Array<{position: string;company: string;startDate: string;endDate?: string;description: string;}>;}";
+
+const CHAT_INSTRUCTIONS_6 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json object look like: ${ICvDatainterface}`;
 @Injectable()
 export class OpenaiService {
   constructor(private readonly openai: OpenAI) {}
@@ -37,8 +42,8 @@ export class OpenaiService {
     const chatCompletion = await this.openai.chat.completions.create({
       model: MODEL,
       messages: [
-        { role: 'system', content: INSTRUCTIONS },
-        { role: 'user', content: text },
+        { role: "system", content: INSTRUCTIONS },
+        { role: "user", content: text },
       ],
       temperature: TEMPERATURE,
     });
@@ -49,8 +54,8 @@ export class OpenaiService {
     const chatCompletion = await this.openai.chat.completions.create({
       model: MODEL,
       messages: [
-        { role: 'system', content: CHAT_INSTRUCTIONS_2 },
-        { role: 'user', content: text },
+        { role: "system", content: CHAT_INSTRUCTIONS_2 },
+        { role: "user", content: text },
       ],
       temperature: TEMPERATURE,
     });
@@ -61,8 +66,8 @@ export class OpenaiService {
     const chatCompletion = await this.openai.chat.completions.create({
       model: MODEL,
       messages: [
-        { role: 'system', content: CHAT_INSTRUCTIONS_5 },
-        { role: 'user', content: text },
+        { role: "system", content: CHAT_INSTRUCTIONS_6 },
+        { role: "user", content: text },
       ],
       temperature: 0.3,
     });
@@ -72,7 +77,7 @@ export class OpenaiService {
   async chatCompletion(
     msg: ChatCompletionUserMessageParam,
     history: ChatCompletionMessageParam[],
-    instructions: IInstructions,
+    instructions: IInstructions
   ) {
     console.log(instructions);
 
@@ -85,7 +90,7 @@ export class OpenaiService {
     }
     const chatCompletion = await this.openai.chat.completions.create({
       model: MODEL,
-      messages: [{ role: 'system', content: content }, ...history, msg],
+      messages: [{ role: "system", content: content }, ...history, msg],
       temperature: TEMPERATURE,
     });
 
