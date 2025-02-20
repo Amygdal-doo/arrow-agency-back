@@ -27,6 +27,7 @@ model User {
 
   role         Role          @default(USER)
   refreshToken RefreshToken?
+  profile      Profile?
   applicants   Applicant[]
   files        File[]
 
@@ -35,6 +36,19 @@ model User {
 
   @@index([email], map: "user_Email_Index")
   @@index([id], map: "user_Id_Index")
+}
+
+model Profile {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phoneNumber String? @db.VarChar(50)
+  address     String? // Address of the customer
+  userId      String  @unique @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // language String
+  // currency String
+  @@index([userId], map: "user_Id_profile_Index")
 }
 
 model RefreshToken {
@@ -55,10 +69,13 @@ model Applicant {
   email        String
   phone        String?
   technologies String[]
-  cvData       Json
-  userId       String   @db.Uuid
-  user         User     @relation(fields: [userId], references: [id])
-  file         File[]
+
+  cvId   String @unique @db.Uuid
+  userId String @db.Uuid
+
+  user User   @relation(fields: [userId], references: [id])
+  cv   Cv     @relation(fields: [cvId], references: [id])
+  file File[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,19 +85,157 @@ model Applicant {
 }
 
 model File {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   url           String
   name          String
   extension     String
   fileCreatedAt DateTime
-  userId        String    @db.Uuid
-  user          User      @relation(fields: [userId], references: [id])
-  applicantId   String   @db.Uuid // Remove @unique so an applicant can have multiple files
-  applicant     Applicant @relation(fields: [applicantId], references: [id])
 
+  userId      String @db.Uuid
+  applicantId String @db.Uuid // Remove @unique so an applicant can have multiple files
+
+  user      User      @relation(fields: [userId], references: [id])
+  applicant Applicant @relation(fields: [applicantId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([id], map: "file_Id_Index")
+}
+
+model Cv {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  summary   String
+  skills    String[]
+  hobbies   String[] @default([])
+
+  experience   Experience[]
+  projects     Project[]
+  educations   Education[]
+  certificates Certificate[]
+  languages    CvLanguage[]
+  courses      Course[]
+  socials      Social[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applicant Applicant?
+
+  @@index([id], map: "cv_Id_Index")
+}
+
+model Experience {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  position    String
+  company     String
+  startDate   String
+  endDate     String?
+  description String
+  cvId        String  @db.Uuid
+  cv          Cv      @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "experience_Cv_Id_Index")
+}
+
+model Project {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String
+  startDate   String
+  endDate     String?
+  url         String?
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "project_Cv_Id_Index")
+}
+
+model Education {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  institution String
+  degree      String
+  field       String
+  startDate   String
+  endDate     String?
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "education_Cv_Id_Index")
+}
+
+model Certificate {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  issuer         String
+  issueDate      String
+  expirationDate String?
+  url            String?
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "certificate_Cv_Id_Index")
+}
+
+model Course {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  url       String
+  startDate String
+  endDate   String?
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "course_Cv_Id_Index")
+}
+
+model Social {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
+  url  String
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "social_Cv_Id_Index")
+}
+
+model CvLanguage {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  efficiency String
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "experience_CvData_Id_Index")
 }
