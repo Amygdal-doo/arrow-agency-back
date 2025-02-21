@@ -199,6 +199,17 @@ export class CvService {
         user: { connect: { id: userId } },
       },
     });
+    // should use applicant service
+    await this.databaseService.applicant.update({
+      where: {
+        id: cv.applicant.id,
+      },
+      data: {
+        technologies: Array.from(
+          new Set([...updateCvDto.skills, ...cv.applicant.technologies])
+        ),
+      },
+    });
 
     return updatedCv;
   }
