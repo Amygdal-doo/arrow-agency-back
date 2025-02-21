@@ -1,12 +1,18 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { SortOrder } from '../enums/order.enum';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Expose, Transform } from "class-transformer";
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
+import { SortOrder } from "../enums/order.enum";
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({
     example: 1,
-    description: 'Page number. Starts from 1.',
+    description: "Page number. Starts from 1.",
   })
   @IsNumber()
   @IsOptional()
@@ -15,7 +21,7 @@ export class PaginationQueryDto {
 
   @ApiPropertyOptional({
     example: 10,
-    description: 'Number of items returned per page.',
+    description: "Number of items returned per page.",
   })
   @IsOptional()
   @IsNumber()
@@ -24,31 +30,41 @@ export class PaginationQueryDto {
 }
 
 export class PaginationResponseDto {
-  @ApiProperty({ example: 25, description: 'Items per page' })
+  @ApiProperty({ example: 25, description: "Items per page" })
   @Expose()
   limit: number;
 
-  @ApiProperty({ example: 1, description: 'Current page' })
+  @ApiProperty({ example: 1, description: "Current page" })
   @Expose()
   page: number;
 
-  @ApiProperty({ example: 1, description: 'Total pages' })
+  @ApiProperty({ example: 1, description: "Total pages" })
   @Expose()
   pages: number;
 
-  @ApiProperty({ example: 1, description: 'Total items' })
+  @ApiProperty({ example: 1, description: "Total items" })
   @Expose()
   total: number;
 
-  @ApiProperty({ example: [], description: 'Results' })
+  @ApiProperty({ example: [], description: "Results" })
   @Expose()
   results: Array<any>;
 }
 
 export class OrderType {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  @ApiPropertyOptional({ enum: SortOrder, example: 'asc' })
+  @ApiPropertyOptional({ enum: SortOrder, example: "asc" })
   @IsEnum(SortOrder)
   @IsOptional()
   type?: SortOrder;
+}
+
+export class ApplicantsBytechnologiesDto {
+  @ApiPropertyOptional({
+    description: "Technologies",
+    example: ["nodejs", "react"],
+  })
+  @IsString({ each: true })
+  @IsArray()
+  @IsOptional()
+  technologies: string[];
 }

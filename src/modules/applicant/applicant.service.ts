@@ -9,6 +9,7 @@ import { SpacesService } from "../spaces/spaces.service";
 import { IUploadedFile } from "../spaces/interfaces/iuploaded-file.interface";
 import { SpacesDestinationPath } from "../spaces/enums/spaces-folder-name.enum";
 import {
+  ApplicantsBytechnologiesDto,
   OrderType,
   PaginationQueryDto,
   PaginationResponseDto,
@@ -42,13 +43,18 @@ export class ApplicantService {
     userId: string,
     paginationQuery: PaginationQueryDto,
     orderType: OrderType
+    // applicantsBytechnologiesDto: ApplicantsBytechnologiesDto
   ): Promise<PaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
-    const orderBy = "firstName";
+    const orderBy = "email";
     const query: Prisma.ApplicantFindManyArgs = {
       where: {
         userId,
         // name: { contains: paginationQuery.name, mode: 'insensitive' },
+        // technologies: {
+        //   hasSome: applicantsBytechnologiesDto.technologies,
+        //   // hasEvery: applicantsBytechnologiesDto.technologies,
+        // },
       },
     };
 
@@ -90,7 +96,7 @@ export class ApplicantService {
     orderType: OrderType
   ) {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
-    const orderBy = "firstName";
+    const orderBy = "email";
     const query: Prisma.ApplicantFindManyArgs = {
       where: {
         // name: { contains: paginationQuery.name, mode: 'insensitive' },
@@ -139,6 +145,13 @@ export class ApplicantService {
   ): Promise<Buffer> {
     const pdfData = await this.pdfService.savePdfToJson(file);
 
+    const skills = Array.from(
+      new Set([
+        ...pdfData.skills.map((skill) => skill.toUpperCase()),
+        ...body.technologies.map((skill) => skill.toUpperCase()),
+      ])
+    );
+
     console.log({ pdfData, body });
     const cvData: ICvData = {
       firstName: "",
@@ -146,7 +159,7 @@ export class ApplicantService {
       email: "",
       phone: "",
       summary: pdfData.summary,
-      skills: Array.from(new Set([...pdfData.skills, ...body.technologies])),
+      skills: skills,
       experience: pdfData.experience,
       projects: pdfData.projects,
       educations: pdfData.educations,
@@ -180,7 +193,7 @@ export class ApplicantService {
       lastName: body.surname,
       email: body.email,
       phone: body.phone,
-      technologies: body.technologies,
+      technologies: skills,
       cv: {
         create: {
           firstName: pdfData.firstName,

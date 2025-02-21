@@ -41,6 +41,8 @@ export class CvService {
     // Delete fields
     await this.deleteFields(updateCvDto.delete, id);
 
+    const skills = updateCvDto.skills.map((skill) => skill.toUpperCase());
+
     // Update the CV with nested relations
     const updatedCv = await this.databaseService.cv.update({
       where: { id },
@@ -59,7 +61,7 @@ export class CvService {
         email: updateCvDto.email,
         phone: updateCvDto.phone,
         summary: updateCvDto.summary,
-        skills: updateCvDto.skills,
+        skills,
         hobbies: updateCvDto.hobbies,
         experience: updateCvDto.experience
           ? {
@@ -205,9 +207,7 @@ export class CvService {
         id: cv.applicant.id,
       },
       data: {
-        technologies: Array.from(
-          new Set([...updateCvDto.skills, ...cv.applicant.technologies])
-        ),
+        technologies: skills,
       },
     });
 

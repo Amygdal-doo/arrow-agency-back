@@ -32,11 +32,18 @@ import { AccessTokenGuard } from "../auth/guards/access-token.guard";
 import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
 import { UploadDto } from "../pdf/dtos/upload.dto";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
-import { ApplicantResponseDto } from "./dtos/applicant.response.dto";
+import {
+  ApplicantPaginationResponseDto,
+  ApplicantResponseDto,
+} from "./dtos/applicant.response.dto";
 import { PermissionsGuard } from "../auth/permission-guard/permissions.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { Role } from "@prisma/client";
-import { PaginationQueryDto, OrderType } from "src/common/dtos/pagination.dto";
+import {
+  PaginationQueryDto,
+  OrderType,
+  ApplicantsBytechnologiesDto,
+} from "src/common/dtos/pagination.dto";
 
 @ApiTags("Applicant")
 @Controller("applicant")
@@ -52,17 +59,19 @@ export class ApplicantController {
   @UseFilters(new HttpExceptionFilter())
   @UseGuards(AccessTokenGuard)
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
-  @Serialize(ApplicantResponseDto)
+  @Serialize(ApplicantPaginationResponseDto)
   @ApiOkResponse({ type: [ApplicantResponseDto] })
   async GetAllYourApplicants(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
+    // @Query() applicantsBytechnologiesDto: ApplicantsBytechnologiesDto,
     @UserLogged() loggedUserInfo: ILoggedUserInfo
   ) {
     return this.applicantService.userApplicantsPaginated(
       loggedUserInfo.id,
       paginationQuery,
       orderType
+      // applicantsBytechnologiesDto
     );
   }
 
@@ -76,7 +85,7 @@ export class ApplicantController {
   @Roles(Role.SUPER_ADMIN)
   @UseGuards(AccessTokenGuard, PermissionsGuard)
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
-  @Serialize(ApplicantResponseDto)
+  @Serialize(ApplicantPaginationResponseDto)
   @ApiOkResponse({ type: [ApplicantResponseDto] })
   async GetAllApplicants(
     @Query() paginationQuery: PaginationQueryDto,
