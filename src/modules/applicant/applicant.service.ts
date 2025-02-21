@@ -42,8 +42,8 @@ export class ApplicantService {
   async userApplicantsPaginated(
     userId: string,
     paginationQuery: PaginationQueryDto,
-    orderType: OrderType
-    // applicantsBytechnologiesDto: ApplicantsBytechnologiesDto
+    orderType: OrderType,
+    applicantsBytechnologiesDto: ApplicantsBytechnologiesDto
   ): Promise<PaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "email";
@@ -51,12 +51,18 @@ export class ApplicantService {
       where: {
         userId,
         // name: { contains: paginationQuery.name, mode: 'insensitive' },
-        // technologies: {
-        //   hasSome: applicantsBytechnologiesDto.technologies,
-        //   // hasEvery: applicantsBytechnologiesDto.technologies,
-        // },
       },
     };
+
+    if (
+      applicantsBytechnologiesDto?.technologies &&
+      applicantsBytechnologiesDto.technologies.length > 0
+    ) {
+      query.where.technologies = {
+        hasSome: applicantsBytechnologiesDto.technologies,
+        // hasEvery: applicantsBytechnologiesDto.technologies,
+      };
+    }
 
     const { page, limit } = pageLimit(paginationQuery);
     const total = await this.databaseService.applicant.count({
@@ -135,8 +141,6 @@ export class ApplicantService {
     });
     return { limit, page, pages, total, results };
   }
-
-  // Bussiness logic
 
   async generatePdfAndSave(
     loggedUserInfo: ILoggedUserInfo,

@@ -59,12 +59,17 @@ export class OrderType {
 }
 
 export class ApplicantsBytechnologiesDto {
-  @ApiPropertyOptional({
-    description: "Technologies",
-    example: ["nodejs", "react"],
-  })
+  @ApiPropertyOptional({ type: [String] })
+  //   @IsArray()
   @IsString({ each: true })
-  @IsArray()
   @IsOptional()
+  @Transform(({ value }) => {
+    console.log(value);
+    return typeof value === "string"
+      ? value.startsWith("[") && value.endsWith("]")
+        ? JSON.parse(value)
+        : value.split(",")
+      : value;
+  })
   technologies: string[];
 }

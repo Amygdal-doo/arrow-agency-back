@@ -64,14 +64,14 @@ export class ApplicantController {
   async GetAllYourApplicants(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
-    // @Query() applicantsBytechnologiesDto: ApplicantsBytechnologiesDto,
-    @UserLogged() loggedUserInfo: ILoggedUserInfo
+    @UserLogged() loggedUserInfo: ILoggedUserInfo,
+    @Query() applicantsBytechnologiesDto: ApplicantsBytechnologiesDto
   ) {
     return this.applicantService.userApplicantsPaginated(
       loggedUserInfo.id,
       paginationQuery,
-      orderType
-      // applicantsBytechnologiesDto
+      orderType,
+      applicantsBytechnologiesDto
     );
   }
 
