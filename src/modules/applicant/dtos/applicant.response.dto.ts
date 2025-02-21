@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Applicant } from "@prisma/client";
 import { JsonValue } from "@prisma/client/runtime/library";
 import { Expose, Type } from "class-transformer";
+import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { CvResponseDto } from "src/modules/cv/dtos/responses/cv.response.dto";
 import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
 import { UserResponseDto } from "src/modules/users/dtos/response/user-response.dto";
@@ -113,4 +114,10 @@ export class ApplicantResponseDto implements Applicant {
   })
   @Expose()
   updatedAt: Date;
+}
+
+export class ApplicantPaginationResponseDto extends PaginationResponseDto {
+  @Expose()
+  @Type(() => ApplicantResponseDto)
+  results: ApplicantResponseDto[];
 }

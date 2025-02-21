@@ -7,6 +7,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Query,
   Response,
   UploadedFile,
   UseFilters,
@@ -35,6 +36,7 @@ import { ApplicantResponseDto } from "./dtos/applicant.response.dto";
 import { PermissionsGuard } from "../auth/permission-guard/permissions.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { Role } from "@prisma/client";
+import { PaginationQueryDto, OrderType } from "src/common/dtos/pagination.dto";
 
 @ApiTags("Applicant")
 @Controller("applicant")
@@ -43,7 +45,7 @@ export class ApplicantController {
 
   @Get()
   @ApiOperation({
-    summary: "Get all your applicants",
+    summary: "Get all your applicants paginated - user",
     description: "Fetches all applicants based on the logged user",
   })
   @ApiBearerAuth("Access Token")
@@ -52,13 +54,21 @@ export class ApplicantController {
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @Serialize(ApplicantResponseDto)
   @ApiOkResponse({ type: [ApplicantResponseDto] })
-  async GetAllYourApplicants(@UserLogged() loggedUserInfo: ILoggedUserInfo) {
-    return this.applicantService.findByUserId(loggedUserInfo.id);
+  async GetAllYourApplicants(
+    @Query() paginationQuery: PaginationQueryDto,
+    @Query() orderType: OrderType,
+    @UserLogged() loggedUserInfo: ILoggedUserInfo
+  ) {
+    return this.applicantService.userApplicantsPaginated(
+      loggedUserInfo.id,
+      paginationQuery,
+      orderType
+    );
   }
 
   @Get("all")
   @ApiOperation({
-    summary: "Get all applicants - Super Admin",
+    summary: "Get all applicants paginated - Super Admin",
     description: "Fetches all applicants for super admin",
   })
   @ApiBearerAuth("Access Token")
@@ -68,8 +78,14 @@ export class ApplicantController {
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @Serialize(ApplicantResponseDto)
   @ApiOkResponse({ type: [ApplicantResponseDto] })
-  async GetAllApplicants() {
-    return this.applicantService.findAll();
+  async GetAllApplicants(
+    @Query() paginationQuery: PaginationQueryDto,
+    @Query() orderType: OrderType
+  ) {
+    return this.applicantService.findAllApplicantsPaginated(
+      paginationQuery,
+      orderType
+    );
   }
 
   // @Get("/cv/:id")

@@ -8,6 +8,13 @@ import { ICvData } from "../pdf/interfaces/cv-data.interface";
 import { SpacesService } from "../spaces/spaces.service";
 import { IUploadedFile } from "../spaces/interfaces/iuploaded-file.interface";
 import { SpacesDestinationPath } from "../spaces/enums/spaces-folder-name.enum";
+import {
+  OrderType,
+  PaginationQueryDto,
+  PaginationResponseDto,
+} from "src/common/dtos/pagination.dto";
+import { SortOrder } from "src/common/enums/order.enum";
+import { pageLimit } from "src/common/helper/pagination.helper";
 
 @Injectable()
 export class ApplicantService {
@@ -31,9 +38,29 @@ export class ApplicantService {
     return this.databaseService.applicant.findMany({ where: { email } });
   }
 
-  async findByUserId(userId: string) {
-    return this.databaseService.applicant.findMany({
-      where: { userId },
+  async userApplicantsPaginated(
+    userId: string,
+    paginationQuery: PaginationQueryDto,
+    orderType: OrderType
+  ): Promise<PaginationResponseDto> {
+    const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
+    const orderBy = "firstName";
+    const query: Prisma.ApplicantFindManyArgs = {
+      where: {
+        userId,
+        // name: { contains: paginationQuery.name, mode: 'insensitive' },
+      },
+    };
+
+    const { page, limit } = pageLimit(paginationQuery);
+    const total = await this.databaseService.applicant.count({
+      where: query.where,
+    });
+
+    const pages = Math.ceil(total / limit);
+    const startIndex = page < 1 ? 0 : (page - 1) * limit;
+
+    const results = await this.databaseService.applicant.findMany({
       include: {
         file: true,
         cv: {
@@ -48,11 +75,59 @@ export class ApplicantService {
           },
         },
       },
+      where: query.where,
+      skip: startIndex,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderIn,
+      },
     });
+    return { limit, page, pages, total, results };
   }
 
-  async findAll() {
-    return this.databaseService.applicant.findMany();
+  async findAllApplicantsPaginated(
+    paginationQuery: PaginationQueryDto,
+    orderType: OrderType
+  ) {
+    const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
+    const orderBy = "firstName";
+    const query: Prisma.ApplicantFindManyArgs = {
+      where: {
+        // name: { contains: paginationQuery.name, mode: 'insensitive' },
+      },
+    };
+
+    const { page, limit } = pageLimit(paginationQuery);
+    const total = await this.databaseService.applicant.count({
+      where: query.where,
+    });
+
+    const pages = Math.ceil(total / limit);
+    const startIndex = page < 1 ? 0 : (page - 1) * limit;
+
+    const results = await this.databaseService.applicant.findMany({
+      include: {
+        file: true,
+        cv: {
+          include: {
+            experience: true,
+            projects: true,
+            educations: true,
+            certificates: true,
+            languages: true,
+            socials: true,
+            courses: true,
+          },
+        },
+      },
+      where: query.where,
+      skip: startIndex,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderIn,
+      },
+    });
+    return { limit, page, pages, total, results };
   }
 
   // Bussiness logic
