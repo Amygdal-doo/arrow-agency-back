@@ -42,8 +42,12 @@ model Profile {
   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   phoneNumber String? @db.VarChar(50)
   address     String? // Address of the customer
+  // companyName String
+  // companyUrl  String?
+  // companyLogo String
+  
+  
   userId      String  @unique @db.Uuid
-
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // language String
@@ -95,7 +99,7 @@ model File {
   applicantId String @db.Uuid // Remove @unique so an applicant can have multiple files
 
   user      User      @relation(fields: [userId], references: [id])
-  applicant Applicant @relation(fields: [applicantId], references: [id])
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
