@@ -8,23 +8,9 @@ import { IInstructions } from "./interfaces/instructions.interface";
 
 const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.7;
-const INSTRUCTIONS = `
-    You are gonna be provided with text that i scraped from website/s (mostly software/IT websites) that i using puppeteer exctracted.Now i want you to extract the most valuble info from website so that i can use openai to write a better email.So return in text that you will be able to understand"
-  `;
 
 const ICvDatainterface =
   "interface IExperience {position: string; company: string; startDate: string; endDate?: string; description: string;} interface IProject {name: string; description: string; startDate: string; endDate?: string; url?: string;} interface IEducation {institution: string; degree: string; field: string; startDate: string; endDate?: string;} interface ISocial {name: string; url: string;} interface ICourse {name: string; url: string; startDate: string; endDate?: string;} interface ICvLanguage {name: string; efficiency: string;} interface ICertificate {name: string; issuer: string; issueDate: string; expirationDate?: string; url?: string;} interface ICvData {firstName: string; lastName: string; email: string; phone: string; summary: string; skills: string[]; hobies: string[]; experience: IExperience[]; projects: IProject[]; educations: IEducation[]; certificates: ICertificate[]; languages: ICvLanguage[]; socials: ISocial[]; courses: ICourse[];}";
-// const INSTRUCTIONS_2 = `
-//   You are gonna be provided with textContent in string texts from a web page/s seperated with ';!' (mostly software/IT websites) that i using puppeteer exctracted,
-//    and you will determine the most valuble info from website so that i can use it to write better email."
-// `;
-
-// const CHAT_INSTRUCTIONS = `
-//     You are gonna be provided with textContent of certain tags from a web page/s (mostly software/IT websites) that i using puppeteer exctracted,
-//      and you are gonna construct a sales email based on it. Any further prompts will be to fix/improve the email."`;
-
-const CHAT_INSTRUCTIONS_2 = `
-    You are helpfull assistant that will help me create sales email based on provided information about company. So youre response should always be in email format."`;
 
 const CHAT_INSTRUCTIONS_3 = `
     You are helpfull assistant that will return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything els youre comments or anything`;
@@ -37,30 +23,6 @@ const CHAT_INSTRUCTIONS_6 = `I want you to return STRINGIFIED json object based 
 @Injectable()
 export class OpenaiService {
   constructor(private readonly openai: OpenAI) {}
-
-  async returnSummerizedResponseOfArrayOfText(text: string) {
-    const chatCompletion = await this.openai.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: INSTRUCTIONS },
-        { role: "user", content: text },
-      ],
-      temperature: TEMPERATURE,
-    });
-    return chatCompletion.choices[0].message;
-  }
-
-  async createEmail(text: string) {
-    const chatCompletion = await this.openai.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: CHAT_INSTRUCTIONS_2 },
-        { role: "user", content: text },
-      ],
-      temperature: TEMPERATURE,
-    });
-    return chatCompletion.choices[0].message.content;
-  }
 
   async createJsonObject(text: string) {
     const chatCompletion = await this.openai.chat.completions.create({
