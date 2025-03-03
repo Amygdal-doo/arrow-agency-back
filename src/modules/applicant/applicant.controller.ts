@@ -44,6 +44,7 @@ import {
   OrderType,
   ApplicantsBytechnologiesDto,
 } from "src/common/dtos/pagination.dto";
+import { sanitizeFilename } from "src/common/helper/sanitize-filename-gen.helper";
 
 @ApiTags("Applicant")
 @Controller("applicant")
@@ -158,9 +159,12 @@ export class ApplicantController {
       body
     );
 
+    let filename = `cv-${body.name}_${body.surname}.pdf`;
+    filename = sanitizeFilename(filename);
+
     res.set({
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="cv-${body.name}_${body.surname}.pdf"`,
+      "Content-Disposition": `attachment; filename="${filename}"`,
       "Content-Length": pdfBuffer.length,
     });
     res.end(pdfBuffer);
