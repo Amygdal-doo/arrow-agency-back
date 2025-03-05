@@ -1,8 +1,7 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { Prisma } from "@prisma/client";
 import { IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
-export class UpdateUserProfileDto implements Prisma.ProfileUpdateInput {
+export class UpdateUserAndProfileDto {
   @ApiPropertyOptional({
     type: String,
     description: "Phone number",
@@ -13,12 +12,28 @@ export class UpdateUserProfileDto implements Prisma.ProfileUpdateInput {
   phoneNumber?: string | null;
 
   @ApiPropertyOptional({
-    example: "123 Main Street",
-    description: "The address of the customer",
+    example: "ulica 23",
+    description: "The name of the customer",
   })
   @IsString()
   @MinLength(3)
   @MaxLength(100)
   @IsOptional()
   address?: string;
+
+  @ApiPropertyOptional({
+    example: "John",
+    description: "Your first name",
+  })
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+
+  @ApiPropertyOptional({
+    example: "Doe",
+    description: "Your last name",
+  })
+  @IsString()
+  @IsOptional()
+  lastName?: string;
 }
