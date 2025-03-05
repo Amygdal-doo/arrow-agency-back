@@ -19,6 +19,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -45,6 +46,8 @@ import {
   ApplicantsBytechnologiesDto,
 } from "src/common/dtos/pagination.dto";
 import { sanitizeFilename } from "src/common/helper/sanitize-filename-gen.helper";
+import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
+import { NotFoundDto } from "src/common/dtos/not-found.dto";
 
 @ApiTags("Applicant")
 @Controller("applicant")
@@ -168,5 +171,28 @@ export class ApplicantController {
       "Content-Length": pdfBuffer.length,
     });
     res.end(pdfBuffer);
+  }
+
+  @Get(":id")
+  @ApiOperation({
+    summary: "Get applicant by id",
+    description: "Fetches an applicant based on the logged user",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  @Serialize(ApplicantResponseDto)
+  @ApiCreatedResponse({ type: ApplicantResponseDto })
+  @ApiNotFoundResponse({ type: NotFoundDto })
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  async findOne(
+    @Param("id") id: string,
+    @UserLogged() loggedUserInfo: ILoggedUserInfo
+  ) {
+    const result = await this.applicantService.findOne(id, loggedUserInfo.id);
+    if (!result) {
+      throw new NotFoundException("Applicant not found");
+    }
+    return result;
   }
 }

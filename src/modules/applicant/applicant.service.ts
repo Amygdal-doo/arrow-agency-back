@@ -35,6 +35,30 @@ export class ApplicantService {
     return this.databaseService.applicant.findUnique({ where: { id } });
   }
 
+  async findOne(id: string, userId: string) {
+    const result = await this.databaseService.applicant.findUnique({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        file: true,
+        cv: {
+          include: {
+            experience: true,
+            projects: true,
+            educations: true,
+            certificates: true,
+            languages: true,
+            socials: true,
+            courses: true,
+          },
+        },
+      },
+    });
+    return result;
+  }
+
   async findByEmail(email: string) {
     return this.databaseService.applicant.findMany({ where: { email } });
   }
@@ -73,20 +97,20 @@ export class ApplicantService {
     const startIndex = page < 1 ? 0 : (page - 1) * limit;
 
     const results = await this.databaseService.applicant.findMany({
-      include: {
-        file: true,
-        cv: {
-          include: {
-            experience: true,
-            projects: true,
-            educations: true,
-            certificates: true,
-            languages: true,
-            socials: true,
-            courses: true,
-          },
-        },
-      },
+      // include: {
+      //   file: true,
+      //   cv: {
+      //     include: {
+      //       experience: true,
+      //       projects: true,
+      //       educations: true,
+      //       certificates: true,
+      //       languages: true,
+      //       socials: true,
+      //       courses: true,
+      //     },
+      //   },
+      // },
       where: query.where,
       skip: startIndex,
       take: limit,
