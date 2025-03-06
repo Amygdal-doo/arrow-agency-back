@@ -241,6 +241,7 @@ export class CvService {
         languages: true,
         socials: true,
         courses: true,
+        skills: true,
       },
     });
 
