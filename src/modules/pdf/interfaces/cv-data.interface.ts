@@ -1,3 +1,11 @@
+enum EfficiencyLevel {
+  null = "null",
+  beginner = "beginner",
+  intermediate = "intermediate",
+  advanced = "advanced",
+  expert = "expert",
+}
+
 export interface IExperience {
   position: string;
   company: string;
@@ -37,7 +45,7 @@ export interface ICourse {
 
 export interface ICvLanguage {
   name: string;
-  efficiency: string;
+  efficiency: string; // default 'null' EfficiencyLevel
 }
 
 export interface ICertificate {
@@ -48,6 +56,11 @@ export interface ICertificate {
   url?: string;
 }
 
+export interface skills {
+  name: string;
+  efficiency: string; // default 'null' EfficiencyLevel
+}
+
 export interface ICvData {
   firstName: string;
   lastName: string;
@@ -55,7 +68,7 @@ export interface ICvData {
   phone: string;
   summary: string;
 
-  skills: string[];
+  skills: skills[];
   hobies: string[];
   experience: IExperience[];
   projects: IProject[];
