@@ -15,6 +15,8 @@ import { UpdateCvLanguageDto } from "./update_language.body.dto";
 import { UpdateProjectDto } from "./update_project.body.dto";
 import { UpdateSocialDto } from "./update_social.body.dto";
 import { DeleteCvFieldsByIdDto } from "../delete_cv_fields_by_id.dto";
+import { Skills } from "@prisma/client";
+import { UpdateSkillsDto } from "./update_skills.body.dto";
 
 export class UpdateCvDto {
   @ApiPropertyOptional({
@@ -58,13 +60,14 @@ export class UpdateCvDto {
   summary?: string;
 
   @ApiPropertyOptional({
-    example: ["JavaScript", "TypeScript", "Node.js"],
+    type: [UpdateSkillsDto],
     description: "Skills of the person",
   })
   @IsArray()
-  @IsString({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateSkillsDto)
   @IsOptional()
-  skills?: string[];
+  skills?: UpdateSkillsDto[];
 
   @ApiPropertyOptional({
     example: ["Reading", "Cycling"],

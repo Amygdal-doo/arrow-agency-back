@@ -41,7 +41,7 @@ export class CvService {
     // Delete fields
     await this.deleteFields(updateCvDto.delete, id);
 
-    const skills = updateCvDto.skills.map((skill) => skill.toUpperCase());
+    // const skills = updateCvDto.skills.map((skill) => skill.toUpperCase());
 
     // Update the CV with nested relations
     const updatedCv = await this.databaseService.cv.update({
@@ -54,6 +54,7 @@ export class CvService {
         languages: true,
         socials: true,
         courses: true,
+        skills: true,
       },
       data: {
         firstName: updateCvDto.firstName,
@@ -61,7 +62,6 @@ export class CvService {
         email: updateCvDto.email,
         phone: updateCvDto.phone,
         summary: updateCvDto.summary,
-        skills,
         hobbies: updateCvDto.hobbies,
         experience: updateCvDto.experience
           ? {
@@ -161,7 +161,18 @@ export class CvService {
               })),
             }
           : undefined,
-        updatedAt: new Date(),
+        skills: updateCvDto.skills
+          ? {
+              upsert: updateCvDto.skills.map((skill) => ({
+                where: { id: skill.id || "" },
+                update: skill,
+                create: {
+                  name: skill.name.toUpperCase(),
+                  efficiency: skill.efficiency,
+                },
+              })),
+            }
+          : undefined,
       },
     });
 
@@ -202,14 +213,14 @@ export class CvService {
       },
     });
     // should use applicant service
-    await this.databaseService.applicant.update({
-      where: {
-        id: cv.applicant.id,
-      },
-      data: {
-        technologies: skills,
-      },
-    });
+    // await this.databaseService.applicant.update({
+    //   where: {
+    //     id: cv.applicant.id,
+    //   },
+    //   data: {
+    //     technologies: skills,
+    //   },
+    // });
 
     return updatedCv;
   }
@@ -302,6 +313,15 @@ export class CvService {
         },
       });
     }
+
+    if (deleteFields.skills) {
+      await this.databaseService.skills.deleteMany({
+        where: {
+          id: { in: deleteFields.skills },
+          cvId: cvId,
+        },
+      });
+    }
   }
 
   transformToICvData(cv: CvResponseDto): ICvData {
@@ -312,9 +332,14 @@ export class CvService {
       phone: cv.phone,
       summary: cv.summary,
 
-      skills: cv.skills || [],
       hobies: cv.hobbies || [], // Using "hobies" to match your interface; consider fixing to "hobbies"
 
+      skills: cv.skills
+        ? cv.skills.map((skill) => ({
+            name: skill.name,
+            efficiency: skill.efficiency,
+          }))
+        : [],
       experience: cv.experience
         ? cv.experience.map((exp) => ({
             position: exp.position,

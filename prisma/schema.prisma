@@ -13,6 +13,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// enum EfficiencyLevel {
+//   null
+//   beginner
+//   intermediate
+//   advanced
+//   expert
+// }
+
 enum Role {
   USER
   SUPER_ADMIN
@@ -45,10 +53,9 @@ model Profile {
   // companyName String
   // companyUrl  String?
   // companyLogo String
-  
-  
-  userId      String  @unique @db.Uuid
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  userId String @unique @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // language String
   // currency String
@@ -114,7 +121,7 @@ model Cv {
   email     String
   phone     String
   summary   String
-  skills    String[]
+  skills    Skills[]
   hobbies   String[] @default([])
 
   experience   Experience[]
@@ -131,6 +138,20 @@ model Cv {
   applicant Applicant?
 
   @@index([id], map: "cv_Id_Index")
+}
+
+model Skills {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  efficiency String @default("null")
+
+  cvId String @db.Uuid
+  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cvId], map: "skills_CvData_Id_Index")
 }
 
 model Experience {

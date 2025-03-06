@@ -39,7 +39,7 @@ export class CvLanguageResponseDto implements CvLanguage {
   name: string;
 
   @ApiProperty({
-    example: "Fluent",
+    example: "expert",
     description: "Proficiency level in the language",
   })
   @Expose()

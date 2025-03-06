@@ -57,4 +57,12 @@ export class DeleteCvFieldsByIdDto {
     description: "Ids of the social entries to be deleted",
   })
   socials: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @ApiProperty({
+    example: ["1", "2", "3"],
+    description: "Ids of the skill entries to be deleted",
+  })
+  skills: string[];
 }

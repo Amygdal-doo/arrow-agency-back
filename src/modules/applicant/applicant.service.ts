@@ -16,6 +16,7 @@ import {
 } from "src/common/dtos/pagination.dto";
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
+import e from "express";
 
 @Injectable()
 export class ApplicantService {
@@ -173,12 +174,13 @@ export class ApplicantService {
   ): Promise<Buffer> {
     const pdfData = await this.pdfService.savePdfToJson(file);
 
-    const skills = Array.from(
-      new Set([
-        ...pdfData.skills.map((skill) => skill.toUpperCase()),
-        ...body.technologies.map((skill) => skill.toUpperCase()),
-      ])
-    );
+    // const skillsOnly = pdfData.skills.map((skill) => skill.name);
+
+    const technologies = body.technologies.map((skill) => skill.toUpperCase());
+    const skills = pdfData.skills.filter((skill) => {
+      skill.name.toUpperCase();
+      skill.efficiency ?? "null";
+    });
 
     console.log({ pdfData, body });
     const cvData: ICvData = {
@@ -221,7 +223,7 @@ export class ApplicantService {
       lastName: body.surname,
       email: body.email,
       phone: body.phone,
-      technologies: skills,
+      technologies: technologies,
       cv: {
         create: {
           firstName: pdfData.firstName,
@@ -229,7 +231,9 @@ export class ApplicantService {
           email: pdfData.email,
           phone: pdfData.phone,
           summary: pdfData.summary,
-          skills: pdfData.skills,
+          skills: {
+            create: skills,
+          },
           hobbies: pdfData.hobies,
           experience: {
             create: pdfData.experience,

@@ -8,6 +8,7 @@ import { CvLanguageResponseDto } from "./cv_language.response.dto";
 import { CvProjectResponseDto } from "./cv_project.response.dto";
 import { CvSocialResponseDto } from "./cv_social.response.dto";
 import { CvExperienceResponseDto } from "./cv_experience.response.dto";
+import { CvSkillResponseDto } from "./cv_skills.response";
 
 export class CvResponseDto implements Cv {
   @ApiProperty({
@@ -57,7 +58,7 @@ export class CvResponseDto implements Cv {
     description: "Skills of the person",
   })
   @Expose()
-  skills: string[];
+  skills: CvSkillResponseDto[];
 
   @ApiProperty({
     example: ["Reading", "Cycling"],
