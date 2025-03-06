@@ -58,7 +58,7 @@ export class PdfService {
     // return { message: 'File uploaded successfully' };
     const pdfText = await this.getPdfText(file.buffer);
     const jsonObject = await this.openaiService.createJsonObject(pdfText);
-    console.log(jsonObject);
+    console.log({ jsonObject });
 
     let object: ICvData;
     try {
