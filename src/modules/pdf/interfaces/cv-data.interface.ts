@@ -1,4 +1,4 @@
-enum EfficiencyLevel {
+export enum EfficiencyLevel {
   null = "null",
   beginner = "beginner",
   intermediate = "intermediate",
