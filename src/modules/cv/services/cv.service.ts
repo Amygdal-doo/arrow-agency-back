@@ -42,7 +42,7 @@ export class CvService {
     await this.deleteFields(updateCvDto.delete, id);
 
     // const skills = updateCvDto.skills.map((skill) => skill.toUpperCase());
-
+    const defaultUUID = "00000000-0000-0000-0000-000000000000";
     // Update the CV with nested relations
     const updatedCv = await this.databaseService.cv.update({
       where: { id },
@@ -66,7 +66,7 @@ export class CvService {
         experience: updateCvDto.experience
           ? {
               upsert: updateCvDto.experience.map((exp) => ({
-                where: { id: exp.id || "" }, // Assumes existing ID or empty string for new
+                where: { id: exp.id || defaultUUID }, // Assumes existing ID or empty string for new
                 update: exp,
                 create: {
                   position: exp.position,
@@ -81,7 +81,7 @@ export class CvService {
         projects: updateCvDto.projects
           ? {
               upsert: updateCvDto.projects.map((proj) => ({
-                where: { id: proj.id || "" },
+                where: { id: proj.id || defaultUUID },
                 update: proj,
                 create: {
                   name: proj.name,
@@ -96,7 +96,7 @@ export class CvService {
         educations: updateCvDto.educations
           ? {
               upsert: updateCvDto.educations.map((edu) => ({
-                where: { id: edu.id || "" },
+                where: { id: edu.id || defaultUUID },
                 update: edu,
                 create: {
                   field: edu.field,
@@ -111,7 +111,7 @@ export class CvService {
         certificates: updateCvDto.certificates
           ? {
               upsert: updateCvDto.certificates.map((cert) => ({
-                where: { id: cert.id || "" },
+                where: { id: cert.id || defaultUUID },
                 update: cert,
                 create: {
                   name: cert.name,
@@ -126,7 +126,7 @@ export class CvService {
         courses: updateCvDto.courses
           ? {
               upsert: updateCvDto.courses.map((course) => ({
-                where: { id: course.id || "" },
+                where: { id: course.id || defaultUUID },
                 update: course,
                 create: {
                   name: course.name,
@@ -140,7 +140,7 @@ export class CvService {
         socials: updateCvDto.socials
           ? {
               upsert: updateCvDto.socials.map((social) => ({
-                where: { id: social.id || "" },
+                where: { id: social.id || defaultUUID },
                 update: social,
                 create: {
                   name: social.name,
@@ -152,7 +152,7 @@ export class CvService {
         languages: updateCvDto.languages
           ? {
               upsert: updateCvDto.languages.map((lang) => ({
-                where: { id: lang.id || "" },
+                where: { id: lang.id || defaultUUID },
                 update: lang,
                 create: {
                   name: lang.name,
@@ -164,10 +164,12 @@ export class CvService {
         skills: updateCvDto.skills
           ? {
               upsert: updateCvDto.skills.map((skill) => ({
-                where: { id: skill.id || "" },
+                where: {
+                  id: skill.id || defaultUUID,
+                },
                 update: skill,
                 create: {
-                  name: skill.name.toUpperCase(),
+                  name: skill.name,
                   efficiency: skill.efficiency,
                 },
               })),
