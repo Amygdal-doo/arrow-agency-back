@@ -8,6 +8,10 @@ import * as path from "path";
 import axios from "axios";
 import { ApplicantService } from "../applicant/applicant.service";
 import { ICvData } from "./interfaces/cv-data.interface";
+import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
+import * as puppeteer from "puppeteer";
+import * as handlebars from "handlebars";
+import { log } from "console";
 
 @Injectable()
 export class PdfService {
@@ -413,6 +417,93 @@ export class PdfService {
     // --- Convert to Buffer ---
     const pdfOutput = doc.output("arraybuffer");
     return Buffer.from(pdfOutput);
+  }
+
+  async generateCvPdfPuppeteer(
+    data: ICvData,
+    templateId: string
+  ): Promise<Buffer> {
+    // Resolve template path
+    const templatePath = path.join(
+      __dirname,
+      "../../../../public",
+      "templates",
+      `${templateId}.html`
+    );
+    console.log(templatePath);
+
+    if (!fs.existsSync(templatePath)) {
+      throw new NotFoundException(`Template "${templateId}" not found`);
+    }
+
+    // Read and compile the template
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
+    const template = handlebars.compile(templateHtml);
+
+    // Format dates for better readability (optional)
+    const formattedData = this.formatCvData(data);
+
+    // Render HTML with data
+    const html = template({
+      ...formattedData,
+      companyName: this.companyName,
+      logoUrl:
+        "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+    });
+
+    // Launch Puppeteer and generate PDF
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
+    });
+    await browser.close();
+
+    return Buffer.from(pdf);
+  }
+
+  private formatCvData(data: ICvData): ICvData {
+    const formatDate = (dateStr: string): string => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+      });
+    };
+
+    return {
+      ...data,
+      experience: data.experience.map((exp) => ({
+        ...exp,
+        startDate: formatDate(exp.startDate),
+        endDate: exp.endDate ? formatDate(exp.endDate) : undefined,
+      })),
+      projects: data.projects.map((proj) => ({
+        ...proj,
+        startDate: formatDate(proj.startDate),
+        endDate: proj.endDate ? formatDate(proj.endDate) : undefined,
+      })),
+      educations: data.educations.map((edu) => ({
+        ...edu,
+        startDate: formatDate(edu.startDate),
+        endDate: edu.endDate ? formatDate(edu.endDate) : undefined,
+      })),
+      certificates: data.certificates.map((cert) => ({
+        ...cert,
+        issueDate: formatDate(cert.issueDate),
+        expirationDate: cert.expirationDate
+          ? formatDate(cert.expirationDate)
+          : undefined,
+      })),
+      courses: data.courses.map((course) => ({
+        ...course,
+        startDate: formatDate(course.startDate),
+        endDate: course.endDate ? formatDate(course.endDate) : undefined,
+      })),
+    };
   }
 
   async generateCvTemplate(data: ICvData): Promise<Buffer> {
