@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -14,7 +15,7 @@ import {
   DeleteObjectsCommandInput,
 } from "@aws-sdk/client-s3";
 import { S3_CLIENT } from "./constants";
-import { IUploadedFile } from "./interfaces/iuploaded-file.interface";
+import { IUploadedFile } from "./interfaces/file-upload.interface";
 import { SpacesDestinationPath } from "./enums/spaces-folder-name.enum";
 import {
   BUCKET,
@@ -23,10 +24,21 @@ import {
   OBJECT_STORAGE_URL,
   SPACES_URL_ORIGIN,
 } from "./config/spaces.config";
+import { IImageUpload } from "./interfaces/image-upload.interface";
+import * as sharp from "sharp";
 
 @Injectable()
 export class SpacesService {
   constructor(@Inject(S3_CLIENT) private readonly s3: S3) {}
+
+  private async getMetadata(buffer: Buffer): Promise<sharp.Metadata> {
+    try {
+      const metadata = await sharp(buffer).metadata();
+      return metadata;
+    } catch (error) {
+      throw new BadRequestException("Image processing error");
+    }
+  }
 
   async uploadSinglePdf(
     pdf: Express.Multer.File,
@@ -140,6 +152,58 @@ export class SpacesService {
             const url = `${OBJECT_STORAGE_ORIGIN_URL}/${fileName}`;
             const createdAt = new Date();
             resolve({
+              name: file.originalname,
+              extension: ext,
+              createdAt,
+              url,
+            });
+          } else {
+            reject(
+              new Error(
+                `SpacesService_ERROR: ${
+                  error.message || "Something went wrong"
+                }`
+              )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  async uploadSingleImage(
+    file: Express.Multer.File,
+    destinationPath: SpacesDestinationPath
+  ) {
+    const ext = extname(file.originalname);
+    if (ext !== ".jpg" && ext !== ".png" && ext !== ".jpeg") {
+      throw new HttpException("Invalid file format.", HttpStatus.BAD_REQUEST);
+    }
+    const fileName =
+      HOME_DIR +
+      "/" +
+      destinationPath +
+      `/files/${Date.now()}-${file.originalname}`;
+    const imageBuffer = file.buffer;
+    // const imageType = ext.slice(1);
+    const imageMetadata = await this.getMetadata(imageBuffer);
+    const imageWidth = imageMetadata.width;
+    const imageHeight = imageMetadata.height;
+    return new Promise<IImageUpload>((resolve, reject) => {
+      this.s3.putObject(
+        {
+          Bucket: BUCKET,
+          Key: fileName,
+          Body: file.buffer,
+          ACL: "public-read",
+        },
+        (error: any /*AWS.AWSError*/) => {
+          if (!error) {
+            const url = `${OBJECT_STORAGE_ORIGIN_URL}/${fileName}`;
+            const createdAt = new Date();
+            resolve({
+              height: imageHeight,
+              width: imageWidth,
               name: file.originalname,
               extension: ext,
               createdAt,

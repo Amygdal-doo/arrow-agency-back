@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 
@@ -42,4 +42,19 @@ export class UploadDto {
   @IsString()
   @IsNotEmpty()
   phone: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  templateId: string;
+
+  @ApiProperty()
+  @IsUUID()
+  @IsNotEmpty()
+  logoId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  companyName: string;
 }

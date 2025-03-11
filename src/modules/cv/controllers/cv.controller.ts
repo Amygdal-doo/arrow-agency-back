@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Put,
+  Query,
   UseFilters,
   UseGuards,
   UseInterceptors,
@@ -73,8 +74,9 @@ export class CvController {
   updateCv(
     @UserLogged() loggedUserInfo: ILoggedUserInfo,
     @Param("id") id: string,
-    @Body() body: UpdateCvDto
+    @Body() body: UpdateCvDto,
+    @Query("templateId") templateId: string
   ) {
-    return this.cvService.updateCv(loggedUserInfo.id, id, body);
+    return this.cvService.updateCv(loggedUserInfo.id, id, body, templateId);
   }
 }

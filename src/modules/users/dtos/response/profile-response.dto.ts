@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Profile } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { UserResponseDto } from "./user-response.dto";
+import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
 
 export class UserProfileResponseDto implements Profile {
   @ApiProperty({
@@ -43,4 +44,13 @@ export class UserProfileResponseDto implements Profile {
   @Expose()
   @Type(() => UserResponseDto)
   user: UserResponseDto;
+
+  @ApiProperty({
+    type: [FileResponseDto],
+    example: [FileResponseDto],
+    description: "Company logos",
+  })
+  @Expose()
+  @Type(() => FileResponseDto)
+  companyLogos: FileResponseDto[];
 }

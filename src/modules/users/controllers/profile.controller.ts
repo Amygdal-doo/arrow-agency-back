@@ -1,10 +1,15 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
+  ParseFilePipe,
   Put,
+  UploadedFile,
   UseFilters,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
   ApiOperation,
@@ -12,6 +17,8 @@ import {
   ApiTags,
   ApiOkResponse,
   ApiUnauthorizedResponse,
+  ApiBody,
+  ApiConsumes,
 } from "@nestjs/swagger";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
 import { UserLogged } from "../../auth/decorators/user.decorator";
@@ -24,6 +31,10 @@ import { UserProfileService } from "../services/user-profile.service";
 import { UsersService } from "../services/users.service";
 import { UpdateUserAndProfileDto } from "../dtos/requests/update-profile-and-user-info.dto";
 import { SuccesfullUpdateDto } from "src/common/dtos/succesfull-update.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { CompanyLogoSizeValidationPipe } from "../pipes/company-logo_size_validation.pipe";
+import { ImageTypeValidationPipe } from "../pipes/image_type_validator.pipe";
+import { uploadCompanyLogoDto } from "../dtos/requests/upload-logo.dto";
 
 @ApiTags("User Profile")
 @Controller({ path: "user/profile" })
@@ -78,5 +89,30 @@ export class UserProfileController {
     return {
       message: "Updated successfully",
     };
+  }
+
+  @Put("company-logos")
+  @ApiOperation({
+    summary: "Upload company logo",
+    description: "",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  // @Serialize(SuccesfullUpdateDto)
+  @ApiOkResponse()
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    description: "Upload company logo",
+    type: uploadCompanyLogoDto,
+  })
+  async uploadCompanyLogo(
+    @UploadedFile(CompanyLogoSizeValidationPipe, ImageTypeValidationPipe)
+    file: Express.Multer.File,
+    @UserLogged() loggedUserInfo: ILoggedUserInfo
+  ) {
+    return this.userProfileService.uploadCompanyLogo(file, loggedUserInfo);
   }
 }

@@ -10,10 +10,11 @@ import { NotFound } from "@aws-sdk/client-s3";
 import { DeleteCvFieldsByIdDto } from "../dtos/requests/delete_cv_fields_by_id.dto";
 import { ICvData } from "src/modules/pdf/interfaces/cv-data.interface";
 import { CvResponseDto } from "../dtos/responses/cv.response.dto";
-import { IUploadedFile } from "src/modules/spaces/interfaces/iuploaded-file.interface";
+import { IUploadedFile } from "src/modules/spaces/interfaces/file-upload.interface";
 import { SpacesService } from "src/modules/spaces/spaces.service";
 import { PdfService } from "src/modules/pdf/pdf.service";
 import { SpacesDestinationPath } from "src/modules/spaces/enums/spaces-folder-name.enum";
+import { checkFileExists } from "src/common/helper/file-exist.helper";
 
 @Injectable()
 export class CvService {
@@ -23,11 +24,19 @@ export class CvService {
     private readonly pdfService: PdfService
   ) {}
 
-  async updateCv(userId: string, id: string, updateCvDto: UpdateCvDto) {
+  async updateCv(
+    userId: string,
+    id: string,
+    updateCvDto: UpdateCvDto,
+    templateId: string
+  ) {
     // Fetch the CV with its Applicant and User
     const cv = await this.databaseService.cv.findUnique({
       where: { id },
-      include: { applicant: { include: { user: true, file: true } } },
+      include: {
+        applicant: { include: { user: true, file: true } },
+        companyLogo: true,
+      },
     });
 
     if (!cv) {
@@ -37,6 +46,9 @@ export class CvService {
     if (cv.applicant?.userId !== userId) {
       throw new ForbiddenException("You are not authorized to update this CV");
     }
+
+    const exists = await checkFileExists(templateId);
+    if (!exists) throw new BadRequestException("Template not found");
 
     // Delete fields
     await this.deleteFields(updateCvDto.delete, id);
@@ -55,10 +67,17 @@ export class CvService {
         socials: true,
         courses: true,
         skills: true,
+        companyLogo: true,
       },
       data: {
+        applicant: {
+          update: {
+            templateId,
+          },
+        },
         firstName: updateCvDto.firstName,
         lastName: updateCvDto.lastName,
+        companyName: updateCvDto.companyName,
         email: updateCvDto.email,
         phone: updateCvDto.phone,
         summary: updateCvDto.summary,
@@ -179,9 +198,13 @@ export class CvService {
     });
 
     // create new cv file
-    const data = this.transformToICvData(updatedCv);
+    const updatedCvWithLogo = { ...updatedCv, companyLogo: cv.companyLogo };
+    const data = this.transformToICvData(updatedCvWithLogo);
 
-    const pdfBuffer = await this.pdfService.generateCvTemplate(data);
+    const pdfBuffer = await this.pdfService.generateCvPdfPuppeteer(
+      data,
+      templateId
+    );
 
     let pdfFile: IUploadedFile | null = null;
     try {
@@ -195,14 +218,13 @@ export class CvService {
     }
 
     //delete old cv file if exists
-    if (cv.applicant.file.length > 0) {
-      await this.spacesService.deleteFileByURL(cv.applicant.file[0].url);
-      await this.databaseService.file.delete({
-        where: {
-          id: cv.applicant.file[0].id,
-        },
-      });
-    }
+
+    await this.spacesService.deleteFileByURL(cv.applicant.file[0].url);
+    await this.databaseService.file.delete({
+      where: {
+        id: cv.applicant.file.id,
+      },
+    });
 
     await this.databaseService.file.create({
       data: {
@@ -334,6 +356,8 @@ export class CvService {
       email: cv.email,
       phone: cv.phone,
       summary: cv.summary,
+      companyName: cv.companyName,
+      companyLogoUrl: cv.companyLogo.url,
 
       hobies: cv.hobbies || [], // Using "hobies" to match your interface; consider fixing to "hobbies"
 

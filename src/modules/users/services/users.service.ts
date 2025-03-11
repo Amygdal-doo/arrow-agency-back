@@ -10,7 +10,17 @@ export class UsersService {
 
   async create(data: Prisma.UserCreateInput) {
     if (!data.role) data.role = Role.USER;
-    return await this.databaseService.user.create({ data });
+    return await this.databaseService.user.create({
+      data: {
+        ...data,
+        profile: {
+          create: {
+            address: "example address",
+            phoneNumber: "0000000000",
+          },
+        },
+      },
+    });
   }
 
   async findByEmail(email: string) {

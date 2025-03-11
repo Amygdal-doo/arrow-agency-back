@@ -100,6 +100,14 @@ export class ApplicantResponseDto implements Applicant {
   user: UserResponseDto;
 
   @ApiProperty({
+    type: String,
+    description: "templateId of the cv",
+    example: "cv1",
+  })
+  @Expose()
+  templateId: string;
+
+  @ApiProperty({
     type: Date,
     description: "Creation date of the applicant record",
     example: "2023-01-01T00:00:00Z",

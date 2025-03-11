@@ -50,15 +50,14 @@ model Profile {
   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   phoneNumber String? @db.VarChar(50)
   address     String? // Address of the customer
+
   // companyName String
   // companyUrl  String?
-  // companyLogo String
+  companyLogos File[] @relation(name: "companyLogos")
 
   userId String @unique @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // language String
-  // currency String
   @@index([userId], map: "user_Id_profile_Index")
 }
 
@@ -85,9 +84,9 @@ model Applicant {
   cvId   String @unique @db.Uuid
   userId String @db.Uuid
 
-  user User   @relation(fields: [userId], references: [id])
-  cv   Cv     @relation(fields: [cvId], references: [id])
-  file File[]
+  user User  @relation(fields: [userId], references: [id])
+  cv   Cv    @relation(fields: [cvId], references: [id])
+  file File?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,13 +100,19 @@ model File {
   url           String
   name          String
   extension     String
+  height        Int?
+  width         Int?
   fileCreatedAt DateTime
 
-  userId      String @db.Uuid
-  applicantId String @db.Uuid // Remove @unique so an applicant can have multiple files
+  userId      String  @db.Uuid
+  profileId   String? @db.Uuid
+  applicantId String? @unique @db.Uuid
+  cvId        String? @unique @db.Uuid
 
-  user      User      @relation(fields: [userId], references: [id])
-  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id])
+  applicant Applicant? @relation(fields: [applicantId], references: [id])
+  profile   Profile?   @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "companyLogos")
+  cv        Cv?        @relation(fields: [cvId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -116,14 +121,18 @@ model File {
 }
 
 model Cv {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   firstName String
   lastName  String
   email     String
   phone     String
   summary   String
-  skills    Skills[]
-  hobbies   String[] @default([])
+
+  companyName String
+  companyLogo File?
+
+  hobbies String[] @default([])
+  skills  Skills[]
 
   experience   Experience[]
   projects     Project[]

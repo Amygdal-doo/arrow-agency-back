@@ -6,7 +6,7 @@ import { UploadDto } from "../pdf/dtos/upload.dto";
 import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
 import { ICvData } from "../pdf/interfaces/cv-data.interface";
 import { SpacesService } from "../spaces/spaces.service";
-import { IUploadedFile } from "../spaces/interfaces/iuploaded-file.interface";
+import { IUploadedFile } from "../spaces/interfaces/file-upload.interface";
 import { SpacesDestinationPath } from "../spaces/enums/spaces-folder-name.enum";
 import {
   ApplicantsBytechnologiesDto,
@@ -278,13 +278,21 @@ export class ApplicantService {
   async generatePdfAndSaveV2(
     loggedUserInfo: ILoggedUserInfo,
     file: Express.Multer.File,
-    body: UploadDto,
-    templateId: string
+    body: UploadDto
   ): Promise<Buffer> {
+    const { templateId, logoId, companyName, ...rest } = body;
     const exists = await checkFileExists(templateId);
     if (!exists) throw new BadRequestException("Template not found");
 
     const pdfData = await this.pdfService.savePdfToJson(file);
+
+    const image = await this.databaseService.file.findUnique({
+      where: {
+        id: logoId,
+      },
+    });
+    if (!image || image.userId !== loggedUserInfo.id)
+      throw new BadRequestException("Logo not found");
 
     // const skillsOnly = pdfData.skills.map((skill) => skill.name);
 
@@ -296,10 +304,14 @@ export class ApplicantService {
 
     console.log({ pdfData, body });
     const cvData: ICvData = {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
+      firstName: pdfData.firstName,
+      lastName: pdfData.lastName,
+
+      companyName: companyName,
+      companyLogoUrl: image.url,
+
+      email: pdfData.email,
+      phone: pdfData.phone,
       summary: pdfData.summary,
       skills: skills,
       experience: pdfData.experience,
@@ -347,6 +359,10 @@ export class ApplicantService {
           email: pdfData.email,
           phone: pdfData.phone,
           summary: pdfData.summary,
+          companyName,
+          companyLogo: {
+            connect: { id: logoId },
+          },
           skills: {
             create: skills,
           },

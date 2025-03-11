@@ -36,6 +36,14 @@ export class UpdateCvDto {
   lastName?: string;
 
   @ApiPropertyOptional({
+    example: "Amygdal doo",
+    description: "Full name of the Firm",
+  })
+  @IsString()
+  @IsOptional()
+  companyName?: string;
+
+  @ApiPropertyOptional({
     example: "john.doe@example.com",
     description: "Email address of the person",
   })

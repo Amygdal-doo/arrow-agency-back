@@ -64,6 +64,10 @@ export interface skills {
 export interface ICvData {
   firstName: string;
   lastName: string;
+
+  companyName: string;
+  companyLogoUrl: string;
+
   email: string;
   phone: string;
   summary: string;

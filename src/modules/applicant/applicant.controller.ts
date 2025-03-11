@@ -173,7 +173,7 @@ export class ApplicantController {
   //   res.end(pdfBuffer);
   // }
 
-  @Post("create/:templateId")
+  @Post("create")
   @ApiOperation({
     summary: "Upload a pdf file",
     description: "Upload a CV in PDF format",
@@ -198,14 +198,12 @@ export class ApplicantController {
     file: Express.Multer.File,
     @Body() body: UploadDto, // Extract text data
     @UserLogged() loggedUserInfo: ILoggedUserInfo,
-    @Response() res: any,
-    @Param("templateId") templateId: string
+    @Response() res: any
   ) {
     const pdfBuffer = await this.applicantService.generatePdfAndSaveV2(
       loggedUserInfo,
       file,
-      body,
-      templateId
+      body
     );
 
     let filename = `cv-${body.name}_${body.surname}.pdf`;
@@ -241,4 +239,6 @@ export class ApplicantController {
     }
     return result;
   }
+
+  //UPDATE APPLICANT
 }

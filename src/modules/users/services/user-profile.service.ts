@@ -1,12 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
-import { UpdateUserProfileDto } from '../dtos/requests/update-user-profile.dto';
-import { Prisma, Profile } from '@prisma/client';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { DatabaseService } from "src/database/database.service";
+import { UpdateUserProfileDto } from "../dtos/requests/update-user-profile.dto";
+import { Prisma, Profile } from "@prisma/client";
+import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
+import { IUploadedFile } from "src/modules/spaces/interfaces/file-upload.interface";
+import { IImageUpload } from "src/modules/spaces/interfaces/image-upload.interface";
+import { SpacesService } from "src/modules/spaces/spaces.service";
+import { SpacesDestinationPath } from "src/modules/spaces/enums/spaces-folder-name.enum";
 
 @Injectable()
 export class UserProfileService {
   constructor(
     private readonly databaseService: DatabaseService,
+    private readonly spacesService: SpacesService
     // private readonly userService: UserService,
   ) {}
 
@@ -14,7 +20,7 @@ export class UserProfileService {
 
   async findByUserId(
     userId: string,
-    tx?: Prisma.TransactionClient,
+    tx?: Prisma.TransactionClient
   ): Promise<Profile> {
     const prisma = tx || this.databaseService;
     const result = await prisma.profile.findUnique({
@@ -23,6 +29,7 @@ export class UserProfileService {
       },
       include: {
         user: true,
+        companyLogos: true,
       },
     });
 
@@ -66,6 +73,45 @@ export class UserProfileService {
       },
       include: {
         user: true,
+      },
+    });
+    return result;
+  }
+
+  async uploadCompanyLogo(
+    file: Express.Multer.File,
+    loggedUserInfo: ILoggedUserInfo
+  ) {
+    let pdfFile: IImageUpload | null = null;
+    try {
+      if (file) {
+        pdfFile = await this.spacesService.uploadSingleImage(
+          file,
+          SpacesDestinationPath.PROFILE
+        );
+      }
+    } catch (error) {
+      throw new BadRequestException("Something went wrong with file upload");
+    }
+
+    if (!pdfFile) throw new BadRequestException("Something went wrong");
+
+    const result = await this.profileModel.update({
+      where: {
+        userId: loggedUserInfo.id,
+      },
+      data: {
+        companyLogos: {
+          create: {
+            url: pdfFile.url,
+            name: pdfFile.name,
+            extension: pdfFile.extension,
+            height: pdfFile.height,
+            width: pdfFile.width,
+            fileCreatedAt: pdfFile.createdAt,
+            userId: loggedUserInfo.id,
+          },
+        },
       },
     });
     return result;

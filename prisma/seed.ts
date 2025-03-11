@@ -17,6 +17,12 @@ async function main() {
       lastName: "Ibrahimovic",
       role: Role.SUPER_ADMIN,
       password: DEV_PASSWORD,
+      profile: {
+        create: {
+          address: "Istanbul",
+          phoneNumber: "1234567890",
+        },
+      },
       // isEmailConfirmed: true,
     },
   });
@@ -31,6 +37,12 @@ async function main() {
       lastName: "Bektas",
       role: Role.USER,
       password: DEV_PASSWORD,
+      profile: {
+        create: {
+          address: "Istanbul",
+          phoneNumber: "1234567890",
+        },
+      },
       // isEmailConfirmed: true,
     },
   });

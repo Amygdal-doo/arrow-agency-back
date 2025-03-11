@@ -444,13 +444,13 @@ export class PdfService {
 
     // Format dates for better readability (optional)
     const formattedData = this.formatCvData(data);
+    console.log(data.companyLogoUrl, 2222222222222);
 
     // Render HTML with data
     const html = template({
       ...formattedData,
-      companyName: this.companyName,
-      logoUrl:
-        "https://media.licdn.com/dms/image/v2/D4D0BAQEEKDKGlsG4QQ/company-logo_200_200/company-logo_200_200/0/1709460920387/amygdal_logo?e=1747267200&v=beta&t=OWiJNTQkaMafxIDUGIYmJql7CT8sm8bZpOuy_qF9S8k",
+      companyName: data.companyName,
+      logoUrl: data.companyLogoUrl,
     });
 
     // Launch Puppeteer and generate PDF

@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { File } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { ApplicantResponseDto } from "src/modules/applicant/dtos/applicant.response.dto";
@@ -46,12 +46,40 @@ export class FileResponseDto implements File {
   @Expose()
   userId: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: "ID of the applicant who uploaded the file",
     example: "1edc68e7-2a7c-4f7f-8f1b-5c21b9d9f5a6",
   })
   @Expose()
   applicantId: string;
+
+  @ApiPropertyOptional({
+    description: "ID of the cv the uploaded image belongs to",
+    example: "1edc68e7-2a7c-4f7f-8f1b-5c21b9d9f5a6",
+  })
+  @Expose()
+  cvId: string;
+
+  @ApiPropertyOptional({
+    description: "Image height",
+    example: 400,
+  })
+  @Expose()
+  height: number;
+
+  @ApiPropertyOptional({
+    description: "Image width",
+    example: 400,
+  })
+  @Expose()
+  width: number;
+
+  @ApiPropertyOptional({
+    description: "ID of the profile the image belongs to",
+    example: "1edc68e7-2a7c-4f7f-8f1b-5c21b9d9f5a6",
+  })
+  @Expose()
+  profileId: string;
 
   // creates an error
   //   @ApiProperty({
