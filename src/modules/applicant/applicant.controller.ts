@@ -129,7 +129,51 @@ export class ApplicantController {
   //   res.end(pdfBuffer);
   // }
 
-  @Post("cv")
+  // @Post("cv")
+  // @ApiOperation({
+  //   summary: "Upload a pdf file",
+  //   description: "Upload a CV in PDF format",
+  // })
+  // @ApiBearerAuth("Access Token")
+  // @UseFilters(new HttpExceptionFilter())
+  // @UseGuards(AccessTokenGuard)
+  // @ApiCreatedResponse({ description: "CV created successfully" })
+  // @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  // @ApiConsumes("multipart/form-data")
+  // @UseInterceptors(FileInterceptor("file"))
+  // @ApiBody({ type: UploadDto })
+  // async cv(
+  //   @UploadedFile(
+  //     new ParseFilePipe({
+  //       validators: [
+  //         new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB limit
+  //         new FileTypeValidator({ fileType: "application/pdf" }),
+  //       ],
+  //     })
+  //   )
+  //   file: Express.Multer.File,
+  //   @Body() body: UploadDto, // Extract text data
+  //   @UserLogged() loggedUserInfo: ILoggedUserInfo,
+  //   @Response() res: any
+  // ) {
+  //   const pdfBuffer = await this.applicantService.generatePdfAndSave(
+  //     loggedUserInfo,
+  //     file,
+  //     body
+  //   );
+
+  //   let filename = `cv-${body.name}_${body.surname}.pdf`;
+  //   filename = sanitizeFilename(filename);
+
+  //   res.set({
+  //     "Content-Type": "application/pdf",
+  //     "Content-Disposition": `attachment; filename="${filename}"`,
+  //     "Content-Length": pdfBuffer.length,
+  //   });
+  //   res.end(pdfBuffer);
+  // }
+
+  @Post("create/:templateId")
   @ApiOperation({
     summary: "Upload a pdf file",
     description: "Upload a CV in PDF format",
@@ -142,7 +186,7 @@ export class ApplicantController {
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("file"))
   @ApiBody({ type: UploadDto })
-  async cv(
+  async create(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -154,12 +198,14 @@ export class ApplicantController {
     file: Express.Multer.File,
     @Body() body: UploadDto, // Extract text data
     @UserLogged() loggedUserInfo: ILoggedUserInfo,
-    @Response() res: any
+    @Response() res: any,
+    @Param("templateId") templateId: string
   ) {
-    const pdfBuffer = await this.applicantService.generatePdfAndSave(
+    const pdfBuffer = await this.applicantService.generatePdfAndSaveV2(
       loggedUserInfo,
       file,
-      body
+      body,
+      templateId
     );
 
     let filename = `cv-${body.name}_${body.surname}.pdf`;

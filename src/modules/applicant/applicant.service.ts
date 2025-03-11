@@ -17,6 +17,7 @@ import {
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
 import e from "express";
+import { checkFileExists } from "src/common/helper/file-exist.helper";
 
 @Injectable()
 export class ApplicantService {
@@ -167,11 +168,122 @@ export class ApplicantService {
     return { limit, page, pages, total, results };
   }
 
-  async generatePdfAndSave(
+  // async generatePdfAndSave(
+  //   loggedUserInfo: ILoggedUserInfo,
+  //   file: Express.Multer.File,
+  //   body: UploadDto
+  // ): Promise<Buffer> {
+  //   const pdfData = await this.pdfService.savePdfToJson(file);
+
+  //   // const skillsOnly = pdfData.skills.map((skill) => skill.name);
+
+  //   const technologies = body.technologies.map((skill) => skill.toUpperCase());
+  //   const skills = pdfData.skills.filter((skill) => {
+  //     skill.name.toUpperCase();
+  //     skill.efficiency ?? "null";
+  //   });
+
+  //   console.log({ pdfData, body });
+  //   const cvData: ICvData = {
+  //     firstName: "",
+  //     lastName: "",
+  //     email: "",
+  //     phone: "",
+  //     summary: pdfData.summary,
+  //     skills: skills,
+  //     experience: pdfData.experience,
+  //     projects: pdfData.projects,
+  //     educations: pdfData.educations,
+  //     certificates: pdfData.certificates,
+  //     hobies: pdfData.hobies,
+
+  //     languages: pdfData.languages,
+  //     socials: pdfData.socials,
+  //     courses: pdfData.courses,
+  //   };
+  //   // const pdfBuffer = await this.pdfService.generateCvPdf(cvData);
+
+  //   const pdfBuffer = await this.pdfService.generateCvTemplate(cvData);
+
+  //   let pdfFile: IUploadedFile | null = null;
+  //   try {
+  //     if (file) {
+  //       pdfFile = await this.spacesService.uploadFileBuffer(
+  //         pdfBuffer,
+  //         `${body.name}_${body.surname}`,
+  //         SpacesDestinationPath.PDF
+  //       );
+  //     }
+  //   } catch (error) {
+  //     throw new BadRequestException("Something went wrong with file upload");
+  //   }
+
+  //   const newApplicant = await this.create({
+  //     user: { connect: { id: loggedUserInfo.id } },
+  //     firstName: body.name,
+  //     lastName: body.surname,
+  //     email: body.email,
+  //     phone: body.phone,
+  //     technologies: technologies,
+  //     cv: {
+  //       create: {
+  //         firstName: pdfData.firstName,
+  //         lastName: pdfData.lastName,
+  //         email: pdfData.email,
+  //         phone: pdfData.phone,
+  //         summary: pdfData.summary,
+  //         skills: {
+  //           create: skills,
+  //         },
+  //         hobbies: pdfData.hobies,
+  //         experience: {
+  //           create: pdfData.experience,
+  //         },
+  //         projects: {
+  //           create: pdfData.projects,
+  //         },
+  //         educations: {
+  //           create: pdfData.educations,
+  //         },
+  //         certificates: {
+  //           create: pdfData.certificates,
+  //         },
+  //         languages: {
+  //           create: pdfData.languages,
+  //         },
+  //         socials: {
+  //           create: pdfData.socials,
+  //         },
+  //         courses: {
+  //           create: pdfData.courses,
+  //         },
+  //       },
+  //     },
+  //     file: {
+  //       create: {
+  //         name: pdfFile.name,
+  //         url: pdfFile.url,
+  //         extension: pdfFile.extension,
+  //         fileCreatedAt: pdfFile.createdAt,
+  //         user: {
+  //           connect: { id: loggedUserInfo.id },
+  //         },
+  //       },
+  //     },
+  //   });
+  //   console.log({ newApplicant });
+  //   return pdfBuffer;
+  // }
+
+  async generatePdfAndSaveV2(
     loggedUserInfo: ILoggedUserInfo,
     file: Express.Multer.File,
-    body: UploadDto
+    body: UploadDto,
+    templateId: string
   ): Promise<Buffer> {
+    const exists = await checkFileExists(templateId);
+    if (!exists) throw new BadRequestException("Template not found");
+
     const pdfData = await this.pdfService.savePdfToJson(file);
 
     // const skillsOnly = pdfData.skills.map((skill) => skill.name);
@@ -202,7 +314,10 @@ export class ApplicantService {
     };
     // const pdfBuffer = await this.pdfService.generateCvPdf(cvData);
 
-    const pdfBuffer = await this.pdfService.generateCvTemplate(cvData);
+    const pdfBuffer = await this.pdfService.generateCvPdfPuppeteer(
+      cvData,
+      templateId
+    );
 
     let pdfFile: IUploadedFile | null = null;
     try {
@@ -223,6 +338,7 @@ export class ApplicantService {
       lastName: body.surname,
       email: body.email,
       phone: body.phone,
+      templateId: templateId,
       technologies: technologies,
       cv: {
         create: {

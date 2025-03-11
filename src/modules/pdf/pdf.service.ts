@@ -11,7 +11,7 @@ import { ICvData } from "./interfaces/cv-data.interface";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 import * as puppeteer from "puppeteer";
 import * as handlebars from "handlebars";
-import { log } from "console";
+import { promises } from "fs";
 
 @Injectable()
 export class PdfService {
@@ -424,9 +424,11 @@ export class PdfService {
     templateId: string
   ): Promise<Buffer> {
     // Resolve template path
+    console.log({ templateId });
+
     const templatePath = path.join(
-      __dirname,
-      "../../../../public",
+      process.cwd(),
+      "public",
       "templates",
       `${templateId}.html`
     );

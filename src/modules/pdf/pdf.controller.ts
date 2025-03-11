@@ -12,8 +12,14 @@ import {
 } from "@nestjs/common";
 import { PdfService } from "./pdf.service";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes, ApiHideProperty, ApiOperation } from "@nestjs/swagger";
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiHideProperty,
+  ApiOperation,
+} from "@nestjs/swagger";
 import { ICvData } from "./interfaces/cv-data.interface";
+import { createPdfDto } from "./dtos/create-pdf.dto";
 
 @Controller("pdf")
 export class PdfController {
@@ -95,10 +101,10 @@ export class PdfController {
   // }
 
   @Post("generate-cv")
-  async generateCv(
-    @Body() body: { data: ICvData; templateId: string },
-    @Res() res: any
-  ) {
+  @ApiOperation({ summary: "Generate CV" })
+  @ApiConsumes("aplication/json")
+  @ApiBody({ type: createPdfDto })
+  async generateCv(@Body() body: createPdfDto, @Res() res: any) {
     try {
       const pdf = await this.pdfService.generateCvPdfPuppeteer(
         body.data,

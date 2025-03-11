@@ -80,6 +80,7 @@ model Applicant {
   email        String
   phone        String?
   technologies String[]
+  templateId   String
 
   cvId   String @unique @db.Uuid
   userId String @db.Uuid
