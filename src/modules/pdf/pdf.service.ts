@@ -432,7 +432,6 @@ export class PdfService {
       "templates",
       `${templateId}.html`
     );
-    console.log(templatePath);
 
     if (!fs.existsSync(templatePath)) {
       throw new NotFoundException(`Template "${templateId}" not found`);
@@ -444,7 +443,6 @@ export class PdfService {
 
     // Format dates for better readability (optional)
     const formattedData = this.formatCvData(data);
-    console.log(data.companyLogoUrl, 2222222222222);
 
     // Render HTML with data
     const html = template({
@@ -454,7 +452,10 @@ export class PdfService {
     });
 
     // Launch Puppeteer and generate PDF
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
     const pdf = await page.pdf({
