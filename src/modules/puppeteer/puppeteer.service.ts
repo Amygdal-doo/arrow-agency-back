@@ -42,6 +42,7 @@ export class PuppeteerService {
 
   async createPdfFile(html: string): Promise<Buffer> {
     try {
+      await this.initializeBrowser();
       const page = await this.browser.newPage();
       await page.setContent(html);
       const pdf = await page.pdf({
