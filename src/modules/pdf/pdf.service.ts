@@ -12,10 +12,14 @@ import { NotFoundException } from "src/common/exceptions/errors/common/not-found
 import * as puppeteer from "puppeteer";
 import * as handlebars from "handlebars";
 import { promises } from "fs";
+import { PuppeteerService } from "../puppeteer/puppeteer.service";
 
 @Injectable()
 export class PdfService {
-  constructor(private readonly openaiService: OpenaiService) {}
+  constructor(
+    private readonly openaiService: OpenaiService,
+    private readonly puppeteerService: PuppeteerService
+  ) {}
   private readonly companyName = "Amygdal, Inc.";
 
   handlePdfFileUpload(file: Express.Multer.File) {
@@ -423,9 +427,6 @@ export class PdfService {
     data: ICvData,
     templateId: string
   ): Promise<Buffer> {
-    // Resolve template path
-    console.log({ templateId });
-
     const templatePath = path.join(
       process.cwd(),
       "public",
@@ -451,21 +452,9 @@ export class PdfService {
       logoUrl: data.companyLogoUrl,
     });
 
-    // Launch Puppeteer and generate PDF
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
-    });
-    await browser.close();
+    const pdf = await this.puppeteerService.createPdfFile(html);
 
-    return Buffer.from(pdf);
+    return pdf;
   }
 
   private formatCvData(data: ICvData): ICvData {
