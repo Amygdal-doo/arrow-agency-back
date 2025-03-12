@@ -3,11 +3,11 @@ import {
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import * as puppeteer from "puppeteer";
+import puppeteer, { Browser } from "puppeteer";
 
 @Injectable()
 export class PuppeteerService {
-  private browser: puppeteer.Browser = null;
+  private browser: Browser = null;
   logger: Logger = new Logger(PuppeteerService.name);
 
   async initializeBrowser() {
@@ -55,7 +55,7 @@ export class PuppeteerService {
       return Buffer.from(pdf);
     } catch (error) {
       this.logger.error(`Error creating PDF: ${error}`);
-      await page.close();
+      // await page.close();
       throw new InternalServerErrorException("Error creating PDF");
     }
   }
