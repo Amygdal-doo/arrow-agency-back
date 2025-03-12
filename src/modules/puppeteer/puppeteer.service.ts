@@ -41,9 +41,10 @@ export class PuppeteerService {
   }
 
   async createPdfFile(html: string): Promise<Buffer> {
+    let page;
     try {
       await this.initializeBrowser();
-      const page = await this.browser.newPage();
+      page = await this.browser.newPage();
       await page.setContent(html);
       const pdf = await page.pdf({
         format: "A4",
@@ -54,6 +55,7 @@ export class PuppeteerService {
       return Buffer.from(pdf);
     } catch (error) {
       this.logger.error(`Error creating PDF: ${error}`);
+      await page.close();
       throw new InternalServerErrorException("Error creating PDF");
     }
   }
