@@ -12,8 +12,7 @@ import { S3_CLIENT_CONFIG } from "./modules/spaces/config/spaces.config";
 import { SpacesService } from "./modules/spaces/spaces.service";
 import { FileModule } from "./modules/file/file.module";
 import { CvModule } from "./modules/cv/cv.module";
-import { PuppeteerModule } from './modules/puppeteer/puppeteer.module';
-import { PuppeteerModule } from './modules/puppeteer/puppeteer.module';
+import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
 
 @Module({
   imports: [
