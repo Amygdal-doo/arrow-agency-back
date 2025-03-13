@@ -5,6 +5,10 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "> or < =23.5.0",
+    "npm": "> or < =10.9.2"
+  },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
