@@ -9,7 +9,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "build": "yarn prisma migrate deploy && yarn prisma generate && yarn build",
+    "build": "prisma migrate deploy && prisma generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -38,8 +38,8 @@
     "class-validator": "^0.14.1",
     "handlebars": "^4.7.8",
     "helmet": "^8.0.0",
-    "jspdf": "^3.0.0",
-    "jspdf-autotable": "^5.0.2",
+    "jspdf": "^1.4.0",
+    "jspdf-autotable": "^3.0.4",
     "openai": "^4.86.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
