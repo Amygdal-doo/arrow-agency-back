@@ -1,23 +1,6 @@
-import {
-  Body,
-  Controller,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-  ParseFilePipe,
-  Post,
-  Res,
-  Response,
-  UploadedFile,
-  UseInterceptors,
-} from "@nestjs/common";
+import { Body, Controller, Post, Res } from "@nestjs/common";
 import { PdfService } from "./pdf.service";
-import { FileInterceptor } from "@nestjs/platform-express";
-import {
-  ApiBody,
-  ApiConsumes,
-  ApiHideProperty,
-  ApiOperation,
-} from "@nestjs/swagger";
+import { ApiBody, ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { ICvData } from "./interfaces/cv-data.interface";
 import { createPdfDto } from "./dtos/create-pdf.dto";
 
