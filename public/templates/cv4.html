@@ -1,0 +1,394 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      :root {
+        --primary: #0ea5e9;
+        --primary-light: #e0f2fe;
+        --dark: #0f172a;
+        --text: #334155;
+        --text-light: #64748b;
+        --background: #f8fafc;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        margin: 0;
+        background: var(--background);
+        color: var(--text);
+      }
+
+      .page {
+        width: 21cm;
+        min-height: 29.7cm;
+        margin: 2rem auto;
+        background: white;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .header {
+        background: var(--primary);
+        padding: 2.5rem;
+        color: white;
+      }
+
+      .company-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .company-header img {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: white;
+        padding: 0.5rem;
+      }
+
+      .company-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+      }
+
+      .personal-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .personal-info h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .contact-details {
+        text-align: right;
+        font-size: 0.9375rem;
+        opacity: 0.9;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+      }
+
+      .left-column {
+        padding: 2.5rem;
+      }
+
+      .right-column {
+        background: var(--primary-light);
+        padding: 2.5rem;
+      }
+
+      .section {
+        margin-bottom: 2.5rem;
+      }
+
+      .section h2 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .section h2::before {
+        content: "";
+        display: block;
+        width: 1.5rem;
+        height: 2px;
+        background: var(--primary);
+      }
+
+      .item {
+        margin-bottom: 1.75rem;
+        position: relative;
+      }
+
+      .item::before {
+        content: "";
+        position: absolute;
+        left: -1.25rem;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: var(--primary);
+        opacity: 0.3;
+      }
+
+      .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+      }
+
+      .item h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin: 0;
+      }
+
+      .item-date {
+        color: var(--text-light);
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .skills-list,
+      .languages-list {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .skill-item,
+      .language-item {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .efficiency {
+        font-size: 0.875rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .social-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .social-links a {
+        background: white;
+        color: var(--primary);
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .social-links a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
+
+      .hobbies-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .hobbies-list p {
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0;
+        font-size: 0.875rem;
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+        .page {
+          margin: 0;
+          box-shadow: none;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="company-header">
+          <img src="{{logoUrl}}" alt="Company Logo" />
+          <h2>{{companyName}}</h2>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <!-- Left Column -->
+        <div class="left-column">
+          {{#if summary}}
+          <div class="section">
+            <p class="item-content">{{summary}}</p>
+          </div>
+          {{/if}} {{#if experience}}
+          <div class="section">
+            <h2>Work Experience</h2>
+            {{#each experience}}
+            <div class="item">
+              <div class="item-header">
+                <div>
+                  <h3>{{position}}</h3>
+                  <p class="item-content">{{company}}</p>
+                </div>
+                <span class="item-date">{{startDate}} - {{endDate}}</span>
+              </div>
+              <p class="item-description">{{description}}</p>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}} {{#if educations}}
+          <div class="section">
+            <h2>Education</h2>
+            {{#each educations}}
+            <div class="item">
+              <h3>{{degree}} in {{field}}</h3>
+              <p class="item-content">{{institution}}</p>
+              <span class="item-date">{{startDate}} - {{endDate}}</span>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}} {{#if projects}}
+          <div class="section">
+            <h2>Projects</h2>
+            {{#each projects}}
+            <div class="item">
+              <div class="item-header">
+                <div>
+                  <h3>{{name}}</h3>
+                  <p class="item-content">{{description}}</p>
+                  {{#if url}}
+                  <a
+                    href="{{url}}"
+                    class="item-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{url}}</a
+                  >
+                  {{/if}}
+                </div>
+                <span class="item-date">{{startDate}} - {{endDate}}</span>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}} {{#if courses}}
+          <div class="section">
+            <h2>Courses</h2>
+            {{#each courses}}
+            <div class="item">
+              <div class="item-header">
+                <div>
+                  <h3>{{name}}</h3>
+                  {{#if url}}
+                  <a
+                    href="{{url}}"
+                    class="item-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{url}}</a
+                  >
+                  {{/if}}
+                </div>
+                <span class="item-date">{{startDate}} - {{endDate}}</span>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}} {{#if certificates}}
+          <div class="section">
+            <h2>Certificates</h2>
+            {{#each certificates}}
+            <div class="item">
+              <div class="item-header">
+                <div>
+                  <h3>{{name}}</h3>
+                  <p class="item-content">{{issuer}}</p>
+                  {{#if url}}
+                  <a
+                    href="{{url}}"
+                    class="item-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{url}}</a
+                  >
+                  {{/if}}
+                </div>
+                <span class="item-date"
+                  >{{issueDate}}{{#if expirationDate}} -
+                  {{expirationDate}}{{/if}}</span
+                >
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+          {{#if skills}}
+          <div class="section">
+            <h2>Skills</h2>
+            <div class="skills-list">
+              {{#each skills}}
+              <div class="skill-item">
+                <span>{{name}}</span>
+                <span class="efficiency">{{efficiency}}</span>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+          {{/if}} {{#if languages}}
+          <div class="section">
+            <h2>Languages</h2>
+            <div class="languages-list">
+              {{#each languages}}
+              <div class="language-item">
+                <span>{{name}}</span>
+                <span class="efficiency">{{efficiency}}</span>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+          {{/if}} {{#if socials}}
+          <div class="section">
+            <h2>Social Links</h2>
+            <div class="social-links">
+              {{#each socials}}
+              <a href="{{url}}" target="_blank" rel="noopener noreferrer"
+                >{{name}}</a
+              >
+              {{/each}}
+            </div>
+          </div>
+          {{/if}} {{#if hobbies}}
+          <div class="section">
+            <h2>Hobbies</h2>
+            <div class="hobbies-list">
+              {{#each hobbies}}
+              <p>{{this}}</p>
+              {{/each}}
+            </div>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
