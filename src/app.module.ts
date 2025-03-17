@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { OpenaiModule } from "./modules/openai/openai.module";
 import { ConfigModule } from "@nestjs/config";
@@ -13,6 +13,7 @@ import { SpacesService } from "./modules/spaces/spaces.service";
 import { FileModule } from "./modules/file/file.module";
 import { CvModule } from "./modules/cv/cv.module";
 import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
+import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
 
 @Module({
   imports: [
@@ -34,4 +35,8 @@ import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
   controllers: [AppController],
   providers: [SpacesService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(HttpLoggerMiddleware).forRoutes("*");
+  }
+}
