@@ -22,6 +22,7 @@ import {
   HOME_DIR,
   OBJECT_STORAGE_ORIGIN_URL,
   OBJECT_STORAGE_URL,
+  SPACES_URL_CREATION,
   SPACES_URL_ORIGIN,
 } from "./config/spaces.config";
 import { IImageUpload } from "./interfaces/image-upload.interface";
@@ -40,6 +41,10 @@ export class SpacesService {
     }
   }
 
+  private removeBlanks(text: string): string {
+    return text.replace(/\s/g, "");
+  }
+
   async uploadSinglePdf(
     pdf: Express.Multer.File,
     destinationPath: SpacesDestinationPath
@@ -48,8 +53,8 @@ export class SpacesService {
     if (ext !== ".pdf") {
       throw new HttpException("Invalid file format.", HttpStatus.BAD_REQUEST);
     }
-    const fileName =
-      HOME_DIR + "/" + destinationPath + `/${Date.now()}-${pdf.originalname}`;
+    const name = this.removeBlanks(pdf?.originalname);
+    const fileName = `${HOME_DIR}/${destinationPath}/${Date.now()}-${name}`;
 
     return new Promise<IUploadedFile>((resolve, reject) => {
       this.s3.putObject(
@@ -61,10 +66,10 @@ export class SpacesService {
         },
         (error: any /*AWS.AWSError*/) => {
           if (!error) {
-            const url = `${SPACES_URL_ORIGIN}/${fileName}`;
+            const url = `${SPACES_URL_CREATION}/${fileName}`;
             const createdAt = new Date();
             resolve({
-              name: pdf.originalname,
+              name: name,
               extension: ext,
               createdAt,
               url,
@@ -93,8 +98,8 @@ export class SpacesService {
         HttpStatus.BAD_REQUEST
       );
     }
-
-    const fullFileName = `${HOME_DIR}/${destinationPath}/${Date.now()}-${fileName}`;
+    const name = this.removeBlanks(fileName);
+    const fullFileName = `${HOME_DIR}/${destinationPath}/${Date.now()}-${name}`;
 
     return new Promise<IUploadedFile>((resolve, reject) => {
       this.s3.putObject(
@@ -106,10 +111,10 @@ export class SpacesService {
         },
         (error: any /*AWS.AWSError*/) => {
           if (!error) {
-            const url = `${SPACES_URL_ORIGIN}/${fullFileName}`;
+            const url = `${SPACES_URL_CREATION}/${fullFileName}`;
             const createdAt = new Date();
             resolve({
-              name: fileName,
+              name: name,
               extension,
               createdAt,
               url,
@@ -134,11 +139,9 @@ export class SpacesService {
     if (ext !== ".txt" && ext !== ".pdf" && ext !== ".doc" && ext !== ".docx") {
       throw new HttpException("Invalid file format.", HttpStatus.BAD_REQUEST);
     }
+    const name = this.removeBlanks(file?.originalname);
     const fileName =
-      HOME_DIR +
-      "/" +
-      destinationPath +
-      `/files/${Date.now()}-${file.originalname}`;
+      HOME_DIR + "/" + destinationPath + `/files/${Date.now()}-${name}`;
     return new Promise<IUploadedFile>((resolve, reject) => {
       this.s3.putObject(
         {
@@ -149,10 +152,10 @@ export class SpacesService {
         },
         (error: any /*AWS.AWSError*/) => {
           if (!error) {
-            const url = `${OBJECT_STORAGE_ORIGIN_URL}/${fileName}`;
+            const url = `${SPACES_URL_CREATION}/${fileName}`;
             const createdAt = new Date();
             resolve({
-              name: file.originalname,
+              name: name,
               extension: ext,
               createdAt,
               url,
@@ -179,11 +182,10 @@ export class SpacesService {
     if (ext !== ".jpg" && ext !== ".png" && ext !== ".jpeg") {
       throw new HttpException("Invalid file format.", HttpStatus.BAD_REQUEST);
     }
+
+    const name = this.removeBlanks(file?.originalname);
     const fileName =
-      HOME_DIR +
-      "/" +
-      destinationPath +
-      `/files/${Date.now()}-${file.originalname}`;
+      HOME_DIR + "/" + destinationPath + `/images/${Date.now()}-${name}`;
     const imageBuffer = file.buffer;
     // const imageType = ext.slice(1);
     const imageMetadata = await this.getMetadata(imageBuffer);
@@ -199,12 +201,12 @@ export class SpacesService {
         },
         (error: any /*AWS.AWSError*/) => {
           if (!error) {
-            const url = `${OBJECT_STORAGE_ORIGIN_URL}/${fileName}`;
+            const url = `${SPACES_URL_CREATION}/${fileName}`;
             const createdAt = new Date();
             resolve({
               height: imageHeight,
               width: imageWidth,
-              name: file.originalname,
+              name: name,
               extension: ext,
               createdAt,
               url,
