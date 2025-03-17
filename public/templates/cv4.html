@@ -3,19 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
       :root {
-        --primary: #0ea5e9;
-        --primary-light: #e0f2fe;
+        --primary: #6366f1;
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        --secondary: #f8fafc;
         --dark: #0f172a;
         --text: #334155;
         --text-light: #64748b;
-        --background: #f8fafc;
+        --accent: #22c55e;
+        --danger: #ef4444;
       }
 
       body {
-        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        font-family: "Space Grotesk", sans-serif;
         margin: 0;
-        background: var(--background);
+        background: var(--secondary);
         color: var(--text);
       }
 
@@ -24,153 +28,132 @@
         min-height: 29.7cm;
         margin: 2rem auto;
         background: white;
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        border-radius: 16px;
         overflow: hidden;
+        display: grid;
+        grid-template-columns: 280px 1fr;
       }
 
-      .header {
-        background: var(--primary);
-        padding: 2.5rem;
+      .sidebar {
+        background: var(--dark);
+        padding: 2rem 1.5rem;
         color: white;
       }
 
-      .company-header {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
+      .profile {
+        text-align: center;
         margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      .company-header img {
-        width: 48px;
-        height: 48px;
+      .company-logo {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1rem;
         border-radius: 8px;
         background: white;
         padding: 0.5rem;
       }
 
-      .company-header h2 {
+      .company-name {
         font-size: 1.25rem;
         font-weight: 600;
         color: white;
         margin: 0;
       }
-
-      .personal-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-
-      .personal-info h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0;
-        line-height: 1.2;
-      }
-
-      .contact-details {
-        text-align: right;
-        font-size: 0.9375rem;
-        opacity: 0.9;
-      }
-
       .main-content {
-        display: grid;
-        grid-template-columns: 1.8fr 1fr;
-      }
-
-      .left-column {
-        padding: 2.5rem;
-      }
-
-      .right-column {
-        background: var(--primary-light);
-        padding: 2.5rem;
+        padding: 3rem;
       }
 
       .section {
         margin-bottom: 2.5rem;
       }
 
-      .section h2 {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--primary);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 1.5rem;
+      .section-header {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
       }
 
-      .section h2::before {
-        content: "";
-        display: block;
-        width: 1.5rem;
+      .section-header h2 {
+        font-size: 1.25rem;
+        color: var(--primary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .section-line {
+        flex: 1;
         height: 2px;
-        background: var(--primary);
+        background: var(--primary-gradient);
+        border-radius: 2px;
       }
 
-      .item {
-        margin-bottom: 1.75rem;
-        position: relative;
+      .experience-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        background: var(--secondary);
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
       }
 
-      .item::before {
-        content: "";
-        position: absolute;
-        left: -1.25rem;
-        top: 0.5rem;
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        background: var(--primary);
-        opacity: 0.3;
+      .experience-item:hover {
+        transform: translateX(8px);
       }
 
-      .item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 0.5rem;
-      }
-
-      .item h3 {
+      .experience-title {
         font-size: 1.125rem;
         font-weight: 600;
         color: var(--dark);
         margin: 0;
       }
 
-      .item-date {
-        color: var(--text-light);
-        font-size: 0.875rem;
+      .experience-company {
+        color: var(--primary);
         font-weight: 500;
+        margin: 0.25rem 0;
       }
 
-      .skills-list,
-      .languages-list {
+      .experience-date {
+        color: var(--text-light);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+      }
+
+      .skills-grid {
         display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
       }
 
-      .skill-item,
-      .language-item {
-        background: white;
+      .skill-item {
+        background: var(--secondary);
         padding: 1rem;
+        margin-bottom: 1rem;
         border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
 
-      .efficiency {
+      .skill-name {
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      .skill-level {
         font-size: 0.875rem;
-        color: var(--primary);
-        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        background: var(--primary-gradient);
+        color: white;
       }
 
       .social-links {
@@ -179,33 +162,37 @@
         gap: 0.75rem;
       }
 
-      .social-links a {
-        background: white;
-        color: var(--primary);
-        text-decoration: none;
+      .social-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
         padding: 0.75rem 1rem;
-        border-radius: 6px;
-        font-weight: 500;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
         transition: all 0.2s;
       }
 
-      .social-links a:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      .social-link:hover {
+        background: var(--primary);
+        transform: translateX(4px);
       }
 
-      .hobbies-list {
+      .languages-list {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        flex-direction: column;
+        gap: 1rem;
       }
 
-      .hobbies-list p {
-        background: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        margin: 0;
-        font-size: 0.875rem;
+      .language-item {
+        display: flex;
+        justify-content: space-between;
+        color: #94a3b8;
+      }
+
+      .language-level {
+        color: var(--primary);
       }
 
       @media print {
@@ -217,177 +204,206 @@
           box-shadow: none;
           border-radius: 0;
         }
+        .experience-item:hover {
+          transform: none;
+        }
       }
     </style>
   </head>
   <body>
     <div class="page">
-      <div class="header">
-        <div class="company-header">
-          <img src="{{logoUrl}}" alt="Company Logo" />
-          <h2>{{companyName}}</h2>
+      <div class="sidebar">
+        <div class="profile">
+          <img src="{{logoUrl}}" alt="Company Logo" class="company-logo" />
+          <h2 class="company-name">{{companyName}}</h2>
         </div>
+
+        {{#if skills}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Skills</h2>
+            <div class="section-line"></div>
+          </div>
+          <div class="skills-list">
+            {{#each skills}}
+            <div class="skill-item">
+              <span class="skill-name">{{name}}</span>
+              <span class="skill-level">{{efficiency}}</span>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}} {{#if languages}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Languages</h2>
+            <div class="section-line"></div>
+          </div>
+          <div class="languages-list">
+            {{#each languages}}
+            <div class="language-item">
+              <span>{{name}}</span>
+              <span class="language-level">{{efficiency}}</span>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}} {{#if hobbies}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Hobbies</h2>
+            <div class="section-line"></div>
+          </div>
+          <div class="hobbies-list">
+            {{#each hobbies}}
+            <p>{{this}}</p>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}} {{#if socials}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Connect</h2>
+            <div class="section-line"></div>
+          </div>
+          <div class="social-links">
+            {{#each socials}}
+            <a
+              href="{{url}}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="social-link"
+            >
+              {{name}}
+            </a>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
       </div>
 
       <div class="main-content">
-        <!-- Left Column -->
-        <div class="left-column">
-          {{#if summary}}
-          <div class="section">
-            <p class="item-content">{{summary}}</p>
+        {{#if summary}}
+        <div class="section">
+          <div class="section-header">
+            <h2>About</h2>
+            <div class="section-line"></div>
           </div>
-          {{/if}} {{#if experience}}
-          <div class="section">
-            <h2>Work Experience</h2>
-            {{#each experience}}
-            <div class="item">
-              <div class="item-header">
-                <div>
-                  <h3>{{position}}</h3>
-                  <p class="item-content">{{company}}</p>
-                </div>
-                <span class="item-date">{{startDate}} - {{endDate}}</span>
-              </div>
+          <p>{{summary}}</p>
+        </div>
+        {{/if}} {{#if experience}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Experience</h2>
+            <div class="section-line"></div>
+          </div>
+          {{#each experience}}
+          <div class="experience-item">
+            <div>
+              <h3 class="experience-title">{{position}}</h3>
+              <div class="experience-company">{{company}}</div>
+              <div class="experience-date">{{startDate}} - {{endDate}}</div>
               <p class="item-description">{{description}}</p>
             </div>
-            {{/each}}
           </div>
-          {{/if}} {{#if educations}}
-          <div class="section">
-            <h2>Education</h2>
-            {{#each educations}}
-            <div class="item">
-              <h3>{{degree}} in {{field}}</h3>
-              <p class="item-content">{{institution}}</p>
-              <span class="item-date">{{startDate}} - {{endDate}}</span>
-            </div>
-            {{/each}}
-          </div>
-          {{/if}} {{#if projects}}
-          <div class="section">
+          {{/each}}
+        </div>
+        {{/if}} {{#if projects}}
+        <div class="section">
+          <div class="section-header">
             <h2>Projects</h2>
-            {{#each projects}}
-            <div class="item">
-              <div class="item-header">
-                <div>
-                  <h3>{{name}}</h3>
-                  <p class="item-content">{{description}}</p>
-                  {{#if url}}
-                  <a
-                    href="{{url}}"
-                    class="item-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >{{url}}</a
-                  >
-                  {{/if}}
-                </div>
-                <span class="item-date">{{startDate}} - {{endDate}}</span>
-              </div>
-            </div>
-            {{/each}}
+            <div class="section-line"></div>
           </div>
-          {{/if}} {{#if courses}}
-          <div class="section">
-            <h2>Courses</h2>
-            {{#each courses}}
-            <div class="item">
-              <div class="item-header">
-                <div>
-                  <h3>{{name}}</h3>
-                  {{#if url}}
-                  <a
-                    href="{{url}}"
-                    class="item-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >{{url}}</a
-                  >
-                  {{/if}}
-                </div>
-                <span class="item-date">{{startDate}} - {{endDate}}</span>
-              </div>
-            </div>
-            {{/each}}
-          </div>
-          {{/if}} {{#if certificates}}
-          <div class="section">
-            <h2>Certificates</h2>
-            {{#each certificates}}
-            <div class="item">
-              <div class="item-header">
-                <div>
-                  <h3>{{name}}</h3>
-                  <p class="item-content">{{issuer}}</p>
-                  {{#if url}}
-                  <a
-                    href="{{url}}"
-                    class="item-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >{{url}}</a
-                  >
-                  {{/if}}
-                </div>
-                <span class="item-date"
-                  >{{issueDate}}{{#if expirationDate}} -
-                  {{expirationDate}}{{/if}}</span
-                >
-              </div>
-            </div>
-            {{/each}}
-          </div>
-          {{/if}}
-        </div>
-
-        <!-- Right Column -->
-        <div class="right-column">
-          {{#if skills}}
-          <div class="section">
-            <h2>Skills</h2>
-            <div class="skills-list">
-              {{#each skills}}
-              <div class="skill-item">
-                <span>{{name}}</span>
-                <span class="efficiency">{{efficiency}}</span>
-              </div>
-              {{/each}}
-            </div>
-          </div>
-          {{/if}} {{#if languages}}
-          <div class="section">
-            <h2>Languages</h2>
-            <div class="languages-list">
-              {{#each languages}}
-              <div class="language-item">
-                <span>{{name}}</span>
-                <span class="efficiency">{{efficiency}}</span>
-              </div>
-              {{/each}}
-            </div>
-          </div>
-          {{/if}} {{#if socials}}
-          <div class="section">
-            <h2>Social Links</h2>
-            <div class="social-links">
-              {{#each socials}}
-              <a href="{{url}}" target="_blank" rel="noopener noreferrer"
-                >{{name}}</a
+          {{#each projects}}
+          <div class="experience-item">
+            <div>
+              <h3 class="experience-title">{{name}}</h3>
+              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+              <p class="item-description">{{description}}</p>
+              {{#if url}}
+              <a
+                href="{{url}}"
+                class="skill-level"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-              {{/each}}
+                {{url}}
+              </a>
+              {{/if}}
             </div>
           </div>
-          {{/if}} {{#if hobbies}}
-          <div class="section">
-            <h2>Hobbies</h2>
-            <div class="hobbies-list">
-              {{#each hobbies}}
-              <p>{{this}}</p>
-              {{/each}}
-            </div>
-          </div>
-          {{/if}}
+          {{/each}}
         </div>
+        {{/if}} {{#if courses}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Courses</h2>
+            <div class="section-line"></div>
+          </div>
+          {{#each courses}}
+          <div class="experience-item">
+            <div>
+              <h3 class="experience-title">{{name}}</h3>
+              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+              {{#if url}}
+              <a
+                href="{{url}}"
+                class="skill-level"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{url}}
+              </a>
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}} {{#if educations}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Education</h2>
+            <div class="section-line"></div>
+          </div>
+          {{#each educations}}
+          <div class="experience-item">
+            <div>
+              <h3 class="experience-title">{{degree}} {{field}}</h3>
+              <div class="experience-company">{{institution}}</div>
+              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}} {{#if certificates}}
+        <div class="section">
+          <div class="section-header">
+            <h2>Certificates</h2>
+            <div class="section-line"></div>
+          </div>
+          {{#each certificates}}
+          <div class="experience-item">
+            <div>
+              <h3 class="experience-title">{{name}}</h3>
+              <div class="experience-company">{{issuer}}</div>
+              <div class="experience-date">
+                {{issueDate}}{{#if expirationDate}} - {{expirationDate}}{{/if}}
+              </div>
+              {{#if url}}
+              <a
+                href="{{url}}"
+                class="skill-level"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{url}}
+              </a>
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
       </div>
     </div>
   </body>
