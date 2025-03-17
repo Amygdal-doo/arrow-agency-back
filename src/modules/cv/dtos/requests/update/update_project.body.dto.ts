@@ -37,6 +37,7 @@ export class UpdateProjectDto {
     description: "Date when the project was ended",
   })
   @IsDateString()
+  @IsOptional()
   endDate?: string;
 
   @ApiPropertyOptional({
@@ -44,5 +45,6 @@ export class UpdateProjectDto {
     description: "Url of the project",
   })
   @IsString()
+  @IsOptional()
   url?: string;
 }
