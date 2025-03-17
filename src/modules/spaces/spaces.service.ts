@@ -23,7 +23,6 @@ import {
   OBJECT_STORAGE_ORIGIN_URL,
   OBJECT_STORAGE_URL,
   SPACES_URL_CREATION,
-  SPACES_URL_ORIGIN,
 } from "./config/spaces.config";
 import { IImageUpload } from "./interfaces/image-upload.interface";
 import * as sharp from "sharp";
