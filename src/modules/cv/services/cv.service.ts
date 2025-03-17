@@ -6,7 +6,6 @@ import {
 } from "@nestjs/common";
 import { DatabaseService } from "src/database/database.service";
 import { UpdateCvDto } from "../dtos/requests/update/update_cv.body.dto";
-import { NotFound } from "@aws-sdk/client-s3";
 import { DeleteCvFieldsByIdDto } from "../dtos/requests/delete_cv_fields_by_id.dto";
 import { ICvData } from "src/modules/pdf/interfaces/cv-data.interface";
 import { CvResponseDto } from "../dtos/responses/cv.response.dto";
@@ -219,7 +218,7 @@ export class CvService {
 
     //delete old cv file if exists
 
-    await this.spacesService.deleteFileByURL(cv.applicant.file[0].url);
+    await this.spacesService.deleteFileByURL(cv.applicant.file.url);
     await this.databaseService.file.delete({
       where: {
         id: cv.applicant.file.id,
