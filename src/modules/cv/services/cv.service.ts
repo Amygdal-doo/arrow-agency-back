@@ -49,8 +49,25 @@ export class CvService {
       throw new ForbiddenException("You are not authorized to update this CV");
     }
 
-    const exists = await checkFileExists(templateId);
-    if (!exists) throw new BadRequestException("Template not found");
+    const fileExists = await checkFileExists(templateId);
+    if (!fileExists) throw new BadRequestException("Template not found");
+
+    let companyLogoUpdate = undefined;
+
+    if (updateCvDto.companyLogoId) {
+      if (cv.companyLogo.id !== updateCvDto.companyLogoId) {
+        const logo = await this.databaseService.file.findUnique({
+          where: {
+            id: updateCvDto.companyLogoId,
+            userId,
+          },
+        });
+        if (!logo) {
+          throw new BadRequestException("Logo not found");
+        }
+        companyLogoUpdate = updateCvDto.companyLogoId;
+      }
+    }
 
     // Delete fields
     await this.deleteFields(updateCvDto.delete, id);
@@ -77,6 +94,13 @@ export class CvService {
             templateId,
           },
         },
+        companyLogo: companyLogoUpdate
+          ? {
+              connect: {
+                id: companyLogoUpdate,
+              },
+            }
+          : undefined,
         firstName: updateCvDto.firstName,
         lastName: updateCvDto.lastName,
         companyName: updateCvDto.companyName,

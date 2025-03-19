@@ -5,6 +5,7 @@ import {
   ValidateNested,
   IsNotEmpty,
   IsBoolean,
+  IsUUID,
 } from "class-validator";
 import { Type } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
@@ -67,6 +68,14 @@ export class UpdateCvDto {
   @IsString()
   @IsOptional()
   colorPalette?: string;
+
+  @ApiPropertyOptional({
+    example: "3298457942857024704",
+    description: "Unique identifier for the company logo",
+  })
+  @IsUUID()
+  @IsOptional()
+  companyLogoId?: string;
 
   @ApiPropertyOptional({
     example: "john.doe@example.com",
