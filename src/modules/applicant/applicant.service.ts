@@ -311,7 +311,7 @@ export class ApplicantService {
       companyName: companyName,
       companyLogoUrl: image.url,
 
-      colorPallete: body.colorPallete,
+      colorPalette: body.colorPallete,
       showCompanyInfo: body.showCompanyInfo,
       showPersonalInfo: body.showPersonalInfo,
 

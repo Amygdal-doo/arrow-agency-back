@@ -388,7 +388,7 @@ export class CvService {
       summary: cv.summary,
       companyName: cv.companyName,
       companyLogoUrl: cv.companyLogo.url,
-      colorPallete: cv.colorPalette,
+      colorPalette: cv.colorPalette,
       showCompanyInfo: cv.showCompanyInfo,
       showPersonalInfo: cv.showPersonalInfo,
 
