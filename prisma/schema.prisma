@@ -127,6 +127,10 @@ model Cv {
   email     String
   phone     String
   summary   String
+  colorPalette String
+  showPersonalInfo Boolean @default(false)
+  showCompanyInfo Boolean  @default(false)
+
 
   companyName String
   companyLogo File?
