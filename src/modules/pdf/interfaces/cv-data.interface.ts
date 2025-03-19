@@ -83,3 +83,9 @@ export interface ICvData {
   socials: ISocial[];
   courses: ICourse[];
 }
+
+export interface ICvDataExtended extends ICvData {
+  colorPallete: string;
+  showCompanyInfo: boolean;
+  showPersonalInfo: boolean;
+}

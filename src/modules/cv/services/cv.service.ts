@@ -7,7 +7,10 @@ import {
 import { DatabaseService } from "src/database/database.service";
 import { UpdateCvDto } from "../dtos/requests/update/update_cv.body.dto";
 import { DeleteCvFieldsByIdDto } from "../dtos/requests/delete_cv_fields_by_id.dto";
-import { ICvData } from "src/modules/pdf/interfaces/cv-data.interface";
+import {
+  ICvData,
+  ICvDataExtended,
+} from "src/modules/pdf/interfaces/cv-data.interface";
 import { CvResponseDto } from "../dtos/responses/cv.response.dto";
 import { IUploadedFile } from "src/modules/spaces/interfaces/file-upload.interface";
 import { SpacesService } from "src/modules/spaces/spaces.service";
@@ -77,6 +80,9 @@ export class CvService {
         firstName: updateCvDto.firstName,
         lastName: updateCvDto.lastName,
         companyName: updateCvDto.companyName,
+        colorPalette: updateCvDto.colorPalette,
+        showCompanyInfo: updateCvDto.showCompanyInfo,
+        showPersonalInfo: updateCvDto.showPersonalInfo,
         email: updateCvDto.email,
         phone: updateCvDto.phone,
         summary: updateCvDto.summary,
@@ -265,6 +271,7 @@ export class CvService {
         socials: true,
         courses: true,
         skills: true,
+        companyLogo: true,
       },
     });
 
@@ -348,7 +355,7 @@ export class CvService {
     }
   }
 
-  transformToICvData(cv: CvResponseDto): ICvData {
+  transformToICvData(cv: CvResponseDto): ICvDataExtended {
     return {
       firstName: cv.firstName,
       lastName: cv.lastName,
@@ -357,6 +364,9 @@ export class CvService {
       summary: cv.summary,
       companyName: cv.companyName,
       companyLogoUrl: cv.companyLogo.url,
+      colorPallete: cv.colorPalette,
+      showCompanyInfo: cv.showCompanyInfo,
+      showPersonalInfo: cv.showPersonalInfo,
 
       hobies: cv.hobbies || [], // Using "hobies" to match your interface; consider fixing to "hobbies"
 

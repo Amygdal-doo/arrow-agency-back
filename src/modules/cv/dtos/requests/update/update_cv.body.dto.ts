@@ -4,6 +4,7 @@ import {
   IsArray,
   ValidateNested,
   IsNotEmpty,
+  IsBoolean,
 } from "class-validator";
 import { Type } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
@@ -42,6 +43,30 @@ export class UpdateCvDto {
   @IsString()
   @IsOptional()
   companyName?: string;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: "Show company info or not",
+  })
+  @IsBoolean()
+  @IsOptional()
+  showCompanyInfo?: boolean;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: "Show personal info or not",
+  })
+  @IsBoolean()
+  @IsOptional()
+  showPersonalInfo?: boolean;
+
+  @ApiPropertyOptional({
+    example: "#007bff",
+    description: "Color palette for the cv",
+  })
+  @IsString()
+  @IsOptional()
+  colorPalette?: string;
 
   @ApiPropertyOptional({
     example: "john.doe@example.com",

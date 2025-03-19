@@ -4,7 +4,7 @@ import { DatabaseService } from "src/database/database.service";
 import { PdfService } from "../pdf/pdf.service";
 import { UploadDto } from "../pdf/dtos/upload.dto";
 import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
-import { ICvData } from "../pdf/interfaces/cv-data.interface";
+import { ICvData, ICvDataExtended } from "../pdf/interfaces/cv-data.interface";
 import { SpacesService } from "../spaces/spaces.service";
 import { IUploadedFile } from "../spaces/interfaces/file-upload.interface";
 import { SpacesDestinationPath } from "../spaces/enums/spaces-folder-name.enum";
@@ -303,12 +303,16 @@ export class ApplicantService {
     });
 
     console.log({ pdfData, body });
-    const cvData: ICvData = {
+    const cvData: ICvDataExtended = {
       firstName: pdfData.firstName,
       lastName: pdfData.lastName,
 
       companyName: companyName,
       companyLogoUrl: image.url,
+
+      colorPallete: body.colorPallete,
+      showCompanyInfo: body.showCompanyInfo,
+      showPersonalInfo: body.showPersonalInfo,
 
       email: pdfData.email,
       phone: pdfData.phone,
@@ -359,6 +363,9 @@ export class ApplicantService {
           email: pdfData.email,
           phone: pdfData.phone,
           summary: pdfData.summary,
+          colorPalette: body.colorPallete,
+          showCompanyInfo: body.showCompanyInfo,
+          showPersonalInfo: body.showPersonalInfo,
           companyName,
           companyLogo: {
             connect: { id: logoId },

@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { PdfReader } from "pdfreader";
 import { OpenaiService } from "../openai/openai.service";
 import * as fs from "fs";
 import * as path from "path";
-import { ICvData } from "./interfaces/cv-data.interface";
+import { ICvData, ICvDataExtended } from "./interfaces/cv-data.interface";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 import * as handlebars from "handlebars";
 import { PuppeteerService } from "../puppeteer/puppeteer.service";
@@ -14,7 +14,7 @@ export class PdfService {
     private readonly openaiService: OpenaiService,
     private readonly puppeteerService: PuppeteerService
   ) {}
-  private readonly companyName = "Amygdal, Inc.";
+  private logger = new Logger(PdfService.name);
 
   handlePdfFileUpload(file: Express.Multer.File) {
     if (!file) {
@@ -60,8 +60,7 @@ export class PdfService {
     // return { message: 'File uploaded successfully' };
     const pdfText = await this.getPdfText(file.buffer);
     const jsonObject = await this.openaiService.createJsonObject(pdfText);
-    console.log({ jsonObject });
-
+    this.logger.log("Ai created json succesfully");
     let object: ICvData;
     try {
       object = JSON.parse(jsonObject) as ICvData;
@@ -69,13 +68,12 @@ export class PdfService {
       console.error("Failed to parse JSON object:", error);
       throw new BadRequestException("Invalid JSON format");
     }
-    console.log(object);
 
     return object;
   }
 
   async generateCvPdfPuppeteer(
-    data: ICvData,
+    data: ICvDataExtended,
     templateId: string
   ): Promise<Buffer> {
     const templatePath = path.join(

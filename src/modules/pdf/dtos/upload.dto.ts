@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+} from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 
@@ -57,4 +63,21 @@ export class UploadDto {
   @IsString()
   @IsNotEmpty()
   companyName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  colorPallete: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  @Transform(({ value }) => value === "true" || value === "1")
+  showPersonalInfo: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  @Transform(({ value }) => value === "true" || value === "1")
+  showCompanyInfo: boolean;
 }

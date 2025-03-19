@@ -41,6 +41,27 @@ export class CvResponseDto implements Cv {
   companyName: string;
 
   @ApiProperty({
+    example: false,
+    description: "Show company info or not",
+  })
+  @Expose()
+  showCompanyInfo: boolean;
+
+  @ApiProperty({
+    example: false,
+    description: "Show personal info or not",
+  })
+  @Expose()
+  showPersonalInfo: boolean;
+
+  @ApiProperty({
+    example: "#007bff",
+    description: "Color palette for the cv",
+  })
+  @Expose()
+  colorPalette: string;
+
+  @ApiProperty({
     type: String,
     description: "Cv file of the applicant",
     example: FileResponseDto,
