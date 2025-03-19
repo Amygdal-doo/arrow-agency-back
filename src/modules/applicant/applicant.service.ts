@@ -54,6 +54,7 @@ export class ApplicantService {
             languages: true,
             socials: true,
             courses: true,
+            companyLogo: true,
           },
         },
       },
