@@ -98,7 +98,7 @@
 
       .main-content {
         display: grid;
-        grid-template-columns: 1.8fr 1fr;
+        grid-template-columns: 3fr 1fr;
         gap: 2rem;
       }
 
@@ -292,6 +292,7 @@
           <div class="personal-info">
             <h1>{{firstName}} {{lastName}}</h1>
             <div class="contact-info">
+              {{#if email}}
               <span class="contact-item">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -309,6 +310,7 @@
                 </svg>
                 {{email}}
               </span>
+              {{/if}} {{#if phone}}
               <span class="contact-item">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -326,6 +328,7 @@
                 </svg>
                 {{phone}}
               </span>
+              {{/if}}
             </div>
           </div>
           {{/if}} {{#if summary}}

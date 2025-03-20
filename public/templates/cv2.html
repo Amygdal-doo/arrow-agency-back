@@ -275,6 +275,7 @@
         <div class="personal-info">
           <h1>{{firstName}} {{lastName}}</h1>
           <div class="contact-info">
+            {{#if email}}
             <span class="contact-item">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -292,6 +293,7 @@
               </svg>
               {{email}}
             </span>
+            {{/if}} {{#if phone}}
             <span class="contact-item">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -309,6 +311,7 @@
               </svg>
               {{phone}}
             </span>
+            {{/if}}
           </div>
         </div>
         {{/if}}
