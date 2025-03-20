@@ -85,7 +85,9 @@ export interface ICvData {
 }
 
 export interface ICvDataExtended extends ICvData {
-  colorPalette: string;
+  primaryColor: string;
+  secondaryColor: string;
+  tertiaryColor: string;
   showCompanyInfo: boolean;
   showPersonalInfo: boolean;
 }

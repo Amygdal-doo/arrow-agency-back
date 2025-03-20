@@ -67,7 +67,23 @@ export class UpdateCvDto {
   })
   @IsString()
   @IsOptional()
-  colorPalette?: string;
+  primaryColor?: string;
+
+  @ApiPropertyOptional({
+    example: "#007bff",
+    description: "Color palette for the cv",
+  })
+  @IsString()
+  @IsOptional()
+  secondaryColor?: string;
+
+  @ApiPropertyOptional({
+    example: "#007bff",
+    description: "Color palette for the cv",
+  })
+  @IsString()
+  @IsOptional()
+  tertiaryColor?: string;
 
   @ApiPropertyOptional({
     example: "3298457942857024704",

@@ -121,16 +121,19 @@ model File {
 }
 
 model Cv {
-  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName String
-  lastName  String
-  email     String
-  phone     String
-  summary   String
-  colorPalette String
-  showPersonalInfo Boolean @default(false)
-  showCompanyInfo Boolean  @default(false)
+  id               String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName        String
+  lastName         String
+  email            String
+  phone            String
+  summary          String
 
+  primaryColor     String
+  secondaryColor   String
+  tertiaryColor    String
+  
+  showPersonalInfo Boolean @default(false)
+  showCompanyInfo  Boolean @default(false)
 
   companyName String
   companyLogo File?

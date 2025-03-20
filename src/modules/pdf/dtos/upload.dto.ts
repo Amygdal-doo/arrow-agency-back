@@ -67,7 +67,17 @@ export class UploadDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  colorPallete: string;
+  primaryColor: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  secondaryColor: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  tertiaryColor: string;
 
   @ApiProperty()
   @IsBoolean()

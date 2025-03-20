@@ -59,7 +59,21 @@ export class CvResponseDto implements Cv {
     description: "Color palette for the cv",
   })
   @Expose()
-  colorPalette: string;
+  primaryColor: string;
+
+  @ApiProperty({
+    example: "#007bff",
+    description: "Color palette for the cv",
+  })
+  @Expose()
+  secondaryColor: string;
+
+  @ApiProperty({
+    example: "#007bff",
+    description: "Color palette for the cv",
+  })
+  @Expose()
+  tertiaryColor: string;
 
   @ApiProperty({
     type: String,
