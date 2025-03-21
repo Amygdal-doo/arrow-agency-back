@@ -61,6 +61,7 @@ export class PdfService {
     const pdfText = await this.getPdfText(file.buffer);
     const jsonObject = await this.openaiService.createJsonObject(pdfText);
     this.logger.log("Ai created json succesfully");
+    console.log(jsonObject);
     let object: ICvData;
     try {
       object = JSON.parse(jsonObject) as ICvData;
