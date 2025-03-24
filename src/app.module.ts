@@ -16,6 +16,7 @@ import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
 import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
 import { OrganizationModule } from "./modules/organization/organization.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
+import { SkillModule } from './modules/skill/skill.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { JobsModule } from "./modules/jobs/jobs.module";
     PuppeteerModule,
     OrganizationModule,
     JobsModule,
+    SkillModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],

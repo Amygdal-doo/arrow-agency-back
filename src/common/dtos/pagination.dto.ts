@@ -75,6 +75,13 @@ export class OrganizationSearchQueryDto {
   search?: string;
 }
 
+export class SkillSearchQueryDto {
+  @ApiPropertyOptional({ example: "NODEJS" })
+  @IsString()
+  @IsOptional()
+  search?: string;
+}
+
 export class ApplicantsBytechnologiesDto {
   @ApiPropertyOptional({ type: [String] })
   //   @IsArray()
