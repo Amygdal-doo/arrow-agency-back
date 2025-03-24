@@ -7,6 +7,14 @@ import { IImageUpload } from "src/modules/spaces/interfaces/image-upload.interfa
 import { SpacesService } from "src/modules/spaces/spaces.service";
 import { CreateOrganizationBodyDto } from "../dtos/requests/create-organization-body.dto";
 import { url } from "inspector";
+import {
+  OrderType,
+  OrganizationSearchQueryDto,
+  PaginationQueryDto,
+} from "src/common/dtos/pagination.dto";
+import { OrganizationPaginationResponseDto } from "../dtos/responses/organization.response";
+import { SortOrder } from "src/common/enums/order.enum";
+import { pageLimit } from "src/common/helper/pagination.helper";
 
 @Injectable()
 export class OrganizationService {
@@ -17,13 +25,27 @@ export class OrganizationService {
 
   logger: Logger = new Logger(OrganizationService.name);
 
+  async findName(name: string) {
+    const organization = await this.databaseService.organization.findUnique({
+      where: { name },
+    });
+    return organization;
+  }
+
+  async findCode(code: string) {
+    const organization = await this.databaseService.organization.findUnique({
+      where: { code },
+    });
+    return organization;
+  }
+
   create(data: Prisma.OrganizationCreateInput) {
     return this.databaseService.organization.create({ data });
   }
 
   async createorganization(
     data: CreateOrganizationBodyDto,
-    loggedUserInfo: ILoggedUserInfo,
+    // loggedUserInfo: ILoggedUserInfo,
     image?: Express.Multer.File
   ) {
     const { file, ...rest } = data;
@@ -39,15 +61,117 @@ export class OrganizationService {
       throw new BadRequestException("Something went wrong with file upload");
     }
 
+    rest.name = rest.name.toUpperCase();
+    rest.code = rest.code.toUpperCase();
+
+    const [name, code] = await Promise.all([
+      this.findName(rest.name),
+      this.findCode(rest.code),
+    ]);
+    if (name) throw new BadRequestException("Organization name already exist");
+    if (code) throw new BadRequestException("Organization code already exist");
+
     const organization = await this.databaseService.organization.create({
       data: {
         ...rest,
+        logo: imageFile
+          ? {
+              create: {
+                url: imageFile.url,
+                name: imageFile.name,
+                extension: imageFile.extension,
+                height: imageFile.height,
+                width: imageFile.width,
+                fileCreatedAt: imageFile.createdAt,
+              },
+            }
+          : undefined,
       },
     });
+
+    return organization;
   }
 
   async findAll() {
     const organizations = await this.databaseService.organization.findMany();
     return organizations;
+  }
+
+  async organizationsPaginated(
+    paginationQuery: PaginationQueryDto,
+    orderType: OrderType
+  ): Promise<OrganizationPaginationResponseDto> {
+    const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
+    const orderBy = "createdAt";
+    const query: Prisma.OrganizationFindManyArgs = {
+      where: {
+        // userId,
+        // name: { contains: paginationQuery.name, mode: 'insensitive' },
+      },
+    };
+
+    const { page, limit } = pageLimit(paginationQuery);
+    const total = await this.databaseService.organization.count({
+      where: query.where,
+    });
+
+    const pages = Math.ceil(total / limit);
+    const startIndex = page < 1 ? 0 : (page - 1) * limit;
+
+    const results = await this.databaseService.organization.findMany({
+      include: {
+        logo: true,
+      },
+      where: query.where,
+      skip: startIndex,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderIn,
+      },
+    });
+    return { limit, page, pages, total, results };
+  }
+
+  async organizationsSearchPaginated(
+    paginationQuery: PaginationQueryDto,
+    orderType: OrderType,
+    organizationSearchQueryDto: OrganizationSearchQueryDto
+  ): Promise<OrganizationPaginationResponseDto> {
+    const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
+    const orderBy = organizationSearchQueryDto.by
+      ? organizationSearchQueryDto.by
+      : "name";
+    const query: Prisma.OrganizationFindManyArgs = {
+      where: {
+        // userId,
+        [orderBy]: {
+          contains: organizationSearchQueryDto.search
+            ? organizationSearchQueryDto.search.toUpperCase()
+            : "",
+          mode: "insensitive",
+        },
+      },
+    };
+
+    const { page, limit } = pageLimit(paginationQuery);
+    const total = await this.databaseService.organization.count({
+      where: query.where,
+    });
+
+    const pages = Math.ceil(total / limit);
+    const startIndex = page < 1 ? 0 : (page - 1) * limit;
+
+    const results = await this.databaseService.organization.findMany({
+      include: {
+        logo: true,
+      },
+      where: query.where,
+      skip: startIndex,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderIn,
+      },
+    });
+    return { limit, page, pages, total, results };
   }
 }

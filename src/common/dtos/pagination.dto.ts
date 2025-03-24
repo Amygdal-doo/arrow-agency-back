@@ -3,11 +3,13 @@ import { Expose, Transform } from "class-transformer";
 import {
   IsArray,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from "class-validator";
 import { SortOrder } from "../enums/order.enum";
+import { OrganizationSearchBy } from "../enums/organization.search-by.enum";
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({
@@ -56,6 +58,21 @@ export class OrderType {
   @IsEnum(SortOrder)
   @IsOptional()
   type?: SortOrder;
+}
+
+export class OrganizationSearchQueryDto {
+  @ApiPropertyOptional({
+    enum: OrganizationSearchBy,
+    example: OrganizationSearchBy.CODE,
+  })
+  @IsEnum(OrganizationSearchBy)
+  @IsOptional()
+  by?: OrganizationSearchBy;
+
+  @ApiPropertyOptional({ example: "ACME" })
+  @IsString()
+  @IsOptional()
+  search?: string;
 }
 
 export class ApplicantsBytechnologiesDto {

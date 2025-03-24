@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   Logger,
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
+  Query,
   UploadedFile,
   UseFilters,
   UseGuards,
@@ -29,6 +31,16 @@ import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter
 import { AccessTokenGuard } from "src/modules/auth/guards/access-token.guard";
 import { uploadCompanyLogoDto } from "src/modules/users/dtos/requests/upload-logo.dto";
 import { FileExtensionValidator } from "src/common/validators/file-extension-validators";
+import {
+  PaginationQueryDto,
+  OrderType,
+  OrganizationSearchQueryDto,
+} from "src/common/dtos/pagination.dto";
+import { Serialize } from "src/common/interceptors/serialize.interceptor";
+import {
+  OrganizationPaginationResponseDto,
+  OrganizationResponse,
+} from "../dtos/responses/organization.response";
 
 @ApiTags("Organization")
 @Controller({ path: "organization" })
@@ -38,12 +50,12 @@ export class OrganizationController {
   logger: Logger = new Logger(OrganizationController.name);
 
   @Post("create")
-  @ApiBearerAuth("Access Token")
+  // @ApiBearerAuth("Access Token")
   @UseFilters(new HttpExceptionFilter())
-  @UseGuards(AccessTokenGuard)
-  // @Serialize(SuccesfullUpdateDto)
+  // @UseGuards(AccessTokenGuard)
+  @Serialize(OrganizationResponse)
   @ApiOkResponse()
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  // @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiOperation({
@@ -52,7 +64,7 @@ export class OrganizationController {
   })
   async create(
     @Body() data: CreateOrganizationBodyDto,
-    @UserLogged() loggedUserInfo: ILoggedUserInfo,
+    // @UserLogged() loggedUserInfo: ILoggedUserInfo,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -69,13 +81,55 @@ export class OrganizationController {
     console.log({ data, file });
 
     if (!file) {
-      return this.organizationService.createorganization(data, loggedUserInfo);
+      return this.organizationService.createorganization(data);
     }
 
-    return this.organizationService.createorganization(
-      data,
-      loggedUserInfo,
-      file
+    return this.organizationService.createorganization(data, file);
+  }
+
+  @Get("all")
+  @ApiOperation({
+    summary: "Get all Organizations paginated ",
+    description: "Fetches all Organizations",
+  })
+  // @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  // @Roles(Role.SUPER_ADMIN)
+  // @UseGuards(AccessTokenGuard)
+  // @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @Serialize(OrganizationPaginationResponseDto)
+  @ApiOkResponse({ type: [OrganizationPaginationResponseDto] })
+  async organizationsPaginated(
+    @Query() paginationQuery: PaginationQueryDto,
+    @Query() orderType: OrderType
+  ) {
+    return this.organizationService.organizationsPaginated(
+      paginationQuery,
+      orderType
+    );
+  }
+
+  @Get("search")
+  @ApiOperation({
+    summary: "Get all Organizations paginated ",
+    description: "Fetches all Organizations",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  // @Roles(Role.SUPER_ADMIN)
+  @UseGuards(AccessTokenGuard)
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @Serialize(OrganizationPaginationResponseDto)
+  @ApiOkResponse({ type: [OrganizationPaginationResponseDto] })
+  async organizationSearchPaginated(
+    @Query() paginationQuery: PaginationQueryDto,
+    @Query() orderType: OrderType,
+    @Query() organizationSearchQueryDto: OrganizationSearchQueryDto
+  ) {
+    return this.organizationService.organizationsSearchPaginated(
+      paginationQuery,
+      orderType,
+      organizationSearchQueryDto
     );
   }
 }
