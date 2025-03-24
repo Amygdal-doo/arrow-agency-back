@@ -318,8 +318,8 @@ model JobCategory {
 
 model JobPosition {
   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code        String  @db.VarChar(10)
-  name        String  @db.VarChar(100)
+  code        String  @db.VarChar(10) @unique
+  name        String  @db.VarChar(100) @unique
   description String? @db.Text
   jobs        Job[]
 
@@ -329,14 +329,14 @@ model JobPosition {
 
 model Organization {
   id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code     String  @db.VarChar(10)
+  code     String  @db.VarChar(10) @unique
   logo     File?
-  name     String  @db.VarChar(100)
+  name     String  @db.VarChar(100) @unique
   about    String  @db.Text
   culture  String? @db.Text
   benefits String? @db.Text
   email    String  @db.VarChar(150)
-  location String
+  location String  @db.VarChar(100)
   verified  Boolean @default(false)
   jobs     Job[]
 
@@ -375,7 +375,7 @@ model Job {
 
 model Skill {
   id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String     @db.VarChar(100)
+  name        String     @db.VarChar(100) @unique
   description String?    @db.Text
   jobSkills   JobSkill[]
 
