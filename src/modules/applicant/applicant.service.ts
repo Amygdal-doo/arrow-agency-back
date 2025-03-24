@@ -16,7 +16,6 @@ import {
 } from "src/common/dtos/pagination.dto";
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
-import e from "express";
 import { checkFileExists } from "src/common/helper/file-exist.helper";
 
 @Injectable()

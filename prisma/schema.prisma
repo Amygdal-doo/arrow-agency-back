@@ -21,8 +21,18 @@ datasource db {
 //   expert
 // }
 
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+  TEMPORARY
+  SEASONAL
+}
+
 enum Role {
   USER
+  HR
   SUPER_ADMIN
 }
 
@@ -104,15 +114,18 @@ model File {
   width         Int?
   fileCreatedAt DateTime
 
-  userId      String  @db.Uuid
-  profileId   String? @db.Uuid
-  applicantId String? @unique @db.Uuid
-  cvId        String? @unique @db.Uuid
+  userId         String? @db.Uuid
+  profileId      String? @db.Uuid
+  applicantId    String? @unique @db.Uuid
+  cvId           String? @unique @db.Uuid
+  organizationId String? @unique @db.Uuid
+  jobId          String? @unique @db.Uuid
 
-  user      User       @relation(fields: [userId], references: [id])
-  applicant Applicant? @relation(fields: [applicantId], references: [id])
-  profile   Profile?   @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "companyLogos")
-  cv        Cv?        @relation(fields: [cvId], references: [id])
+  user         User?         @relation(fields: [userId], references: [id])
+  applicant    Applicant?    @relation(fields: [applicantId], references: [id])
+  profile      Profile?      @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "companyLogos")
+  cv           Cv?           @relation(fields: [cvId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -121,17 +134,17 @@ model File {
 }
 
 model Cv {
-  id               String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName        String
-  lastName         String
-  email            String
-  phone            String
-  summary          String
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  summary   String
 
-  primaryColor     String
-  secondaryColor   String
-  tertiaryColor    String
-  
+  primaryColor   String
+  secondaryColor String
+  tertiaryColor  String
+
   showPersonalInfo Boolean @default(false)
   showCompanyInfo  Boolean @default(false)
 
@@ -280,4 +293,102 @@ model CvLanguage {
   updatedAt DateTime @updatedAt
 
   @@index([cvId], map: "experience_CvData_Id_Index")
+}
+
+model JobCategory {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String   @db.VarChar(10)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  jobs        Job[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// model JobPlatform {
+//   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+//   code        String  @db.VarChar(10)
+//   name        String  @db.VarChar(100)
+//   description String? @db.Text
+//   jobs        Job[]
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model JobPosition {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String  @db.VarChar(10) @unique
+  name        String  @db.VarChar(100) @unique
+  description String? @db.Text
+  jobs        Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code     String  @db.VarChar(10) @unique
+  logo     File?
+  name     String  @db.VarChar(100) @unique
+  about    String  @db.Text
+  culture  String? @db.Text
+  benefits String? @db.Text
+  email    String  @db.VarChar(150)
+  location String  @db.VarChar(100)
+  verified  Boolean @default(false)
+  jobs     Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Job {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  worldwide       Boolean
+  remote          Boolean
+  code            String   @db.VarChar(10)
+  name            String   @db.VarChar(100)
+  description     String?  @db.Text
+  salary          String?  @db.VarChar(100)
+  // datePublished  DateTime
+  applyBeforeDate DateTime
+  noOfVacancies   Int?
+
+  jobCategoryId  String @db.Uuid
+  jobPositionId  String @db.Uuid
+  // jobPlatformId  String @db.Uuid
+  organizationId String @db.Uuid
+
+  jobType   JobType
+  jobSkills JobSkill[]
+
+  jobCategory  JobCategory  @relation(fields: [jobCategoryId], references: [id])
+  jobPosition  JobPosition  @relation(fields: [jobPositionId], references: [id])
+  // jobPlatform  JobPlatform  @relation(fields: [jobPlatformId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String     @db.VarChar(100) @unique
+  description String?    @db.Text
+  jobSkills   JobSkill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JobSkill {
+  jobId   String @db.Uuid
+  skillId String @db.Uuid
+
+  job   Job   @relation(fields: [jobId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@id([jobId, skillId])
 }
