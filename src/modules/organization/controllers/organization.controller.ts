@@ -21,15 +21,11 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { OrganizationService } from "../services/organization.service";
-import { UserLogged } from "src/modules/auth/decorators/user.decorator";
-import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
-import { CompanyLogoSizeValidationPipe } from "src/modules/users/pipes/company-logo_size_validation.pipe";
-import { ImageTypeValidationPipe } from "src/modules/users/pipes/image_type_validator.pipe";
+
 import { CreateOrganizationBodyDto } from "../dtos/requests/create-organization-body.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { AccessTokenGuard } from "src/modules/auth/guards/access-token.guard";
-import { uploadCompanyLogoDto } from "src/modules/users/dtos/requests/upload-logo.dto";
 import { FileExtensionValidator } from "src/common/validators/file-extension-validators";
 import {
   PaginationQueryDto,

@@ -39,10 +39,6 @@ export class OrganizationService {
     return organization;
   }
 
-  create(data: Prisma.OrganizationCreateInput) {
-    return this.databaseService.organization.create({ data });
-  }
-
   async createorganization(
     data: CreateOrganizationBodyDto,
     // loggedUserInfo: ILoggedUserInfo,
