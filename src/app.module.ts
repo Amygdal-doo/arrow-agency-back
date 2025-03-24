@@ -14,8 +14,8 @@ import { FileModule } from "./modules/file/file.module";
 import { CvModule } from "./modules/cv/cv.module";
 import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
 import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
-import { OrganizationModule } from './modules/organization/organization.module';
-import { JobsModule } from './modules/jobs/jobs.module';
+import { OrganizationModule } from "./modules/organization/organization.module";
+import { JobsModule } from "./modules/jobs/jobs.module";
 
 @Module({
   imports: [
