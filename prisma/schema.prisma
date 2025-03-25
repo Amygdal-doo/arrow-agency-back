@@ -367,8 +367,8 @@ model Job {
 
   jobCategory  JobCategory  @relation(fields: [jobCategoryId], references: [id])
   jobPosition  JobPosition  @relation(fields: [jobPositionId], references: [id])
-  // jobPlatform  JobPlatform  @relation(fields: [jobPlatformId], references: [id])
   organization Organization @relation(fields: [organizationId], references: [id])
+  // jobPlatform  JobPlatform  @relation(fields: [jobPlatformId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

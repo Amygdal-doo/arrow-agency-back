@@ -54,7 +54,7 @@ export class JobPositionController {
   // @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @Serialize(JobPositionPaginationResponseDto)
   @ApiOkResponse({ type: [JobPositionPaginationResponseDto] })
-  async organizationSearchPaginated(
+  async jobPositionSearchPaginated(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
     @Query() searchQueryDto: OrganizationSearchQueryDto

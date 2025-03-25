@@ -31,8 +31,8 @@ export class JobCategoryService {
   }
 
   async create(data: CreateJobCategoryDto) {
-    data.code = data.code.toUpperCase();
-    data.name = data.name.toUpperCase();
+    // data.code = data.code.toUpperCase();
+    // data.name = data.name.toUpperCase();
 
     const [name, code] = await Promise.all([
       this.findName(data.name),
@@ -56,7 +56,7 @@ export class JobCategoryService {
         // userId,
         [orderBy]: {
           contains: searchQueryDto.search
-            ? searchQueryDto.search.toUpperCase()
+            ? searchQueryDto.search //.toUpperCase()
             : "",
           mode: "insensitive",
         },

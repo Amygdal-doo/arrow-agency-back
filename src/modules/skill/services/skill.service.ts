@@ -6,7 +6,7 @@ import {
   OrderType,
   OrganizationSearchQueryDto,
   PaginationQueryDto,
-  SkillSearchQueryDto,
+  SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
 import { Prisma } from "@prisma/client";
 import { SortOrder } from "src/common/enums/order.enum";
@@ -38,7 +38,7 @@ export class SkillService {
   async skillSearchPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,
-    searchQueryDto: SkillSearchQueryDto
+    searchQueryDto: SearchQueryDto
   ): Promise<skillPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "name";

@@ -12,7 +12,7 @@ import { Skill } from "@prisma/client";
 import {
   OrderType,
   PaginationQueryDto,
-  SkillSearchQueryDto,
+  SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
@@ -57,7 +57,7 @@ export class SkillController {
   async organizationSearchPaginated(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
-    @Query() searchQueryDto: SkillSearchQueryDto
+    @Query() searchQueryDto: SearchQueryDto
   ) {
     return this.skillService.skillSearchPaginated(
       paginationQuery,

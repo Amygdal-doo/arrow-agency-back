@@ -75,7 +75,7 @@ export class OrganizationSearchQueryDto {
   search?: string;
 }
 
-export class SkillSearchQueryDto {
+export class SearchQueryDto {
   @ApiPropertyOptional({ example: "NODEJS" })
   @IsString()
   @IsOptional()
