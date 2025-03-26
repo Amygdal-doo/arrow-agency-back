@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Job, JobType } from "@prisma/client";
+import { Job, JobStatus, JobType } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { OrganizationResponse } from "src/modules/organization/dtos/responses/organization.response";
@@ -126,6 +126,13 @@ export class JobResponseDto implements Job {
   @Expose()
   @Type(() => JobPositionResponseDto)
   jobPosition: JobPositionResponseDto;
+
+  @ApiProperty({
+    example: JobStatus.DRAFT,
+    enum: JobStatus,
+  })
+  @Expose()
+  status: JobStatus;
 
   //   @ApiProperty({
   //     example: [JobSkillsResponseDto],
