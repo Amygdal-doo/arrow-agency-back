@@ -1,11 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Job, JobType } from "@prisma/client";
+import {
+  ApplicationType,
+  Job,
+  JobExperienceLevel,
+  JobStatus,
+  JobType,
+} from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { OrganizationResponse } from "src/modules/organization/dtos/responses/organization.response";
 import { JobCategoryResponseDto } from "./job_category.response.dto";
-import { JobPositionResponseDto } from "./job_position.response.dto";
-import { JobSkillsResponseDto } from "src/modules/skill/dtos/responses/job_skill.response.dto";
 
 export class JobResponseDto implements Job {
   @ApiProperty({
@@ -28,13 +32,6 @@ export class JobResponseDto implements Job {
   })
   @Expose()
   remote: boolean;
-
-  @ApiProperty({
-    example: "SE",
-    description: "The code of the job",
-  })
-  @Expose()
-  code: string;
 
   @ApiProperty({
     example: "Software Engineer",
@@ -84,13 +81,6 @@ export class JobResponseDto implements Job {
 
   @ApiProperty({
     example: "12345678-1234-1234-1234-123456789012",
-    description: "The identifier of the job position",
-  })
-  @Expose()
-  jobPositionId: string;
-
-  @ApiProperty({
-    example: "12345678-1234-1234-1234-123456789012",
     description: "The identifier of the organization",
   })
   @Expose()
@@ -120,12 +110,35 @@ export class JobResponseDto implements Job {
   jobCategory: JobCategoryResponseDto;
 
   @ApiProperty({
-    example: JobPositionResponseDto,
-    description: "The Position of the job",
+    enum: JobStatus,
+    example: JobStatus.PUBLISHED,
+    description: "The current status of the job",
   })
   @Expose()
-  @Type(() => JobPositionResponseDto)
-  jobPosition: JobPositionResponseDto;
+  status: JobStatus;
+
+  @ApiProperty({
+    enum: ApplicationType,
+    example: ApplicationType.EMAIL,
+    description: "The type of application for the job",
+  })
+  @Expose()
+  typeOfApplication: ApplicationType;
+
+  @ApiProperty({
+    example: "https://example.com/apply",
+    description: "The link where the applicants can apply for the job",
+  })
+  @Expose()
+  applicationLinkOrEmail: string;
+
+  @ApiProperty({
+    enum: JobExperienceLevel,
+    example: JobExperienceLevel.SENIOR,
+    description: "The experience level required for the job",
+  })
+  @Expose()
+  experienceRequired: JobExperienceLevel;
 
   //   @ApiProperty({
   //     example: [JobSkillsResponseDto],

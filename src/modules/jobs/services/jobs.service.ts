@@ -7,7 +7,7 @@ import {
   PaginationQueryDto,
   SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
-import { Prisma } from "@prisma/client";
+import { JobStatus, Prisma } from "@prisma/client";
 import { JobPaginationResponseDto } from "../dtos/responses/job.response.dto";
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
@@ -36,13 +36,13 @@ export class JobsService {
   // }
 
   async create(data: CreateJobDto) {
-    const { jobCategory, jobPosition, jobSkills, organization, ...rest } = data;
+    const { jobCategory, jobSkills, organization, ...rest } = data;
 
     return this.JobModel.create({
       data: {
         ...rest,
+        status: JobStatus.DRAFT,
         jobCategory: { connect: { id: jobCategory } },
-        jobPosition: { connect: { id: jobPosition } },
         organization: { connect: { id: organization } },
         jobSkills: {
           create: jobSkills.map((id) => ({ skill: { connect: { id } } })),
@@ -72,7 +72,6 @@ export class JobsService {
     const results = await this.JobModel.findMany({
       include: {
         jobCategory: true,
-        jobPosition: true,
         organization: true,
         jobSkills: {
           include: {
@@ -122,7 +121,6 @@ export class JobsService {
     const results = await this.JobModel.findMany({
       include: {
         jobCategory: true,
-        jobPosition: true,
         organization: true,
         jobSkills: {
           include: {

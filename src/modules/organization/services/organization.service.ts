@@ -32,13 +32,6 @@ export class OrganizationService {
     return organization;
   }
 
-  async findCode(code: string) {
-    const organization = await this.databaseService.organization.findUnique({
-      where: { code },
-    });
-    return organization;
-  }
-
   async createorganization(
     data: CreateOrganizationBodyDto,
     // loggedUserInfo: ILoggedUserInfo,
@@ -60,12 +53,8 @@ export class OrganizationService {
     rest.name = rest.name.toUpperCase();
     rest.code = rest.code.toUpperCase();
 
-    const [name, code] = await Promise.all([
-      this.findName(rest.name),
-      this.findCode(rest.code),
-    ]);
+    const name = await this.findName(rest.name);
     if (name) throw new BadRequestException("Organization name already exist");
-    if (code) throw new BadRequestException("Organization code already exist");
 
     const organization = await this.databaseService.organization.create({
       data: {

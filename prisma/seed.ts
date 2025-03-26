@@ -83,88 +83,88 @@ async function main() {
   }
 
   // Seed JobPosition
-  const jobPositions = [
-    {
-      code: "SWE",
-      name: "Software Engineer",
-      description: "Designs, develops, and tests software applications.",
-    },
-    {
-      code: "HWE",
-      name: "Hardware Engineer",
-      description: "Designs and tests hardware components.",
-    },
-    {
-      code: "QAE",
-      name: "Quality Assurance Engineer",
-      description: "Ensures product quality through testing and validation.",
-    },
-    {
-      code: "MKC",
-      name: "Marketing Coordinator",
-      description: "Assists in marketing campaigns and events.",
-    },
-    {
-      code: "SEO",
-      name: "SEO Specialist",
-      description: "Optimizes website content for search engines.",
-    },
-    {
-      code: "SR",
-      name: "Sales Representative",
-      description: "Sells products and services to customers.",
-    },
-    {
-      code: "AM",
-      name: "Account Manager",
-      description: "Manages client accounts and relationships.",
-    },
-    {
-      code: "HRG",
-      name: "HR Generalist",
-      description:
-        "Handles various HR tasks including recruitment and employee relations.",
-    },
-    {
-      code: "REC",
-      name: "Recruiter",
-      description: "Sources and hires new employees.",
-    },
-    {
-      code: "FA",
-      name: "Financial Analyst",
-      description: "Analyzes financial data and prepares reports.",
-    },
-    {
-      code: "ACC",
-      name: "Accountant",
-      description: "Manages accounting records and financial statements.",
-    },
-    {
-      code: "PM",
-      name: "Product Manager",
-      description: "Oversees product development and strategy.",
-    },
-    {
-      code: "UXD",
-      name: "UX Designer",
-      description: "Designs user experiences for products.",
-    },
-    {
-      code: "DA",
-      name: "Data Analyst",
-      description: "Analyzes data to provide insights.",
-    },
-    {
-      code: "CTO",
-      name: "Chief Technology Officer",
-      description: "Leads the technology strategy and innovation.",
-    },
-  ];
+  // const jobPositions = [
+  //   {
+  //     code: "SWE",
+  //     name: "Software Engineer",
+  //     description: "Designs, develops, and tests software applications.",
+  //   },
+  //   {
+  //     code: "HWE",
+  //     name: "Hardware Engineer",
+  //     description: "Designs and tests hardware components.",
+  //   },
+  //   {
+  //     code: "QAE",
+  //     name: "Quality Assurance Engineer",
+  //     description: "Ensures product quality through testing and validation.",
+  //   },
+  //   {
+  //     code: "MKC",
+  //     name: "Marketing Coordinator",
+  //     description: "Assists in marketing campaigns and events.",
+  //   },
+  //   {
+  //     code: "SEO",
+  //     name: "SEO Specialist",
+  //     description: "Optimizes website content for search engines.",
+  //   },
+  //   {
+  //     code: "SR",
+  //     name: "Sales Representative",
+  //     description: "Sells products and services to customers.",
+  //   },
+  //   {
+  //     code: "AM",
+  //     name: "Account Manager",
+  //     description: "Manages client accounts and relationships.",
+  //   },
+  //   {
+  //     code: "HRG",
+  //     name: "HR Generalist",
+  //     description:
+  //       "Handles various HR tasks including recruitment and employee relations.",
+  //   },
+  //   {
+  //     code: "REC",
+  //     name: "Recruiter",
+  //     description: "Sources and hires new employees.",
+  //   },
+  //   {
+  //     code: "FA",
+  //     name: "Financial Analyst",
+  //     description: "Analyzes financial data and prepares reports.",
+  //   },
+  //   {
+  //     code: "ACC",
+  //     name: "Accountant",
+  //     description: "Manages accounting records and financial statements.",
+  //   },
+  //   {
+  //     code: "PM",
+  //     name: "Product Manager",
+  //     description: "Oversees product development and strategy.",
+  //   },
+  //   {
+  //     code: "UXD",
+  //     name: "UX Designer",
+  //     description: "Designs user experiences for products.",
+  //   },
+  //   {
+  //     code: "DA",
+  //     name: "Data Analyst",
+  //     description: "Analyzes data to provide insights.",
+  //   },
+  //   {
+  //     code: "CTO",
+  //     name: "Chief Technology Officer",
+  //     description: "Leads the technology strategy and innovation.",
+  //   },
+  // ];
 
-  for (const position of jobPositions) {
-    await prisma.jobPosition.create({ data: position });
-  }
+  // for (const position of jobPositions) {
+  //   await prisma.jobPosition.create({ data: position });
+  // }
 
   console.log("Seeding completed.");
 }

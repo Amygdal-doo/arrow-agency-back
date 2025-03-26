@@ -14,12 +14,11 @@ import {
 } from "src/common/dtos/pagination.dto";
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
-import { CreateJobPositionDto } from "../dtos/requests/create-job_position.dto";
 import {
   JobCategoryPaginationResponseDto,
   JobCategoryResponseDto,
 } from "../dtos/responses/job_category.response.dto";
-import { JobPositionResponseDto } from "../dtos/responses/job_position.response.dto";
+import { CreateJobCategoryDto } from "../dtos/requests/create-jog_category.dto";
 
 @ApiTags("Job Category")
 @Controller("job-category")
@@ -31,14 +30,14 @@ export class JobCategoryController {
   @UseFilters(new HttpExceptionFilter())
   // @UseGuards(AccessTokenGuard)
   @Serialize(JobCategoryResponseDto)
-  @ApiCreatedResponse({ description: "Created", type: JobPositionResponseDto })
+  @ApiCreatedResponse({ description: "Created", type: JobCategoryResponseDto })
   // @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiOperation({
     summary: "Create Job position",
     description: "Create Job position",
   })
   async create(
-    @Body() data: CreateJobPositionDto
+    @Body() data: CreateJobCategoryDto
     // @UserLogged() loggedUserInfo: ILoggedUserInfo,
   ) {
     return this.jobCategoryService.create(data);

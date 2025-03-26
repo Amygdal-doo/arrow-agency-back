@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { JobType } from "@prisma/client";
+import {
+  ApplicationType,
+  JobExperienceLevel,
+  JobStatus,
+  JobType,
+} from "@prisma/client";
 import {
   IsBoolean,
   IsString,
@@ -28,14 +33,6 @@ export class CreateJobDto {
   })
   @IsBoolean()
   remote: boolean;
-
-  @ApiProperty({
-    example: "SE",
-    description: "The code of the job",
-  })
-  @IsString()
-  @MaxLength(10)
-  code: string;
 
   @ApiProperty({
     example: "Software Engineer",
@@ -103,12 +100,28 @@ export class CreateJobDto {
   jobCategory: string;
 
   @ApiProperty({
-    example: "12345678-1234-1234-1234-123456789012",
-    description: "The identifier of the job position",
+    example: "www.example.com",
+    description: "The link or email address for applying to the job",
   })
-  @IsUUID()
-  @IsNotEmpty()
-  jobPosition: string;
+  @IsString()
+  applicationLinkOrEmail: string;
+
+  @ApiProperty({
+    enum: ApplicationType,
+    example: ApplicationType.LINK,
+    description: "The type of application link or email",
+  })
+  @IsEnum(ApplicationType)
+  typeOfApplication: ApplicationType;
+
+  @ApiPropertyOptional({
+    enum: JobExperienceLevel,
+    example: JobExperienceLevel.JUNIOR,
+    description: "The level of experience required for the job",
+  })
+  @IsEnum(JobExperienceLevel)
+  @IsOptional()
+  experienceRequired?: JobExperienceLevel;
 
   @ApiProperty({
     example: "12345678-1234-1234-1234-123456789012",

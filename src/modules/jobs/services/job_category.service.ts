@@ -24,22 +24,12 @@ export class JobCategoryService {
     });
   }
 
-  async findCode(code: string) {
-    return this.JobCategoryModel.findUnique({
-      where: { code },
-    });
-  }
-
   async create(data: CreateJobCategoryDto) {
     // data.code = data.code.toUpperCase();
     // data.name = data.name.toUpperCase();
 
-    const [name, code] = await Promise.all([
-      this.findName(data.name),
-      this.findCode(data.code),
-    ]);
+    const name = await this.findName(data.name);
     if (name) throw new BadRequestException("Job Category name already exist");
-    if (code) throw new BadRequestException("job Category code already exist");
 
     return this.JobCategoryModel.create({ data });
   }

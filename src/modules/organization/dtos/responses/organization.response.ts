@@ -28,13 +28,6 @@ export class OrganizationResponse implements Organization {
 
   @Expose()
   @ApiProperty({
-    example: "ACME",
-    description: "The code of the organization",
-  })
-  code: string;
-
-  @Expose()
-  @ApiProperty({
     example: "About ACME INC",
     description: "The about of the organization",
   })

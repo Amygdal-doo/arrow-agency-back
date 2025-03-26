@@ -7,7 +7,10 @@ import {
 } from "@nestjs/swagger";
 import { SkillService } from "../services/skill.service";
 import { CreateSkillDto } from "../dtos/requests/create-skill.dto";
-import { skillPaginationResponseDto } from "../dtos/responses/skill.response.dto";
+import {
+  skillPaginationResponseDto,
+  SkillResponseDto,
+} from "../dtos/responses/skill.response.dto";
 import { Skill } from "@prisma/client";
 import {
   OrderType,
@@ -17,7 +20,6 @@ import {
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
 import { JobCategoryResponseDto } from "src/modules/jobs/dtos/responses/job_category.response.dto";
-import { JobPositionResponseDto } from "src/modules/jobs/dtos/responses/job_position.response.dto";
 
 @ApiTags("Skill")
 @Controller("skill")
@@ -29,7 +31,7 @@ export class SkillController {
   @UseFilters(new HttpExceptionFilter())
   // @UseGuards(AccessTokenGuard)
   @Serialize(JobCategoryResponseDto)
-  @ApiCreatedResponse({ description: "Created", type: JobPositionResponseDto })
+  @ApiCreatedResponse({ description: "Created", type: SkillResponseDto })
   // @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiOperation({
     summary: "Create Skill",

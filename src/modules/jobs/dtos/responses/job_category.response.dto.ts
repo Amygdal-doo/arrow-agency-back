@@ -18,10 +18,6 @@ export class JobCategoryResponseDto implements JobCategory {
   @Expose()
   name: string;
 
-  @ApiProperty({ example: "IT", description: "The code of the job category" })
-  @Expose()
-  code: string;
-
   @ApiPropertyOptional({
     example: "This is a job category for software engineer",
     description: "The description of the job category",
