@@ -354,7 +354,10 @@ model Organization {
   email    String  @db.VarChar(150)
   location String  @db.VarChar(100)
   verified Boolean @default(false)
-  jobs     Job[]
+
+  status JobStatus @default(DRAFT)
+
+  jobs Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
