@@ -9,7 +9,6 @@ import {
   IsString,
 } from "class-validator";
 import { SortOrder } from "../enums/order.enum";
-import { OrganizationSearchBy } from "../enums/organization.search-by.enum";
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({

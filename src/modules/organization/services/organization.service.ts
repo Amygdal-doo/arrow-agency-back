@@ -60,8 +60,7 @@ export class OrganizationService {
       throw new BadRequestException("Something went wrong with file upload");
     }
 
-    rest.name = rest.name.toUpperCase();
-    rest.code = rest.code.toUpperCase();
+    rest.name = rest.name;
 
     const name = await this.findName(rest.name);
     if (name) throw new BadRequestException("Organization name already exist");

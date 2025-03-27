@@ -15,10 +15,10 @@ import {
 export class CreateOrganizationBodyDto
   implements Prisma.OrganizationCreateInput
 {
-  @ApiProperty({ example: "ACME", description: "The code of the organization" })
-  @IsString()
-  @IsNotEmpty()
-  code: string;
+  // @ApiProperty({ example: "ACME", description: "The code of the organization" })
+  // @IsString()
+  // @IsNotEmpty()
+  // code: string;
 
   @ApiProperty({
     example: "ACME INC",
