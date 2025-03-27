@@ -6,10 +6,11 @@ import {
   PaginationQueryDto,
   SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
-import { JobStatus, Prisma } from "@prisma/client";
+import { CreatedBy, JobStatus, Prisma } from "@prisma/client";
 import { JobPaginationResponseDto } from "../dtos/responses/job.response.dto";
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
+import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
 
 @Injectable()
 export class JobsService {
@@ -33,13 +34,31 @@ export class JobsService {
   //   });
   //   return organization;
   // }
-
-  async create(data: CreateJobDto) {
+  async getJob(id: string) {
+    return this.JobModel.findUnique({
+      where: { id },
+      include: {
+        jobSkills: {
+          select: {
+            skill: true,
+          },
+        },
+        jobCategory: true,
+        organization: true,
+        user: true,
+      },
+    });
+  }
+  async create(data: CreateJobDto, loggedUserInfo?: ILoggedUserInfo) {
     const { jobCategory, jobSkills, organization, ...rest } = data;
 
     return this.JobModel.create({
       data: {
         ...rest,
+        createdBy: loggedUserInfo
+          ? CreatedBy.LOGGED_USER
+          : CreatedBy.NOT_LOGGED,
+        user: loggedUserInfo ? { connect: { id: loggedUserInfo.id } } : null,
         status: JobStatus.DRAFT,
         jobCategory: { connect: { id: jobCategory } },
         organization: { connect: { id: organization } },
@@ -52,14 +71,17 @@ export class JobsService {
 
   async jobsPaginated(
     paginationQuery: PaginationQueryDto,
-    orderType: OrderType
+    orderType: OrderType,
+    loggedUserInfo?: ILoggedUserInfo
   ): Promise<JobPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "createdAt";
     const query: Prisma.JobFindManyArgs = {
       where: {},
     };
-
+    if (!!loggedUserInfo) {
+      query.where.userId = loggedUserInfo.id;
+    }
     const { page, limit } = pageLimit(paginationQuery);
     const total = await this.JobModel.count({
       where: query.where,
@@ -95,7 +117,8 @@ export class JobsService {
   async jobSearchPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,
-    searchQueryDto: SearchQueryDto
+    searchQueryDto: SearchQueryDto,
+    loggedUserInfo?: ILoggedUserInfo
   ): Promise<JobPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "name";
@@ -108,6 +131,9 @@ export class JobsService {
         },
       },
     };
+    if (!!loggedUserInfo) {
+      query.where.userId = loggedUserInfo.id;
+    }
 
     const { page, limit } = pageLimit(paginationQuery);
     const total = await this.JobModel.count({

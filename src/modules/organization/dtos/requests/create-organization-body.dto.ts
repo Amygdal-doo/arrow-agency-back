@@ -1,5 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Prisma } from "@prisma/client";
+import {
+  ApiHideProperty,
+  ApiProperty,
+  ApiPropertyOptional,
+} from "@nestjs/swagger";
+import { $Enums, CreatedBy, Prisma } from "@prisma/client";
 import {
   IsBoolean,
   IsEmail,
@@ -63,6 +67,9 @@ export class CreateOrganizationBodyDto
   @IsString()
   @IsNotEmpty()
   location: string;
+
+  @ApiHideProperty()
+  createdBy: CreatedBy;
 
   //   @ApiPropertyOptional({
   //     example: true,

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   ApplicationType,
+  CreatedBy,
   Job,
   JobExperienceLevel,
   JobStatus,
@@ -10,6 +11,7 @@ import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { OrganizationResponse } from "src/modules/organization/dtos/responses/organization.response";
 import { JobCategoryResponseDto } from "./job_category.response.dto";
+import { UserResponseDto } from "src/modules/users/dtos/response/user-response.dto";
 
 export class JobResponseDto implements Job {
   @ApiProperty({
@@ -139,6 +141,29 @@ export class JobResponseDto implements Job {
   })
   @Expose()
   experienceRequired: JobExperienceLevel;
+
+  @ApiProperty({
+    enum: CreatedBy,
+    example: CreatedBy.NOT_LOGGED,
+    description: "The kind of user who created the job",
+  })
+  @Expose()
+  createdBy: CreatedBy;
+
+  @ApiPropertyOptional({
+    example: "12345678-1234-1234-1234-123456789012",
+    description: "The ID of the user who created the job",
+  })
+  @Expose()
+  userId: string | null;
+
+  @ApiPropertyOptional({
+    example: UserResponseDto,
+    description: "The user who created the job",
+  })
+  @Type(() => UserResponseDto)
+  @Expose()
+  user?: UserResponseDto;
 
   //   @ApiProperty({
   //     example: [JobSkillsResponseDto],

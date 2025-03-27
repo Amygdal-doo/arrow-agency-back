@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { CreatedBy, Prisma } from "@prisma/client";
 import { DatabaseService } from "src/database/database.service";
 import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
 import { SpacesDestinationPath } from "src/modules/spaces/enums/spaces-folder-name.enum";
@@ -24,6 +24,17 @@ export class OrganizationService {
 
   logger: Logger = new Logger(OrganizationService.name);
 
+  async getOrganization(id: string) {
+    const organization = await this.databaseService.organization.findUnique({
+      where: { id },
+      include: {
+        jobs: true,
+        user: true,
+      },
+    });
+    return organization;
+  }
+
   async findName(name: string) {
     const organization = await this.databaseService.organization.findUnique({
       where: { name },
@@ -33,10 +44,10 @@ export class OrganizationService {
 
   async createorganization(
     data: CreateOrganizationBodyDto,
-    // loggedUserInfo: ILoggedUserInfo,
-    image?: Express.Multer.File
+    image: Express.Multer.File | null,
+    loggedUserInfo?: ILoggedUserInfo
   ) {
-    const { file, ...rest } = data;
+    const { file, createdBy, ...rest } = data;
     let imageFile: IImageUpload | null = null;
     try {
       if (image) {
@@ -57,6 +68,10 @@ export class OrganizationService {
 
     const organization = await this.databaseService.organization.create({
       data: {
+        createdBy: loggedUserInfo
+          ? CreatedBy.LOGGED_USER
+          : CreatedBy.NOT_LOGGED,
+        user: loggedUserInfo ? { connect: { id: loggedUserInfo.id } } : null,
         ...rest,
         logo: imageFile
           ? {
@@ -83,7 +98,8 @@ export class OrganizationService {
 
   async organizationsPaginated(
     paginationQuery: PaginationQueryDto,
-    orderType: OrderType
+    orderType: OrderType,
+    loggedUserInfo?: ILoggedUserInfo
   ): Promise<OrganizationPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "createdAt";
@@ -93,6 +109,10 @@ export class OrganizationService {
         // name: { contains: paginationQuery.name, mode: 'insensitive' },
       },
     };
+
+    if (!!loggedUserInfo) {
+      query.where.userId = loggedUserInfo.id;
+    }
 
     const { page, limit } = pageLimit(paginationQuery);
     const total = await this.databaseService.organization.count({
@@ -119,7 +139,8 @@ export class OrganizationService {
   async organizationsSearchPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,
-    searchQueryDto: SearchQueryDto
+    searchQueryDto: SearchQueryDto,
+    loggedUserInfo?: ILoggedUserInfo
   ): Promise<OrganizationPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     // const orderBy = searchQueryDto.by
@@ -137,6 +158,10 @@ export class OrganizationService {
         },
       },
     };
+
+    if (!!loggedUserInfo) {
+      query.where.userId = loggedUserInfo.id;
+    }
 
     const { page, limit } = pageLimit(paginationQuery);
     const total = await this.databaseService.organization.count({

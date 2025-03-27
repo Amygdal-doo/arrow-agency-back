@@ -31,7 +31,11 @@ export class JobCategoryService {
     const name = await this.findName(data.name);
     if (name) throw new BadRequestException("Job Category name already exist");
 
-    return this.JobCategoryModel.create({ data });
+    return this.JobCategoryModel.create({
+      data: {
+        ...data,
+      },
+    });
   }
 
   async jobCategorySearchPaginated(

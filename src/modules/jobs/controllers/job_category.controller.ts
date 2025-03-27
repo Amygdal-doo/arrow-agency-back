@@ -33,8 +33,8 @@ export class JobCategoryController {
   @ApiCreatedResponse({ description: "Created", type: JobCategoryResponseDto })
   // @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiOperation({
-    summary: "Create Job position",
-    description: "Create Job position",
+    summary: "Create Job Category",
+    description: "Create Job Category",
   })
   async create(
     @Body() data: CreateJobCategoryDto
@@ -45,7 +45,7 @@ export class JobCategoryController {
 
   @Get("search")
   @ApiOperation({
-    summary: "Get Job Position paginated with search",
+    summary: "Get Job Category paginated with search",
     description: "",
   })
   // @ApiBearerAuth("Access Token")

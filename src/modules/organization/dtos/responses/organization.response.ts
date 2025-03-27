@@ -1,8 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { JobStatus, Organization } from "@prisma/client";
+import { $Enums, CreatedBy, JobStatus, Organization } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
+import { UserResponseDto } from "src/modules/users/dtos/response/user-response.dto";
 
 export class OrganizationResponse implements Organization {
   @Expose()
@@ -79,6 +80,28 @@ export class OrganizationResponse implements Organization {
   logo?: FileResponseDto;
 
   //   jobs: string[];
+
+  @Expose()
+  @ApiProperty({
+    example: CreatedBy.LOGGED_USER,
+    description: "The created by of the organization",
+  })
+  createdBy: CreatedBy;
+
+  @Expose()
+  @ApiProperty({
+    example: "12345678-1234-1234-1234-123456789012",
+    description: "The user identifier who created the organization",
+  })
+  userId: string;
+
+  @Expose()
+  @ApiPropertyOptional({
+    type: UserResponseDto,
+    description: "The user who created the organization",
+  })
+  @Type(() => UserResponseDto)
+  user?: UserResponseDto;
 
   @Expose()
   @ApiProperty({
