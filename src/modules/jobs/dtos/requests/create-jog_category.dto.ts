@@ -3,14 +3,14 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Prisma } from "@prisma/client";
 
 export class CreateJobCategoryDto implements Prisma.JobCategoryCreateInput {
-  @ApiProperty({
-    example: "IT",
-    description: "The code of the job category",
-  })
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(10)
-  code: string;
+  // @ApiProperty({
+  //   example: "IT",
+  //   description: "The code of the job category",
+  // })
+  // @IsNotEmpty()
+  // @IsString()
+  // @MaxLength(10)
+  // code: string;
 
   @ApiProperty({
     example: "INFORMATION TECHNOLOGY",
