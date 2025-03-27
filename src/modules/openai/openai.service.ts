@@ -21,7 +21,7 @@ const CHAT_INSTRUCTIONS_3 = `
 const CHAT_INSTRUCTIONS_5 =
   "I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything els youre comments or anything. use this interface as how should the json object look like: interface ICvData {firstName: string;lastName: string;email: string;phone: string;summary: string;skills: string[];experience: Array<{position: string;company: string;startDate: string;endDate?: string;description: string;}>;}";
 
-const CHAT_INSTRUCTIONS_6 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json object look like: ${ICvDatainterface}`;
+const CHAT_INSTRUCTIONS_6 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format. Return simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json response object look like: ${ICvDatainterface} - Dont give me partial object of the interface. Only return the complete object.`;
 @Injectable()
 export class OpenaiService {
   constructor(private readonly openai: OpenAI) {}
@@ -33,7 +33,7 @@ export class OpenaiService {
         { role: "system", content: CHAT_INSTRUCTIONS_6 },
         { role: "user", content: text },
       ],
-      temperature: 0.3,
+      temperature: 0.1,
     });
     return chatCompletion.choices[0].message.content;
   }
