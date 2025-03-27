@@ -42,7 +42,7 @@ enum CreatedBy {
 
 enum JobExperienceLevel {
   JUNIOR
-  Medior
+  MEDIOR
   SENIOR
 }
 
