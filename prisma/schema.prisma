@@ -21,6 +21,11 @@ datasource db {
 //   expert
 // }
 
+enum CreatedBy {
+  LOGGED_USER
+  NOT_LOGGED
+}
+
 enum JobExperienceLevel {
   JUNIOR
   Medior
@@ -59,11 +64,13 @@ model User {
   email     String @unique(map: "user_email_unique") @db.VarChar(256)
   password  String
 
-  role         Role          @default(USER)
-  refreshToken RefreshToken?
-  profile      Profile?
-  applicants   Applicant[]
-  files        File[]
+  role          Role           @default(USER)
+  refreshToken  RefreshToken?
+  profile       Profile?
+  applicants    Applicant[]
+  files         File[]
+  organizations Organization[]
+  jobs          Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -355,9 +362,13 @@ model Organization {
   location String  @db.VarChar(100)
   verified Boolean @default(false)
 
+  createdBy CreatedBy
+
   status JobStatus @default(DRAFT)
 
-  jobs Job[]
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs   Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -378,11 +389,14 @@ model Job {
   applicationLinkOrEmail String
   typeOfApplication      ApplicationType
   status                 JobStatus           @default(DRAFT)
+  createdBy              CreatedBy
 
-  jobCategoryId  String @db.Uuid
+  jobCategoryId  String  @db.Uuid
+  userId         String? @db.Uuid
   // jobPositionId  String @db.Uuid
   // jobPlatformId  String @db.Uuid
-  organizationId String @db.Uuid
+  organizationId String  @db.Uuid
+  user           User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   jobType   JobType
   jobSkills JobSkill[]
