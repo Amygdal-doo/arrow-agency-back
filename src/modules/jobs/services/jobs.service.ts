@@ -52,20 +52,25 @@ export class JobsService {
   async create(data: CreateJobDto, loggedUserInfo?: ILoggedUserInfo) {
     const { jobCategory, jobSkills, organization, ...rest } = data;
 
-    return this.JobModel.create({
-      data: {
-        ...rest,
-        createdBy: loggedUserInfo
-          ? CreatedBy.LOGGED_USER
-          : CreatedBy.NOT_LOGGED,
-        user: loggedUserInfo ? { connect: { id: loggedUserInfo.id } } : null,
-        status: JobStatus.DRAFT,
-        jobCategory: { connect: { id: jobCategory } },
-        organization: { connect: { id: organization } },
-        jobSkills: {
-          create: jobSkills.map((id) => ({ skill: { connect: { id } } })),
-        },
+    const query: Prisma.JobUncheckedCreateInput = {
+      // userId: loggedUserInfo?.id,
+      ...rest,
+      createdBy: loggedUserInfo ? CreatedBy.LOGGED_USER : CreatedBy.NOT_LOGGED,
+      status: JobStatus.DRAFT,
+      // jobCategory: { connect: { id: jobCategory } },
+      // organization: { connect: { id: organization } },
+      jobCategoryId: jobCategory,
+      organizationId: organization,
+      jobSkills: {
+        create: jobSkills.map((id) => ({ skill: { connect: { id } } })),
       },
+    };
+    if (!!loggedUserInfo) {
+      query.userId = loggedUserInfo.id;
+    }
+
+    return this.JobModel.create({
+      data: query,
     });
   }
 
