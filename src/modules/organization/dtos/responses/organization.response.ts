@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Organization } from "@prisma/client";
+import { JobStatus, Organization } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
@@ -32,6 +32,14 @@ export class OrganizationResponse implements Organization {
     description: "The about of the organization",
   })
   about: string;
+
+  @ApiProperty({
+    enum: JobStatus,
+    description: "The status of the organization",
+    example: JobStatus.DRAFT,
+  })
+  @Expose()
+  status: JobStatus;
 
   @Expose()
   @ApiProperty({

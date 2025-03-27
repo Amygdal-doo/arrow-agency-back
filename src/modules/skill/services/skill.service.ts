@@ -4,7 +4,6 @@ import { CreateSkillDto } from "../dtos/requests/create-skill.dto";
 import { skillPaginationResponseDto } from "../dtos/responses/skill.response.dto";
 import {
   OrderType,
-  OrganizationSearchQueryDto,
   PaginationQueryDto,
   SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
@@ -46,9 +45,7 @@ export class SkillService {
       where: {
         // userId,
         [orderBy]: {
-          contains: searchQueryDto.search
-            ? searchQueryDto.search.toUpperCase()
-            : "",
+          contains: searchQueryDto.search ? searchQueryDto.search : "",
           mode: "insensitive",
         },
       },

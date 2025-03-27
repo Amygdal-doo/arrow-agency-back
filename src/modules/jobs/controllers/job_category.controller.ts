@@ -10,7 +10,7 @@ import { JobCategoryService } from "../services/job_category.service";
 import {
   PaginationQueryDto,
   OrderType,
-  OrganizationSearchQueryDto,
+  SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
@@ -58,7 +58,7 @@ export class JobCategoryController {
   async jonCategorySearchPaginated(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
-    @Query() searchQueryDto: OrganizationSearchQueryDto
+    @Query() searchQueryDto: SearchQueryDto
   ) {
     return this.jobCategoryService.jobCategorySearchPaginated(
       paginationQuery,

@@ -3,7 +3,6 @@ import { DatabaseService } from "src/database/database.service";
 import { CreateJobDto } from "../dtos/requests/create-job.dto";
 import {
   OrderType,
-  OrganizationSearchQueryDto,
   PaginationQueryDto,
   SearchQueryDto,
 } from "src/common/dtos/pagination.dto";

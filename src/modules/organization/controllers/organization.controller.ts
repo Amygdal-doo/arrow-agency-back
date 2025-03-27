@@ -30,7 +30,7 @@ import { FileExtensionValidator } from "src/common/validators/file-extension-val
 import {
   PaginationQueryDto,
   OrderType,
-  OrganizationSearchQueryDto,
+  SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
 import {
@@ -120,12 +120,12 @@ export class OrganizationController {
   async organizationSearchPaginated(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
-    @Query() organizationSearchQueryDto: OrganizationSearchQueryDto
+    @Query() searchQueryDto: SearchQueryDto
   ) {
     return this.organizationService.organizationsSearchPaginated(
       paginationQuery,
       orderType,
-      organizationSearchQueryDto
+      searchQueryDto
     );
   }
 }

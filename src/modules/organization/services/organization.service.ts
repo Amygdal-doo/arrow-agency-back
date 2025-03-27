@@ -6,11 +6,10 @@ import { SpacesDestinationPath } from "src/modules/spaces/enums/spaces-folder-na
 import { IImageUpload } from "src/modules/spaces/interfaces/image-upload.interface";
 import { SpacesService } from "src/modules/spaces/spaces.service";
 import { CreateOrganizationBodyDto } from "../dtos/requests/create-organization-body.dto";
-import { url } from "inspector";
 import {
   OrderType,
-  OrganizationSearchQueryDto,
   PaginationQueryDto,
+  SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
 import { OrganizationPaginationResponseDto } from "../dtos/responses/organization.response";
 import { SortOrder } from "src/common/enums/order.enum";
@@ -120,18 +119,19 @@ export class OrganizationService {
   async organizationsSearchPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,
-    organizationSearchQueryDto: OrganizationSearchQueryDto
+    searchQueryDto: SearchQueryDto
   ): Promise<OrganizationPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
-    const orderBy = organizationSearchQueryDto.by
-      ? organizationSearchQueryDto.by
-      : "name";
+    // const orderBy = searchQueryDto.by
+    //   ? searchQueryDto.by
+    //   : "name";
+    const orderBy = "name";
     const query: Prisma.OrganizationFindManyArgs = {
       where: {
         // userId,
         [orderBy]: {
-          contains: organizationSearchQueryDto.search
-            ? organizationSearchQueryDto.search.toUpperCase()
+          contains: searchQueryDto.search
+            ? searchQueryDto.search.toUpperCase()
             : "",
           mode: "insensitive",
         },

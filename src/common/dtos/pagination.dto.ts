@@ -60,20 +60,20 @@ export class OrderType {
   type?: SortOrder;
 }
 
-export class OrganizationSearchQueryDto {
-  @ApiPropertyOptional({
-    enum: OrganizationSearchBy,
-    example: OrganizationSearchBy.CODE,
-  })
-  @IsEnum(OrganizationSearchBy)
-  @IsOptional()
-  by?: OrganizationSearchBy;
+// export class OrganizationSearchQueryDto {
+//   @ApiPropertyOptional({
+//     enum: OrganizationSearchBy,
+//     example: OrganizationSearchBy.CODE,
+//   })
+//   @IsEnum(OrganizationSearchBy)
+//   @IsOptional()
+//   by?: OrganizationSearchBy;
 
-  @ApiPropertyOptional({ example: "ACME" })
-  @IsString()
-  @IsOptional()
-  search?: string;
-}
+//   @ApiPropertyOptional({ example: "ACME" })
+//   @IsString()
+//   @IsOptional()
+//   search?: string;
+// }
 
 export class SearchQueryDto {
   @ApiPropertyOptional({ example: "NODEJS" })

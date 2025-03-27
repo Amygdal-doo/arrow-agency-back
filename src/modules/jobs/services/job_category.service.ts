@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import {
   OrderType,
-  OrganizationSearchQueryDto,
   PaginationQueryDto,
+  SearchQueryDto,
 } from "src/common/dtos/pagination.dto";
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
@@ -37,10 +37,15 @@ export class JobCategoryService {
   async jobCategorySearchPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,
-    searchQueryDto: OrganizationSearchQueryDto
+    searchQueryDto: SearchQueryDto
   ): Promise<JobCategoryPaginationResponseDto> {
+    console.log({ searchQueryDto });
+
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
-    const orderBy = searchQueryDto.by ? searchQueryDto.by : "name";
+    const orderBy = "name";
+
+    console.log({ orderIn, orderBy });
+
     const query: Prisma.JobCategoryFindManyArgs = {
       where: {
         // userId,
