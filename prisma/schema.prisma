@@ -21,6 +21,20 @@ datasource db {
 //   expert
 // }
 
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum MonriCurrency {
+  USD
+  EUR
+  BAM
+  HRK
+}
+
 enum CreatedBy {
   LOGGED_USER
   NOT_LOGGED
@@ -71,6 +85,7 @@ model User {
   files         File[]
   organizations Organization[]
   jobs          Job[]
+  payments     Payment[]     @relation("userPayments")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -379,6 +394,7 @@ model Job {
   worldwide              Boolean
   remote                 Boolean
   experienceRequired     JobExperienceLevel?
+  payment   Payment?   @relation("jobPayment")
   // code                   String          @db.VarChar(10)
   name                   String              @db.VarChar(100)
   description            String?             @db.Text
@@ -428,4 +444,21 @@ model JobSkill {
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@id([jobId, skillId])
+}
+
+model Payment {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String        @db.Uuid
+  jobId               String        @unique @db.Uuid
+  amount              Decimal       @db.Money
+  currency            MonriCurrency
+  status              PaymentStatus
+  monriTransactionId  String
+  transactionResponse Json? // Optional field to store the full Monri transaction response
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  // Relationships
+  user User @relation("userPayments", fields: [userId], references: [id])
+  job  Job  @relation("jobPayment", fields: [jobId], references: [id])
 }
