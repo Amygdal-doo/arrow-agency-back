@@ -65,26 +65,30 @@ export class OrganizationService {
     const name = await this.findName(rest.name);
     if (name) throw new BadRequestException("Organization name already exist");
 
+    const dataQuery: Prisma.OrganizationUncheckedCreateInput = {
+      createdBy: loggedUserInfo ? CreatedBy.LOGGED_USER : CreatedBy.NOT_LOGGED,
+      // user: loggedUserInfo ? { connect: { id: loggedUserInfo.id } } : null,
+      ...rest,
+      logo: imageFile
+        ? {
+            create: {
+              url: imageFile.url,
+              name: imageFile.name,
+              extension: imageFile.extension,
+              height: imageFile.height,
+              width: imageFile.width,
+              fileCreatedAt: imageFile.createdAt,
+            },
+          }
+        : undefined,
+    };
+
+    if (!!loggedUserInfo) {
+      dataQuery.userId = loggedUserInfo.id;
+    }
+
     const organization = await this.databaseService.organization.create({
-      data: {
-        createdBy: loggedUserInfo
-          ? CreatedBy.LOGGED_USER
-          : CreatedBy.NOT_LOGGED,
-        user: loggedUserInfo ? { connect: { id: loggedUserInfo.id } } : null,
-        ...rest,
-        logo: imageFile
-          ? {
-              create: {
-                url: imageFile.url,
-                name: imageFile.name,
-                extension: imageFile.extension,
-                height: imageFile.height,
-                width: imageFile.width,
-                fileCreatedAt: imageFile.createdAt,
-              },
-            }
-          : undefined,
-      },
+      data: dataQuery,
     });
 
     return organization;
