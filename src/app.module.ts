@@ -17,6 +17,7 @@ import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
 import { OrganizationModule } from "./modules/organization/organization.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { SkillModule } from './modules/skill/skill.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { SkillModule } from './modules/skill/skill.module';
     OrganizationModule,
     JobsModule,
     SkillModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],
