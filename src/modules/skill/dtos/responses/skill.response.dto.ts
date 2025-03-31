@@ -3,7 +3,7 @@ import { Skill } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 
-export class SkillResponseDto implements Skill {
+export class SkillResponseDto {
   @ApiProperty({
     example: "824950y793q5tvy4q3905v6y24378w95743w",
     description: "The id of the skill",
@@ -23,15 +23,15 @@ export class SkillResponseDto implements Skill {
     description: "The description of the skill",
   })
   @Expose()
-  description: string;
+  description?: string;
 
   @ApiProperty()
   @Expose()
-  createdAt: Date;
+  createdAt?: Date;
 
   @ApiProperty()
   @Expose()
-  updatedAt: Date;
+  updatedAt?: Date;
 }
 
 export class skillPaginationResponseDto extends PaginationResponseDto {

@@ -12,6 +12,7 @@ import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { OrganizationResponse } from "src/modules/organization/dtos/responses/organization.response";
 import { JobCategoryResponseDto } from "./job_category.response.dto";
 import { UserResponseDto } from "src/modules/users/dtos/response/user-response.dto";
+import { JobSkillsResponseDto } from "src/modules/skill/dtos/responses/job_skill.response.dto";
 
 export class JobResponseDto implements Job {
   @ApiProperty({
@@ -165,13 +166,13 @@ export class JobResponseDto implements Job {
   @Expose()
   user?: UserResponseDto;
 
-  //   @ApiProperty({
-  //     example: [JobSkillsResponseDto],
-  //     description: "The Position of the job",
-  //   })
-  //   @Expose()
-  //   @Type(() => JobSkillsResponseDto)
-  //   jobSkills: JobSkillsResponseDto[];
+  @ApiProperty({
+    example: [JobSkillsResponseDto],
+    description: "The Position of the job",
+  })
+  @Expose()
+  @Type(() => JobSkillsResponseDto)
+  jobSkills: JobSkillsResponseDto[];
 
   @ApiProperty({
     example: "2022-01-01T00:00:00.000Z",
