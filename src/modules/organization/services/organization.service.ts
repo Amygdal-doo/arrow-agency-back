@@ -30,6 +30,7 @@ export class OrganizationService {
       include: {
         jobs: true,
         user: true,
+        logo: true,
       },
     });
     return organization;
