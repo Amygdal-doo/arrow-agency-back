@@ -11,6 +11,7 @@ import { JobPaginationResponseDto } from "../dtos/responses/job.response.dto";
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
 import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
+import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 
 @Injectable()
 export class JobsService {
@@ -35,7 +36,7 @@ export class JobsService {
   //   return organization;
   // }
   async getJob(id: string) {
-    return this.JobModel.findUnique({
+    const job = await this.JobModel.findUnique({
       where: { id },
       include: {
         jobSkills: {
@@ -44,13 +45,46 @@ export class JobsService {
           },
         },
         jobCategory: true,
-        organization: true,
+        organization: {
+          include: {
+            logo: true,
+          },
+        },
         user: true,
       },
     });
+
+    // const skills = job.jobSkills.map((jobSkill) => {
+    //   return {
+    //     id: jobSkill.skill.id,
+    //     skill: jobSkill.skill.name,
+    //   };
+    // });
+    // console.log({ skills });
+    // job.skills = skills;
+    return job;
   }
   async create(data: CreateJobDto, loggedUserInfo?: ILoggedUserInfo) {
+    this.logger.log("Creating a job...");
     const { jobCategory, jobSkills, organization, ...rest } = data;
+
+    // use promise all to get jobCategory and organization and skills
+    const [category, org, skills] = await Promise.all([
+      this.databaseService.jobCategory.findUnique({
+        where: { id: jobCategory },
+      }),
+      this.databaseService.organization.findUnique({
+        where: { id: organization },
+      }),
+      this.databaseService.skill.findMany({
+        where: { id: { in: jobSkills } },
+      }),
+    ]);
+
+    if (!category) throw new NotFoundException("Job Category not found");
+    if (!org) throw new NotFoundException("Organization not found");
+    if (skills.length !== jobSkills.length)
+      throw new NotFoundException("Job Skills not found");
 
     const query: Prisma.JobUncheckedCreateInput = {
       // userId: loggedUserInfo?.id,
