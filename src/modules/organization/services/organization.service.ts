@@ -100,6 +100,20 @@ export class OrganizationService {
     return organizations;
   }
 
+  async update(id: string, data: Prisma.OrganizationUpdateInput) {
+    const result = await this.databaseService.organization.update({
+      where: { id },
+      data,
+    });
+    return result;
+  }
+
+  async delete(id: string) {
+    return this.databaseService.organization.delete({
+      where: { id },
+    });
+  }
+
   async organizationsPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,

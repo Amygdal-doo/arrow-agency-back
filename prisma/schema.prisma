@@ -21,6 +21,25 @@ datasource db {
 //   expert
 // }
 
+enum PaymentType {
+  ONE_TIME
+  SUBSCRIPTION
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum MonriCurrency {
+  USD
+  EUR
+  BAM
+  HRK
+}
+
 enum CreatedBy {
   LOGGED_USER
   NOT_LOGGED
@@ -71,6 +90,7 @@ model User {
   files         File[]
   organizations Organization[]
   jobs          Job[]
+  payments      Payment[]      @relation("userPayments")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -379,6 +399,7 @@ model Job {
   worldwide              Boolean
   remote                 Boolean
   experienceRequired     JobExperienceLevel?
+  payment                Payment?            @relation("jobPayments")
   // code                   String          @db.VarChar(10)
   name                   String              @db.VarChar(100)
   description            String?             @db.Text
@@ -428,4 +449,67 @@ model JobSkill {
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@id([jobId, skillId])
+}
+
+// model Payment {
+//   id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+//   userId              String        @db.Uuid
+//   jobId               String        @unique @db.Uuid
+//   amount              Decimal       @db.Money
+//   currency            MonriCurrency
+//   status              PaymentStatus
+//   monriTransactionId  String
+//   transactionResponse Json? // Optional field to store the full Monri transaction response
+//   createdAt           DateTime      @default(now())
+//   updatedAt           DateTime      @updatedAt
+
+//   // Relationships
+//   user User @relation("userPayments", fields: [userId], references: [id])
+//   job  Job  @relation("jobPayment", fields: [jobId], references: [id])
+// }
+
+model SubscriptionPlan {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String         @db.VarChar(100)
+  description   String?        @db.Text
+  price         Decimal        @db.Money
+  currency      MonriCurrency
+  features      Json? // Store features like job posting limits
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Subscription {
+  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId      String           @db.Uuid
+  planId              String           @db.Uuid
+  status              String // e.g., "active", "canceled", "past_due"
+  startDate           DateTime
+  nextBillingDate     DateTime?
+  monriSubscriptionId String? // Monri's subscription identifier
+  // organization        Organization  @relation(fields: [organizationId], references: [id])
+  plan                SubscriptionPlan @relation(fields: [planId], references: [id])
+  payments            Payment[]        @relation("subscriptionPayments")
+  // jobs                Job[]         @relation("jobSubscription")
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+}
+
+model Payment {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String?        @db.Uuid
+  jobId               String?       @unique @db.Uuid // Removed unique constraint, made optional
+  subscriptionId      String?       @db.Uuid // Added for subscription payments
+  paymentType         PaymentType // Distinguish between one-time and subscription
+  amount              Decimal       @db.Money
+  currency            MonriCurrency
+  status              PaymentStatus @default(PENDING)
+  monriTransactionId  Int?
+  transactionResponse Json? // Store Monri's transaction response
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  user                User?         @relation("userPayments", fields: [userId], references: [id])
+  job                 Job?          @relation("jobPayments", fields: [jobId], references: [id])
+  subscription        Subscription? @relation("subscriptionPayments", fields: [subscriptionId], references: [id])
 }
