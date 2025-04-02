@@ -35,6 +35,30 @@ export class JobsService {
   //   });
   //   return organization;
   // }
+
+  async findById(id: string) {
+    const job = await this.JobModel.findUnique({
+      where: { id },
+      include: {
+        organization: true,
+      },
+    });
+    return job;
+  }
+
+  async update(id: string, data: Prisma.JobUpdateInput) {
+    return this.JobModel.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async delete(id: string) {
+    return this.JobModel.delete({
+      where: { id },
+    });
+  }
+
   async getJob(id: string) {
     const job = await this.JobModel.findUnique({
       where: { id },
