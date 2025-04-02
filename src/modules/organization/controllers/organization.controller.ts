@@ -240,7 +240,7 @@ export class OrganizationController {
   // @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @Serialize(OrganizationResponse)
   @ApiOkResponse({ type: OrganizationResponse })
-  async getJob(@Query("id", ParseUUIDPipe) id: string) {
+  async getOrganization(@Query("id", ParseUUIDPipe) id: string) {
     return this.organizationService.getOrganization(id);
   }
 }

@@ -140,7 +140,9 @@ export class JobsService {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "createdAt";
     const query: Prisma.JobFindManyArgs = {
-      where: {},
+      where: {
+        status: JobStatus.PUBLISHED,
+      },
     };
     if (!!loggedUserInfo) {
       query.where.userId = loggedUserInfo.id;
@@ -187,6 +189,7 @@ export class JobsService {
     const orderBy = "name";
     const query: Prisma.JobFindManyArgs = {
       where: {
+        status: JobStatus.PUBLISHED,
         // userId,
         [orderBy]: {
           contains: searchQueryDto.search ? searchQueryDto.search : "",
@@ -198,6 +201,51 @@ export class JobsService {
       query.where.userId = loggedUserInfo.id;
     }
 
+    const { page, limit } = pageLimit(paginationQuery);
+    const total = await this.JobModel.count({
+      where: query.where,
+    });
+
+    const pages = Math.ceil(total / limit);
+    const startIndex = page < 1 ? 0 : (page - 1) * limit;
+
+    const results = await this.JobModel.findMany({
+      include: {
+        jobCategory: true,
+        organization: true,
+        jobSkills: {
+          include: {
+            skill: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      where: query.where,
+      skip: startIndex,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderIn,
+      },
+    });
+    return { limit, page, pages, total, results };
+  }
+
+  async jobsPaginatedAll(
+    paginationQuery: PaginationQueryDto,
+    orderType: OrderType
+    // loggedUserInfo: ILoggedUserInfo
+  ): Promise<JobPaginationResponseDto> {
+    const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
+    const orderBy = "createdAt";
+    const query: Prisma.JobFindManyArgs = {
+      where: {
+        // status: JobStatus.PUBLISHED,
+      },
+    };
     const { page, limit } = pageLimit(paginationQuery);
     const total = await this.JobModel.count({
       where: query.where,

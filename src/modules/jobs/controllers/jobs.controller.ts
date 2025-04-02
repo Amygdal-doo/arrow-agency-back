@@ -32,6 +32,9 @@ import {
 import { UserLogged } from "src/modules/auth/decorators/user.decorator";
 import { AccessTokenGuard } from "src/modules/auth/guards/access-token.guard";
 import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
+import { PermissionsGuard } from "src/modules/auth/permission-guard/permissions.guard";
+import { Roles } from "src/modules/auth/decorators/roles.decorator";
+import { Role } from "@prisma/client";
 
 @ApiTags("jobs")
 @Controller("jobs")
@@ -91,6 +94,25 @@ export class JobsController {
     @Query() orderType: OrderType
   ) {
     return this.jobsService.jobsPaginated(paginationQuery, orderType);
+  }
+
+  @Get("/all")
+  @ApiOperation({
+    summary: "Get Job paginated - Super Admin",
+    description: "JOb status published and Draft ",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @Roles(Role.SUPER_ADMIN)
+  @UseGuards(AccessTokenGuard, PermissionsGuard)
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @Serialize(JobPaginationResponseDto)
+  @ApiOkResponse({ type: [JobPaginationResponseDto] })
+  async organizationPaginatedAll(
+    @Query() paginationQuery: PaginationQueryDto,
+    @Query() orderType: OrderType
+  ) {
+    return this.jobsService.jobsPaginatedAll(paginationQuery, orderType);
   }
 
   @Get("me")
