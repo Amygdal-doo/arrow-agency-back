@@ -12,6 +12,7 @@ import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
 import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 @Injectable()
 export class JobsService {
@@ -277,5 +278,21 @@ export class JobsService {
       },
     });
     return { limit, page, pages, total, results };
+  }
+
+  // cron job
+
+  // @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_WEEK)
+  async deleteExpiredDraftJobs() {
+    this.logger.log("Deleting expired draft jobs...");
+    await this.JobModel.deleteMany({
+      where: {
+        status: JobStatus.DRAFT,
+        createdAt: {
+          lte: new Date(new Date().setDate(new Date().getDate() - 7)), // 7 days
+        },
+      },
+    });
   }
 }
