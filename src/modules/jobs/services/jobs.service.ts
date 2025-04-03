@@ -142,7 +142,7 @@ export class JobsService {
     const orderBy = "createdAt";
     const query: Prisma.JobFindManyArgs = {
       where: {
-        status: JobStatus.PUBLISHED,
+        // status: JobStatus.PUBLISHED, // need to return
       },
     };
     if (!!loggedUserInfo) {
@@ -190,7 +190,7 @@ export class JobsService {
     const orderBy = "name";
     const query: Prisma.JobFindManyArgs = {
       where: {
-        status: JobStatus.PUBLISHED,
+        // status: JobStatus.PUBLISHED, // need to return
         // userId,
         [orderBy]: {
           contains: searchQueryDto.search ? searchQueryDto.search : "",
