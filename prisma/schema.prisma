@@ -21,6 +21,20 @@ datasource db {
 //   expert
 // }
 
+enum SUBSCRIPTION_PERIOD {
+  day
+  week
+  month
+  half_year
+  year
+}
+//approved, invalid-request or error
+enum SUBSCRIPTION_STATUS {
+  approved
+  invalid_request
+  error
+}
+
 enum PaymentType {
   ONE_TIME
   SUBSCRIPTION
@@ -30,6 +44,7 @@ enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
+  // CANCELLED
   REFUNDED
 }
 
@@ -470,14 +485,19 @@ model JobSkill {
 
 model SubscriptionPlan {
   id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String         @db.VarChar(100)
-  description   String?        @db.Text
-  price         Decimal        @db.Money
+  name          String         @unique @db.VarChar(255)
+  description   String         @db.Text
+  price         Int // in minor units
   currency      MonriCurrency
   features      Json? // Store features like job posting limits
   subscriptions Subscription[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+
+  monriPlanId Int
+  period      SUBSCRIPTION_PERIOD @default(month)
+  status      SUBSCRIPTION_STATUS
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
@@ -498,7 +518,7 @@ model Subscription {
 
 model Payment {
   id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId              String?        @db.Uuid
+  userId              String?       @db.Uuid
   jobId               String?       @unique @db.Uuid // Removed unique constraint, made optional
   subscriptionId      String?       @db.Uuid // Added for subscription payments
   paymentType         PaymentType // Distinguish between one-time and subscription
