@@ -81,6 +81,9 @@ export class PaymentController {
   // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @HttpCode(200)
   async transaction(@Body() body: any) {
+    if (!body) throw new BadRequestException("Body is empty");
+    if (!body.transaction_response)
+      throw new BadRequestException("Body is empty");
     console.log("🚀 ~ PaymentController ~ initializeTransaction ~ body:", body);
     const parsed = JSON.parse(body.transaction_response);
 
