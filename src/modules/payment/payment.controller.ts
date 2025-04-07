@@ -109,7 +109,7 @@ export class PaymentController {
     return this.paymentService.payByLink(initializePaymentDto);
   }
 
-  @Post("callback")
+  @Post("callback/v2")
   @ApiOperation({
     summary: "Payment callback",
     description: "Payment callback",
