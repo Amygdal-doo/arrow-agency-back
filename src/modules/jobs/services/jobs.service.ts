@@ -47,15 +47,21 @@ export class JobsService {
     return job;
   }
 
-  async update(id: string, data: Prisma.JobUpdateInput) {
-    return this.JobModel.update({
+  async update(
+    id: string,
+    data: Prisma.JobUpdateInput,
+    tx?: Prisma.TransactionClient
+  ) {
+    const prisma = tx || this.databaseService;
+    return prisma.job.update({
       where: { id },
       data,
     });
   }
 
-  async delete(id: string) {
-    return this.JobModel.delete({
+  async delete(id: string, tx?: Prisma.TransactionClient) {
+    const prisma = tx || this.databaseService;
+    return prisma.job.delete({
       where: { id },
     });
   }
