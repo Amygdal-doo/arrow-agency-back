@@ -5,9 +5,11 @@ import { SwaggerModule } from "@nestjs/swagger";
 import { configSwagger } from "./common/config";
 import { ConfigService } from "@nestjs/config";
 import { ValidationPipe } from "@nestjs/common";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { resolve } from "path";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Use helmet for security
   app.use(helmet());
@@ -32,6 +34,10 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const PORT = configService.get("PORT");
+
+  app.useStaticAssets(resolve("./public"));
+  app.setBaseViewsDir(resolve("./public/views"));
+  app.setViewEngine("hbs");
 
   await app.listen(PORT);
 }
