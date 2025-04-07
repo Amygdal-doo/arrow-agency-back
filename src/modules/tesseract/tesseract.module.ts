@@ -4,7 +4,8 @@ import { TesseractService } from "./tesseract.service";
 import { OpenaiModule } from "../openai/openai.module";
 
 @Module({
-  controllers: [TesseractController, OpenaiModule],
+  imports: [OpenaiModule],
+  controllers: [TesseractController],
   providers: [TesseractService],
   exports: [TesseractService],
 })

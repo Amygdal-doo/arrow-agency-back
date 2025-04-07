@@ -6,6 +6,7 @@ import {
   Injectable,
   Logger,
 } from "@nestjs/common";
+import axios from "axios";
 import { ConfigService } from "@nestjs/config";
 import {
   JobStatus,
@@ -17,7 +18,10 @@ import {
 } from "@prisma/client";
 import { calculateDigest } from "src/common/helper/digest.helper";
 import { toCents } from "src/common/helper/to-cents.helper";
-import { IDigest } from "src/common/interfaces/digest.interface";
+import {
+  IDigest,
+  IDigestPayByLink,
+} from "src/common/interfaces/digest.interface";
 import { DatabaseService } from "src/database/database.service";
 import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
 import { InitializePaymentDto } from "./dtos/requests/initialize-payment.dto";
@@ -26,6 +30,13 @@ import { JobsService } from "../jobs/services/jobs.service";
 import { OrganizationService } from "../organization/services/organization.service";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 import { MonriTransactionDto } from "./dtos/requests/transaction.dto";
+import { PayByLinkResponseDto } from "./dtos/response/pay-by-link.response.dto";
+import { IPayByLinkArgs } from "./interfaces/create_payment_args.interface";
+import { TransactionTypeEnum } from "./enum/transaction_type.enum";
+import { calculateDigestPayByLink } from "src/common/helper/digest_pay_by_link.helper";
+import { PaymentCallbackDto } from "./dtos/requests/callback-payment.dto";
+import { PaymentCallbackResponseDto } from "./dtos/response/payment_callback.response.dto";
+import { PaymentFailedException } from "src/common/exceptions/errors/payment/payment_failed.exception";
 
 @Injectable()
 export class PaymentService {
@@ -46,12 +57,25 @@ export class PaymentService {
     return calculateDigest(key, transactionData);
   }
 
-  async findById(id: string) {
-    return this.paymentModel.findUnique({ where: { id } });
+  digestPayByLink(transactionData: IDigestPayByLink) {
+    return calculateDigestPayByLink(transactionData);
   }
 
-  async update(id: string, data: Prisma.PaymentUpdateInput) {
-    const result = await this.paymentModel.update({
+  async findById(id: string, tx?: Prisma.TransactionClient) {
+    const prisma = tx || this.databaseService;
+    return prisma.payment.findUnique({
+      where: { id },
+      include: { job: true, user: true },
+    });
+  }
+
+  async update(
+    id: string,
+    data: Prisma.PaymentUpdateInput,
+    tx?: Prisma.TransactionClient
+  ) {
+    const prisma = tx || this.databaseService;
+    const result = await prisma.payment.update({
       where: { id },
       data,
     });
@@ -82,6 +106,27 @@ export class PaymentService {
     return result;
   }
 
+  async createV2(args: IPayByLinkArgs) {
+    const { jobId, amount, currency, loggedUserInfo, tx } = args;
+    const prisma = tx || this.databaseService;
+    const data: Prisma.PaymentCreateInput = {
+      job: { connect: { id: jobId } },
+      // jobId,
+      amount,
+      currency,
+      paymentType: PaymentType.ONE_TIME,
+      status: PaymentStatus.PENDING,
+    };
+    if (loggedUserInfo) {
+      data.user = { connect: { id: loggedUserInfo.id } };
+      // data.userId = loggedUserInfo.id;
+    }
+    const result = await prisma.payment.create({
+      data,
+    });
+    return result;
+  }
+
   async initializeTransaction(
     initializePaymentDto: InitializePaymentDto,
     loggedUserInfoDto?: ILoggedUserInfo
@@ -104,7 +149,8 @@ export class PaymentService {
     if (payment) throw new BadRequestException("Job already has payment");
 
     try {
-      const { jobId, currency } = initializePaymentDto;
+      const { jobId } = initializePaymentDto;
+      const currency = MonriCurrency.USD;
       const price = "6.00";
       const payment = await this.create(
         jobId,
@@ -357,5 +403,191 @@ export class PaymentService {
       console.error("Error processing Monri callback:", error);
       throw new BadRequestException("Error processing transaction");
     }
+  }
+
+  // pay - by - link
+
+  async payByLink(
+    initializePaymentDto: InitializePaymentDto,
+    loggedUserInfoDto?: ILoggedUserInfo
+  ): Promise<PayByLinkResponseDto> {
+    // const { bundleId } = body;
+    const fullpath = "/v2/terminal-entry/create-or-update";
+    const monriUrl = `${this.configService.get("MONRI_URL")}${fullpath}`;
+    const authenticityToken = this.configService.get(
+      "MONRI_AUTHENTICITY_TOKEN"
+    );
+    const merchantKey = this.configService.get("MONRI_KEY");
+    const url = this.configService.get("BACKEND_URL");
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+
+    const job = await this.jobService.findById(initializePaymentDto.jobId);
+
+    if (!job) throw new NotFoundException("Job not found");
+    if (job.status == JobStatus.PUBLISHED)
+      throw new BadRequestException("Job already published");
+    if (!!loggedUserInfoDto) {
+      if (job.userId !== loggedUserInfoDto.id)
+        throw new ForbiddenException(
+          "User not allowed, Cant initialize payment"
+        );
+    }
+
+    const payment = await this.paymentModel.findFirst({
+      where: { jobId: initializePaymentDto.jobId },
+    });
+    if (payment) throw new BadRequestException("Job already has payment");
+
+    return this.databaseService
+      .$transaction(async (tx) => {
+        const currency = MonriCurrency.USD;
+        const price = "6.00";
+        const amountInCents = toCents(Number(price));
+        const payment = await this.createV2({
+          jobId: initializePaymentDto.jobId,
+          amount: price,
+          currency,
+          loggedUserInfo: loggedUserInfoDto ? loggedUserInfoDto : undefined,
+          tx,
+        });
+
+        return {
+          payment,
+          amountInCents,
+          currency,
+          paymentDetail: {
+            ch_address: "",
+            ch_city: "",
+            ch_zip: "",
+            ch_country: "",
+            ch_email: loggedUserInfoDto?.email || "",
+            ch_phone: "",
+            ch_full_name: "",
+            language: "",
+          },
+        };
+      })
+      .then(
+        async ({
+          payment,
+          amountInCents,
+          currency,
+          paymentDetail,
+        }): Promise<PayByLinkResponseDto> => {
+          // check if logged in user has a pan token
+          // const user = await this.userService.findById(payment.userId);
+          // if (user.pan_tokens.length === 0) {
+          //   throw new BadRequestException(
+          //     "User has no pan tokens, Please add a pan token"
+          //   );
+          // }
+          // External API Call (Monri) - done AFTER the transaction is committed
+          const requestPayload = {
+            transaction_type: TransactionTypeEnum.PURCHASE,
+            amount: amountInCents,
+            currency,
+            number_of_installments: "",
+            order_number: payment.id,
+            order_info: `Ordered Job Post with ${payment.jobId} ID and with ammount in cents ${amountInCents} ${currency}`,
+            ...paymentDetail,
+            comment: "",
+            tokenize_pan_offered: true,
+            // supported_payment_methods: [...user.pan_tokens, 'card'],
+            supported_payment_methods: ["card"],
+            success_url_override: `${url}/api/payment/success`,
+            cancel_url_override: `${url}/api/payment/cancel`,
+            callback_url_override: `${url}/api/payment/callback`,
+          };
+
+          const bodyString = JSON.stringify(requestPayload);
+          const digestData: IDigestPayByLink = {
+            fullpath,
+            body: bodyString,
+            merchant_key: merchantKey,
+            timestamp,
+            authenticity_token: authenticityToken,
+          };
+
+          const digest = this.digestPayByLink(digestData);
+          const authorizationHeader = `WP3-v2.1 ${authenticityToken} ${timestamp} ${digest}`;
+
+          const headers = {
+            Authorization: authorizationHeader,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          };
+
+          const response = await axios.post(monriUrl, requestPayload, {
+            headers,
+          });
+          const transactionResponse = JSON.parse(JSON.stringify(response.data));
+          await this.update(payment.id, {
+            monriTransactionId: response.data.id,
+            transactionResponse,
+          });
+
+          return {
+            paymentUrl: response.data.payment_url,
+          };
+        }
+      );
+  }
+
+  async paymentCallback(
+    body: PaymentCallbackDto
+  ): Promise<PaymentCallbackResponseDto> {
+    return this.databaseService
+      .$transaction(async (tx) => {
+        const order = await this.findById(body.order_number, tx);
+        if (!order) throw new PaymentFailedException();
+        const transactionResponse = JSON.parse(JSON.stringify(body));
+
+        if (body.status === "approved") {
+          // Update order status
+          await this.update(
+            order.id,
+            { status: PaymentStatus.COMPLETED, transactionResponse },
+            tx
+          );
+          console.log(body);
+
+          // Update job status
+          await this.jobService.update(
+            order.jobId,
+            { status: JobStatus.PUBLISHED },
+            tx
+          );
+
+          // if (!!body.pan_token) {
+          //   // Fetch user and check if pan_token exists
+          //   const user = await this.userService.findById(order.userId, tx);
+          //   if (!user.pan_tokens?.includes(body.pan_token)) {
+          //     await this.userService.updateUserById(
+          //       order.userId,
+          //       { pan_tokens: { push: body.pan_token } },
+          //       tx
+          //     );
+          //   }
+          // }
+
+          return { message: "Payment Completed" };
+        }
+
+        // If payment failed, set order status to FAILED
+        await this.update(
+          order.id,
+          { status: PaymentStatus.FAILED, transactionResponse },
+          tx
+        );
+
+        // delete job
+        await this.jobService.delete(order.jobId, tx);
+
+        throw new PaymentFailedException();
+      })
+      .catch((error) => {
+        console.error("🚀 ~ PaymentService ~ paymentCallback ~ Error:", error);
+        throw new PaymentFailedException();
+      });
   }
 }

@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { PaymentService } from "./payment.service";
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
@@ -30,6 +31,9 @@ import { paymentCanceledSwagger } from "./swagger_docs/ok_response/payment_cance
 import { paymentSuccessSwagger } from "./swagger_docs/ok_response/payment_successful.swagger";
 import { MonriTransactionDto } from "./dtos/requests/transaction.dto";
 import { plainToInstance } from "class-transformer";
+import { PayByLinkResponseDto } from "./dtos/response/pay-by-link.response.dto";
+import { PaymentCallbackResponseDto } from "./dtos/response/payment_callback.response.dto";
+import { PaymentCallbackDto } from "./dtos/requests/callback-payment.dto";
 
 @ApiTags("Payment")
 @Controller("payment")
@@ -66,6 +70,29 @@ export class PaymentController {
   @HttpCode(200)
   async initializeNotLogged(@Body() body: InitializePaymentDto) {
     return this.paymentService.initializeTransaction(body);
+  }
+
+  @Post("pay-by-link")
+  // @Version('2')
+  @ApiOperation({
+    summary: "Payment Intent initialization",
+    description: "Payment Intent initialization",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  @Serialize(PayByLinkResponseDto)
+  @ApiOkResponse()
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @HttpCode(200)
+  async payByLinkV2(
+    @UserLogged() loggedUserInfoDto: ILoggedUserInfo,
+    @Body() initializePaymentDto: InitializePaymentDto
+  ) {
+    return this.paymentService.payByLink(
+      initializePaymentDto,
+      loggedUserInfoDto
+    );
   }
 
   @Post("callback")
@@ -171,5 +198,19 @@ export class PaymentController {
       order_id: query.order_number,
       status: "cancelled", // should be dynamic
     });
+  }
+
+  @Post("callback")
+  @ApiOperation({
+    summary: "Payment Callback",
+    description:
+      "Endpoint that handles payment callback after paymnent finishes",
+  })
+  @UseFilters(new HttpExceptionFilter())
+  @ApiBadRequestResponse({ description: "Bad Request" })
+  @ApiOkResponse({ type: PaymentCallbackResponseDto })
+  @HttpCode(HttpStatus.OK)
+  async callbackV2(@Body() body: PaymentCallbackDto) {
+    return this.paymentService.paymentCallback(body);
   }
 }

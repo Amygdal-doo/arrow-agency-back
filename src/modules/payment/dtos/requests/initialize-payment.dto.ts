@@ -16,11 +16,11 @@ export class InitializePaymentDto {
   @IsString()
   jobId: string;
 
-  @ApiProperty({
-    description: "Currency",
-    example: MonriCurrency.USD,
-    enum: MonriCurrency,
-  })
-  @IsEnum(MonriCurrency)
-  currency: MonriCurrency;
+  // @ApiProperty({
+  //   description: "Currency",
+  //   example: MonriCurrency.USD,
+  //   enum: MonriCurrency,
+  // })
+  // @IsEnum(MonriCurrency)
+  // currency: MonriCurrency;
 }
