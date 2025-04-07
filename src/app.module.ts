@@ -16,9 +16,10 @@ import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
 import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
 import { OrganizationModule } from "./modules/organization/organization.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
-import { SkillModule } from './modules/skill/skill.module';
-import { PaymentModule } from './modules/payment/payment.module';
-import { MonriModule } from './modules/monri/monri.module';
+import { SkillModule } from "./modules/skill/skill.module";
+import { MonriModule } from "./modules/monri/monri.module";
+import { PaymentModule } from "./modules/payment/payment.module";
+import { TesseractModule } from "./modules/tesseract/tesseract.module";
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { MonriModule } from './modules/monri/monri.module';
     SkillModule,
     PaymentModule,
     MonriModule,
+    TesseractModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],

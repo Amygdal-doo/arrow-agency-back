@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Applicant } from "@prisma/client";
-import { JsonValue } from "@prisma/client/runtime/library";
 import { Expose, Type } from "class-transformer";
 import { PaginationResponseDto } from "src/common/dtos/pagination.dto";
 import { CvResponseDto } from "src/modules/cv/dtos/responses/cv.response.dto";

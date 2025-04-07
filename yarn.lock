@@ -2695,6 +2695,13 @@
     "@types/methods" "^1.1.4"
     "@types/superagent" "^8.1.0"
 
+"@types/tesseract.js@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/tesseract.js/-/tesseract.js-2.0.0.tgz#f5a6e44ee67460f300164dd0e68c29e15b9bb89c"
+  integrity sha512-t0uNy5L9Ynp/O/fu0+75/ot7lWZZRlwsVwaPQOeYud/V6a0B/JjfYvwnrA4TV6+R9xc1ioRLukqjhI8Spy5diw==
+  dependencies:
+    tesseract.js "*"
+
 "@types/validator@^13.11.8":
   version "13.12.2"
   resolved "https://registry.npmjs.org/@types/validator/-/validator-13.12.2.tgz"
@@ -3265,6 +3272,11 @@ bl@^4.1.0:
     buffer "^5.5.0"
     inherits "^2.0.4"
     readable-stream "^3.4.0"
+
+bmp-js@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/bmp-js/-/bmp-js-0.1.0.tgz#e05a63f796a6c1ff25f4771ec7adadc148c07233"
+  integrity sha512-vHdS19CnY3hwiNdkaqk93DvjVLfbEcI8mys4UjuWrlX1haDmroo8o4xCzh4wD6DGV6HxRCyauwhHRqMTfERtjw==
 
 body-parser@^2.0.1:
   version "2.1.0"
@@ -4400,6 +4412,11 @@ follow-redirects@^1.15.6:
   resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.9.tgz"
   integrity sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==
 
+foreachasync@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/foreachasync/-/foreachasync-3.0.0.tgz#5502987dc8714be3392097f32e0071c9dee07cf6"
+  integrity sha512-J+ler7Ta54FwwNcx6wQRDhTIbNeyDcARMkOcguEqnEdtm0jKvN3Li3PDAb2Du3ubJYEWfYL83XMROXdsXAXycw==
+
 foreground-child@^3.1.0:
   version "3.3.0"
   resolved "https://registry.npmjs.org/foreground-child/-/foreground-child-3.3.0.tgz"
@@ -4641,6 +4658,18 @@ handlebars@*, handlebars@^4.7.8:
   optionalDependencies:
     uglify-js "^3.1.4"
 
+handlebars@4.7.7:
+  version "4.7.7"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
+  integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
+  dependencies:
+    minimist "^1.2.5"
+    neo-async "^2.6.0"
+    source-map "^0.6.1"
+    wordwrap "^1.0.0"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
 has-flag@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz"
@@ -4662,6 +4691,14 @@ hasown@^2.0.2:
   integrity sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==
   dependencies:
     function-bind "^1.1.2"
+
+hbs@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/hbs/-/hbs-4.2.0.tgz#10e40dcc24d5be7342df9636316896617542a32b"
+  integrity sha512-dQwHnrfWlTk5PvG9+a45GYpg0VpX47ryKF8dULVd6DtwOE6TEcYQXQ5QM6nyOx/h7v3bvEQbdn19EDAcfUAgZg==
+  dependencies:
+    handlebars "4.7.7"
+    walk "2.3.15"
 
 helmet@^8.0.0:
   version "8.0.0"
@@ -4737,6 +4774,11 @@ iconv-lite@^0.5.2:
   integrity sha512-kERHXvpSaB4aU3eANwidg79K8FlrN77m8G9V+0vOR3HYaRifrlwMEpT7ZBJqLSEIHnEgJTHcWK82wwLwwKwtag==
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
+
+idb-keyval@^6.2.0:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/idb-keyval/-/idb-keyval-6.2.1.tgz#94516d625346d16f56f3b33855da11bfded2db33"
+  integrity sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==
 
 ieee754@^1.1.13:
   version "1.2.1"
@@ -4878,6 +4920,11 @@ is-unicode-supported@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/is-unicode-supported/-/is-unicode-supported-0.1.0.tgz"
   integrity sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==
+
+is-url@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/is-url/-/is-url-1.2.4.tgz#04a4df46d28c4cff3d73d01ff06abeb318a1aa52"
+  integrity sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==
 
 isarray@~1.0.0:
   version "1.0.0"
@@ -5780,7 +5827,7 @@ negotiator@^1.0.0:
   resolved "https://registry.npmjs.org/negotiator/-/negotiator-1.0.0.tgz"
   integrity sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==
 
-neo-async@^2.6.2:
+neo-async@^2.6.0, neo-async@^2.6.2:
   version "2.6.2"
   resolved "https://registry.npmjs.org/neo-async/-/neo-async-2.6.2.tgz"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
@@ -5807,7 +5854,7 @@ node-emoji@1.11.0:
   dependencies:
     lodash "^4.17.21"
 
-node-fetch@^2.6.7:
+node-fetch@^2.6.7, node-fetch@^2.6.9:
   version "2.7.0"
   resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.7.0.tgz"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
@@ -5879,6 +5926,11 @@ openai@^4.86.2:
     form-data-encoder "1.7.2"
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
+
+opencollective-postinstall@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/opencollective-postinstall/-/opencollective-postinstall-2.0.3.tgz#7a0fff978f6dbfa4d006238fbac98ed4198c3259"
+  integrity sha512-8AV/sCtuzUeTo8gQK5qDZzARrulB3egtLzFgteqB2tcT4Mw7B8Kt7JcDHmltjz6FOAHsvTevk70gZEbhM4ZS9Q==
 
 optionator@^0.9.3:
   version "0.9.4"
@@ -6324,6 +6376,11 @@ reflect-metadata@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npmjs.org/reflect-metadata/-/reflect-metadata-0.2.2.tgz"
   integrity sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==
+
+regenerator-runtime@^0.13.3:
+  version "0.13.11"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz#f6dca3e7ceec20590d07ada785636a90cdca17f9"
+  integrity sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==
 
 repeat-string@^1.6.1:
   version "1.6.1"
@@ -6897,6 +6954,26 @@ terser@^5.31.1:
     commander "^2.20.0"
     source-map-support "~0.5.20"
 
+tesseract.js-core@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/tesseract.js-core/-/tesseract.js-core-6.0.0.tgz#6f25da94f70f8e8f02aff47a43be61d49e6f67c3"
+  integrity sha512-1Qncm/9oKM7xgrQXZXNB+NRh19qiXGhxlrR8EwFbK5SaUbPZnS5OMtP/ghtqfd23hsr1ZvZbZjeuAGcMxd/ooA==
+
+tesseract.js@*, tesseract.js@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/tesseract.js/-/tesseract.js-6.0.0.tgz#62ff7fffc8833b5810430a4067785e49d5ca8e7f"
+  integrity sha512-tqYCod1HwJzkeZw1l6XWx+ly2hhisGcBtak9MArhYwDAxL0NgeVhLJcUjqPxZMQtpgtVUzWcpZPryi+hnaQGVw==
+  dependencies:
+    bmp-js "^0.1.0"
+    idb-keyval "^6.2.0"
+    is-url "^1.2.4"
+    node-fetch "^2.6.9"
+    opencollective-postinstall "^2.0.3"
+    regenerator-runtime "^0.13.3"
+    tesseract.js-core "^6.0.0"
+    wasm-feature-detect "^1.2.11"
+    zlibjs "^0.3.1"
+
 test-exclude@^6.0.0:
   version "6.0.0"
   resolved "https://registry.npmjs.org/test-exclude/-/test-exclude-6.0.0.tgz"
@@ -7161,12 +7238,24 @@ vary@^1, vary@~1.1.2:
   resolved "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
+walk@2.3.15:
+  version "2.3.15"
+  resolved "https://registry.yarnpkg.com/walk/-/walk-2.3.15.tgz#1b4611e959d656426bc521e2da5db3acecae2424"
+  integrity sha512-4eRTBZljBfIISK1Vnt69Gvr2w/wc3U6Vtrw7qiN5iqYJPH7LElcYh/iU4XWhdCy2dZqv1ToMyYlybDylfG/5Vg==
+  dependencies:
+    foreachasync "^3.0.0"
+
 walker@^1.0.8:
   version "1.0.8"
   resolved "https://registry.npmjs.org/walker/-/walker-1.0.8.tgz"
   integrity sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==
   dependencies:
     makeerror "1.0.12"
+
+wasm-feature-detect@^1.2.11:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/wasm-feature-detect/-/wasm-feature-detect-1.8.0.tgz#4e9f55b0a64d801f372fbb0324ed11ad3abd0c78"
+  integrity sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==
 
 watchpack@^2.4.1:
   version "2.4.2"
@@ -7366,6 +7455,11 @@ yoctocolors-cjs@^2.1.2:
   version "2.1.2"
   resolved "https://registry.npmjs.org/yoctocolors-cjs/-/yoctocolors-cjs-2.1.2.tgz"
   integrity sha512-cYVsTjKl8b+FrnidjibDWskAv7UKOfcwaVZdp/it9n1s9fU3IkgDbhdIRKCW4JDsAlECJY0ytoVPT3sK6kideA==
+
+zlibjs@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/zlibjs/-/zlibjs-0.3.1.tgz#50197edb28a1c42ca659cc8b4e6a9ddd6d444554"
+  integrity sha512-+J9RrgTKOmlxFSDHo0pI1xM6BLVUv+o0ZT9ANtCxGkjIVCCUdx9alUF8Gm+dGLKbkkkidWIHFDZHDMpfITt4+w==
 
 zod@^3.24.1:
   version "3.24.2"

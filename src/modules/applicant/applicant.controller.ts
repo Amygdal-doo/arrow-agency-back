@@ -48,11 +48,15 @@ import {
 import { sanitizeFilename } from "src/common/helper/sanitize-filename-gen.helper";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 import { NotFoundDto } from "src/common/dtos/not-found.dto";
+import { TesseractService } from "../tesseract/tesseract.service";
 
 @ApiTags("Applicant")
 @Controller("applicant")
 export class ApplicantController {
-  constructor(private readonly applicantService: ApplicantService) {}
+  constructor(
+    private readonly applicantService: ApplicantService,
+    private readonly tesseractService: TesseractService
+  ) {}
 
   @Get()
   @ApiOperation({
