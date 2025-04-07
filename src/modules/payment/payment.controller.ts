@@ -85,7 +85,7 @@ export class PaymentController {
   @ApiOkResponse()
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @HttpCode(200)
-  async payByLinkV2(
+  async payByLink(
     @UserLogged() loggedUserInfoDto: ILoggedUserInfo,
     @Body() initializePaymentDto: InitializePaymentDto
   ) {
@@ -93,6 +93,20 @@ export class PaymentController {
       initializePaymentDto,
       loggedUserInfoDto
     );
+  }
+
+  @Post("pay-by-link/not-logged")
+  // @Version('2')
+  @ApiOperation({
+    summary: "Payment Intent initialization - Not logged",
+    description: "Payment Intent initialization",
+  })
+  @UseFilters(new HttpExceptionFilter())
+  @Serialize(PayByLinkResponseDto)
+  @ApiOkResponse()
+  @HttpCode(200)
+  async payByLinkNotLogged(@Body() initializePaymentDto: InitializePaymentDto) {
+    return this.paymentService.payByLink(initializePaymentDto);
   }
 
   @Post("callback")
