@@ -16,8 +16,9 @@ import { PuppeteerModule } from "./modules/puppeteer/puppeteer.module";
 import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
 import { OrganizationModule } from "./modules/organization/organization.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
-import { SkillModule } from './modules/skill/skill.module';
-import { PaymentModule } from './modules/payment/payment.module';
+import { SkillModule } from "./modules/skill/skill.module";
+import { PaymentModule } from "./modules/payment/payment.module";
+import { TesseractModule } from './modules/tesseract/tesseract.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     JobsModule,
     SkillModule,
     PaymentModule,
+    TesseractModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],

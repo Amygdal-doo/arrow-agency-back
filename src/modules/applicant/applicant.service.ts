@@ -17,13 +17,15 @@ import {
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
 import { checkFileExists } from "src/common/helper/file-exist.helper";
+import { TesseractService } from "../tesseract/tesseract.service";
 
 @Injectable()
 export class ApplicantService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly pdfService: PdfService,
-    private readonly spacesService: SpacesService
+    private readonly spacesService: SpacesService,
+    private readonly tesseractService: TesseractService
   ) {}
 
   // DB Queries
@@ -285,7 +287,10 @@ export class ApplicantService {
     const exists = await checkFileExists(templateId);
     if (!exists) throw new BadRequestException("Template not found");
 
-    const pdfData = await this.pdfService.savePdfToJson(file);
+    let pdfData = await this.pdfService.savePdfFileToJson(file);
+    if (!pdfData) {
+      pdfData = await this.tesseractService.savePdfImageToJson(file);
+    }
 
     const image = await this.databaseService.file.findUnique({
       where: {

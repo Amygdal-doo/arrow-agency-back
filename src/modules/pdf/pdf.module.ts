@@ -2,8 +2,8 @@ import { Module } from "@nestjs/common";
 import { PdfService } from "./pdf.service";
 import { PdfController } from "./pdf.controller";
 import { OpenaiModule } from "../openai/openai.module";
-import { ApplicantModule } from "../applicant/applicant.module";
 import { PuppeteerModule } from "../puppeteer/puppeteer.module";
+import { TesseractModule } from "../tesseract/tesseract.module";
 
 @Module({
   imports: [OpenaiModule, PuppeteerModule],
