@@ -56,11 +56,12 @@ export class PdfService {
       });
     });
   }
-  async savePdfToJson(file: Express.Multer.File) {
+  async savePdfFileToJson(file: Express.Multer.File) {
     // return { message: 'File uploaded successfully' };
     const pdfText = await this.getPdfText(file.buffer);
+    this.logger.log("Pdf data extracted succesfully...");
     const jsonObject = await this.openaiService.createJsonObject(pdfText);
-    this.logger.log("Ai created json succesfully");
+    this.logger.log("Ai created json succesfully...");
     console.log(jsonObject);
     let object: ICvData;
     try {

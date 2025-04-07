@@ -59,4 +59,26 @@ export class PuppeteerService {
       throw new InternalServerErrorException("Error creating PDF");
     }
   }
+
+  async convertPdfToImage(pdfBuffer: Buffer): Promise<Buffer> {
+    await this.initializeBrowser();
+    let page;
+    try {
+      page = await this.browser.newPage();
+
+      // Load PDF from buffer
+      const pdfDataUrl = `data:application/pdf;base64,${pdfBuffer.toString("base64")}`;
+      await page.goto(pdfDataUrl);
+
+      // Take screenshot of the first page
+      const imageBuffer = await page.screenshot({
+        type: "png",
+        fullPage: true,
+      });
+
+      return imageBuffer as Buffer;
+    } finally {
+      await this.browser.close();
+    }
+  }
 }
