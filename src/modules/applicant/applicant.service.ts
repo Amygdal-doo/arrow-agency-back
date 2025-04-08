@@ -287,9 +287,11 @@ export class ApplicantService {
     const exists = await checkFileExists(templateId);
     if (!exists) throw new BadRequestException("Template not found");
 
-    let pdfData = await this.pdfService.savePdfFileToJson(file);
+    // let pdfData = await this.pdfService.savePdfFileToJson(file);
+    let pdfData = await this.pdfService.savePdfFileToJsonDivided(file);
     if (!pdfData) {
-      pdfData = await this.tesseractService.savePdfImageToJson(file);
+      // pdfData = await this.tesseractService.savePdfImageToJson(file);
+      pdfData = await this.tesseractService.savePdfImageToJsonDivided(file);
     }
 
     const image = await this.databaseService.file.findUnique({

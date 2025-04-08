@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { createWorker } from "tesseract.js";
-import { OpenaiService } from "../openai/openai.service";
+import {
+  CHAT_INSTRUCTIONS_6_1,
+  CHAT_INSTRUCTIONS_6_2,
+  CHAT_INSTRUCTIONS_6_3,
+  OpenaiService,
+} from "../openai/openai.service";
 import { ICvData } from "../pdf/interfaces/cv-data.interface";
 
 @Injectable()
@@ -73,5 +78,69 @@ export class TesseractService {
     }
 
     return object;
+  }
+
+  async savePdfImageToJsonDivided(file: Express.Multer.File): Promise<ICvData> {
+    let first: string;
+    let second: string;
+    let third: string;
+    // return { message: 'File uploaded successfully' };
+    const pdfText = await this.extractTextFromImageBuffer(file);
+    this.logger.log("Pdf data extracted succesfully...");
+
+    first = await this.openaiService.createJsonObjectInstructions(
+      pdfText,
+      CHAT_INSTRUCTIONS_6_1
+    );
+    this.logger.log("Ai created first json succesfully...");
+    console.log(first);
+
+    second = await this.openaiService.createJsonObjectInstructions(
+      pdfText,
+      CHAT_INSTRUCTIONS_6_2
+    );
+    this.logger.log("Ai created second json succesfully...");
+    console.log(second);
+
+    third = await this.openaiService.createJsonObjectInstructions(
+      pdfText,
+      CHAT_INSTRUCTIONS_6_3
+    );
+    this.logger.log("Ai created third json succesfully...");
+    console.log(third);
+
+    let object1: ICvData;
+    let object2: ICvData;
+    let object3: ICvData;
+    try {
+      object1 = JSON.parse(first) as ICvData;
+      object2 = JSON.parse(second) as ICvData;
+      object3 = JSON.parse(third) as ICvData;
+    } catch (error) {
+      // console.error("Failed to parse JSON object:", error);
+      // throw new BadRequestException("Invalid JSON format");
+      return null;
+    }
+
+    return {
+      firstName: object1.firstName,
+      lastName: object1.lastName,
+      companyName: object1.companyName,
+      companyLogoUrl: object1.companyLogoUrl,
+      email: object1.email,
+      phone: object1.phone,
+      summary: object1.summary,
+      educations: object1.educations,
+      hobies: object1.hobies,
+      languages: object1.languages,
+      socials: object1.socials,
+      courses: object1.courses,
+
+      certificates: object2.certificates,
+      skills: object2.skills,
+      projects: object2.projects,
+
+      experience: object3.experience,
+    };
   }
 }

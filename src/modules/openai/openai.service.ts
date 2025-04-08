@@ -22,6 +22,10 @@ const CHAT_INSTRUCTIONS_5 =
   "I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format.Retun simple clean stringified json object.without anything els youre comments or anything. use this interface as how should the json object look like: interface ICvData {firstName: string;lastName: string;email: string;phone: string;summary: string;skills: string[];experience: Array<{position: string;company: string;startDate: string;endDate?: string;description: string;}>;}";
 
 const CHAT_INSTRUCTIONS_6 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format. Return simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json response object look like: ${ICvDatainterface} - Dont give me partial object of the interface. Only return the complete object.`;
+export const CHAT_INSTRUCTIONS_6_1 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format. Return simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json response object look like: ${ICvDatainterface} - fill all the fields of the interface that you can but dont fill these fields: skills, projects, certificates, experience and set them as an empty array.`;
+export const CHAT_INSTRUCTIONS_6_2 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format. Return simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json response object look like: ${ICvDatainterface} - fill these fields of the interface: skills, projects, certificates, and set the rest as empty.`;
+export const CHAT_INSTRUCTIONS_6_3 = `I want you to return STRINGIFIED json object based on provided text from pdf. So youre response should always be in json format. Return simple clean stringified json object.without anything else youre comments or anything. use this interface as how should the json response object look like: ${ICvDatainterface} - fill this field: experience, and set the rest as empty.`;
+
 @Injectable()
 export class OpenaiService {
   constructor(private readonly openai: OpenAI) {}
@@ -31,6 +35,18 @@ export class OpenaiService {
       model: MODEL,
       messages: [
         { role: "system", content: CHAT_INSTRUCTIONS_6 },
+        { role: "user", content: text },
+      ],
+      temperature: 0.1,
+    });
+    return chatCompletion.choices[0].message.content;
+  }
+
+  async createJsonObjectInstructions(text: string, instructions: string) {
+    const chatCompletion = await this.openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: instructions },
         { role: "user", content: text },
       ],
       temperature: 0.1,
