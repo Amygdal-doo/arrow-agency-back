@@ -84,15 +84,12 @@ export class PaymentService {
     return result;
   }
 
-  async create(
-    jobId: string,
-    amount: string,
-    currency: MonriCurrency,
-    loggedUserInfo?: ILoggedUserInfo
-  ) {
+  async create(args: IPayByLinkArgs) {
+    const { jobId, amount, currency, loggedUserInfo, tx, packageId } = args;
     const data: Prisma.PaymentCreateInput = {
       job: { connect: { id: jobId } },
       // jobId,
+      package: { connect: { id: packageId } },
       amount,
       currency,
       paymentType: PaymentType.ONE_TIME,
@@ -160,12 +157,13 @@ export class PaymentService {
       const currency = package_.currency;
       const price = package_.price.toString();
 
-      const payment = await this.create(
+      const payment = await this.create({
         jobId,
-        price,
+        amount: price,
         currency,
-        loggedUserInfoDto ? loggedUserInfoDto : undefined
-      );
+        packageId: initializePaymentDto.packageId,
+        loggedUserInfo: loggedUserInfoDto ? loggedUserInfoDto : undefined,
+      });
       console.log({ payment });
 
       const amountInCents = toCents(Number(price));
@@ -464,6 +462,7 @@ export class PaymentService {
           jobId: initializePaymentDto.jobId,
           amount: price,
           currency,
+          packageId: initializePaymentDto.packageId,
           loggedUserInfo: loggedUserInfoDto ? loggedUserInfoDto : undefined,
           tx,
         });

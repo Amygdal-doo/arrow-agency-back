@@ -6,5 +6,6 @@ export interface IPayByLinkArgs {
   amount: string;
   currency: MonriCurrency;
   loggedUserInfo?: ILoggedUserInfo;
+  packageId?: string;
   tx?: Prisma.TransactionClient;
 }
