@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { MonriCurrency, PrismaClient, Role } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -270,6 +270,32 @@ async function main() {
     "Data Mining",
     "Data Preprocessing",
   ];
+
+  const packages = [
+    {
+      name: "GOOD",
+      description: "Display current logo etc.",
+      price: "58.00",
+      currency: MonriCurrency.USD,
+    },
+    {
+      name: "BETTER",
+      description: "Display current logo etc.",
+      price: "98.00",
+      currency: MonriCurrency.USD,
+    },
+    {
+      name: "BEST",
+      description: "Display current logo etc.",
+      price: "149.00",
+      currency: MonriCurrency.USD,
+    },
+  ];
+
+  for (const package_ of packages) {
+    await prisma.package.create({ data: package_ });
+  }
+  console.log("Packages created...");
 
   for (const category of jobCategories) {
     await prisma.jobCategory.create({ data: category });

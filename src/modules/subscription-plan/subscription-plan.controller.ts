@@ -34,12 +34,12 @@ export class SubscriptionPlanController {
   @Post("subscription-plan")
   @ApiBearerAuth("Access Token")
   @UseFilters(new HttpExceptionFilter())
-  @Roles(Role.USER)
+  @Roles(Role.SUPER_ADMIN)
   @UseGuards(AccessTokenGuard, PermissionsGuard)
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   // @Serialize(JobResponseDto)
   // @ApiOkResponse({ type: JobResponseDto })
-  @ApiOperation({ summary: "Create a subscription plan" })
+  @ApiOperation({ summary: "Create a subscription plan - Super Admin" })
   async create(
     @UserLogged() loggedUserInfo: ILoggedUserInfo,
     @Body() data: CreateSubscriptionPlanDto

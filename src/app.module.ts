@@ -21,6 +21,7 @@ import { MonriModule } from "./modules/monri/monri.module";
 import { PaymentModule } from "./modules/payment/payment.module";
 import { TesseractModule } from "./modules/tesseract/tesseract.module";
 import { SubscriptionPlanModule } from './modules/subscription-plan/subscription-plan.module';
+import { PackageModule } from './modules/package/package.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { SubscriptionPlanModule } from './modules/subscription-plan/subscription
     MonriModule,
     TesseractModule,
     SubscriptionPlanModule,
+    PackageModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],
