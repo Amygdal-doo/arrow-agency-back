@@ -17,8 +17,10 @@ import { HttpLoggerMiddleware } from "./middleware/logging/logging.middleware";
 import { OrganizationModule } from "./modules/organization/organization.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { SkillModule } from "./modules/skill/skill.module";
+import { MonriModule } from "./modules/monri/monri.module";
 import { PaymentModule } from "./modules/payment/payment.module";
-import { TesseractModule } from './modules/tesseract/tesseract.module';
+import { TesseractModule } from "./modules/tesseract/tesseract.module";
+import { SubscriptionPlanModule } from './modules/subscription-plan/subscription-plan.module';
 
 @Module({
   imports: [
@@ -40,7 +42,9 @@ import { TesseractModule } from './modules/tesseract/tesseract.module';
     JobsModule,
     SkillModule,
     PaymentModule,
+    MonriModule,
     TesseractModule,
+    SubscriptionPlanModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],

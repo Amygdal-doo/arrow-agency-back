@@ -4,6 +4,13 @@ export interface IDigest {
   currency: string;
 }
 
+export interface IReqDigest {
+  merchantKey: string;
+  authenticityToken: string;
+  fullpath: string;
+  timestamp: number; //new Date()).getTime()
+  body: string;
+}
 export interface IDigestPayByLink {
   // order_number: string;
   // transaction_type: TransactionTypeEnum;
