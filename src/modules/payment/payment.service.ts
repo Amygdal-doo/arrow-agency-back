@@ -37,6 +37,7 @@ import { calculateDigestPayByLink } from "src/common/helper/digest_pay_by_link.h
 import { PaymentCallbackDto } from "./dtos/requests/callback-payment.dto";
 import { PaymentCallbackResponseDto } from "./dtos/response/payment_callback.response.dto";
 import { PaymentFailedException } from "src/common/exceptions/errors/payment/payment_failed.exception";
+import { PackageService } from "../package/package.service";
 
 @Injectable()
 export class PaymentService {
@@ -44,7 +45,8 @@ export class PaymentService {
     private readonly databaseService: DatabaseService,
     private configService: ConfigService,
     private readonly jobService: JobsService,
-    private readonly organizationService: OrganizationService
+    private readonly organizationService: OrganizationService,
+    private readonly packageService: PackageService
     // private readonly userService: UsersService
   ) {}
   private readonly paymentModel = this.databaseService.payment;
@@ -148,10 +150,16 @@ export class PaymentService {
     });
     if (payment) throw new BadRequestException("Job already has payment");
 
+    const package_ = await this.packageService.findById(
+      initializePaymentDto.packageId
+    );
+    if (!package_) throw new NotFoundException("Package not found");
+
     try {
       const { jobId } = initializePaymentDto;
-      const currency = MonriCurrency.USD;
-      const price = "6.00";
+      const currency = package_.currency;
+      const price = package_.price.toString();
+
       const payment = await this.create(
         jobId,
         price,
@@ -433,6 +441,11 @@ export class PaymentService {
         );
     }
 
+    const package_ = await this.packageService.findById(
+      initializePaymentDto.packageId
+    );
+    if (!package_) throw new NotFoundException("Package not found");
+
     const payment = await this.paymentModel.findFirst({
       where: { jobId: initializePaymentDto.jobId },
     });
@@ -440,8 +453,12 @@ export class PaymentService {
 
     return this.databaseService
       .$transaction(async (tx) => {
-        const currency = MonriCurrency.USD;
-        const price = "6.00";
+        // const currency = MonriCurrency.USD;
+        // const price = "6.00";
+        const currency = package_.currency;
+        const price = package_.price.toString();
+        console.log({ price });
+
         const amountInCents = toCents(Number(price));
         const payment = await this.createV2({
           jobId: initializePaymentDto.jobId,

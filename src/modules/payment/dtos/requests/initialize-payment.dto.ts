@@ -13,8 +13,14 @@ export class InitializePaymentDto {
     example: "4b97a2a8-54c1-4f6f-9b9a-4c9a3b0df5f2",
   })
   @IsUUID()
-  @IsString()
   jobId: string;
+
+  @ApiProperty({
+    description: "ID uuid of the package",
+    example: "4b97a2a8-54c1-4f6f-9b9a-4c9a3b0df5f2",
+  })
+  @IsUUID()
+  packageId: string;
 
   // @ApiProperty({
   //   description: "Currency",

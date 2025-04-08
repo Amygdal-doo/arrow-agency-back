@@ -17,14 +17,11 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { PackageService } from "./package.service";
-import { Create } from "sharp";
 import { CreatePackageDto } from "./dtos/requests/create_package.dto";
 import { Role } from "@prisma/client";
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { Roles } from "../auth/decorators/roles.decorator";
-import { UserLogged } from "../auth/decorators/user.decorator";
 import { AccessTokenGuard } from "../auth/guards/access-token.guard";
-import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
 import { PermissionsGuard } from "../auth/permission-guard/permissions.guard";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
 import { PackageResponseDto } from "./dtos/responses/package.response.dto";
