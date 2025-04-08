@@ -79,4 +79,10 @@ export class UserResponseDto implements User {
 
   @Exclude()
   password: string;
+
+  @Exclude()
+  pan_tokens: string[];
+
+  @Exclude()
+  customerId: string;
 }

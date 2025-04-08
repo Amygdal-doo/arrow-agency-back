@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { MonriCurrency, SUBSCRIPTION_PERIOD } from "@prisma/client";
 import { IsString, IsNumber, IsEnum, IsNotEmpty } from "class-validator";
+import { ISubscription } from "src/modules/monri/interfaces/subscription.interface";
 
-export class CreateSubscriptionPlanDto {
+export class CreateSubscriptionPlanDto implements ISubscription {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: "Monthly Plan", description: "Name of the plan" })

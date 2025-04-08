@@ -5,6 +5,11 @@ import { ConfigService } from "@nestjs/config";
 import { addMonths, format } from "date-fns";
 import { IReqDigest } from "src/common/interfaces/digest.interface";
 import { reqDigest } from "src/common/helper/digest.helper";
+import { ISubscription } from "./interfaces/subscription.interface";
+import { SubscriptionPlanResponseDto } from "./dtos/response/subscription_plan.response.dto";
+import { MonriCurrency, SUBSCRIPTION_PERIOD } from "@prisma/client";
+import { ICustomerSubscription } from "./interfaces/customer_subscription.interface";
+import { ICreateCustomer } from "./interfaces/create_customer.interface";
 
 @Injectable()
 export class MonriService {
@@ -37,7 +42,7 @@ export class MonriService {
    * @param customerData Customer details (e.g., name, email)
    * @returns Customer object with ID
    */
-  async createCustomer(customerData: any): Promise<any> {
+  async createCustomer(customerData: ICreateCustomer): Promise<any> {
     const fullpath = "/v2/customers";
     const timestamp = new Date().getTime();
     const digestData: IReqDigest = {
@@ -110,7 +115,9 @@ export class MonriService {
    * @param planData Subscription plan details (e.g., name, price, period)
    * @returns Plan object with ID
    */
-  async createPlan(planData: any): Promise<any> {
+  async createPlan(
+    planData: ISubscription
+  ): Promise<SubscriptionPlanResponseDto> {
     const fullpath = "/v2/subscriptions";
     const timestamp = new Date().getTime();
     const digestData: IReqDigest = {
@@ -122,9 +129,9 @@ export class MonriService {
     };
     this.logger.debug({ digestData });
     const digest = reqDigest(digestData);
-    this.logger.debug({ digest });
+    this.logger.debug({ digest, url: `${this.MONRI_API_URL}${fullpath}` });
     try {
-      const response = await firstValueFrom(
+      const response: any = await firstValueFrom(
         this.httpService.post(`${this.MONRI_API_URL}${fullpath}`, planData, {
           headers: {
             ...this.getHeaders(),
@@ -132,13 +139,16 @@ export class MonriService {
           },
         })
       );
-      return response.data;
+
+      console.log({
+        response,
+        data: response.data,
+      });
+
+      return response;
     } catch (error) {
-      this.logger.error(
-        "Error creating plan:",
-        error.response?.data || error.message
-      );
-      throw error;
+      this.logger.error("Error creating plan:", error.message, error.status);
+      // throw error;
     }
   }
 
@@ -196,12 +206,12 @@ export class MonriService {
       //   console.log({ paymentMethod });
 
       // Step 3: Create a subscription plan
-      const planData = {
+      const planData: ISubscription = {
         name: "Monthly Plan",
         description: "Monthly subscription plan",
         price: 1000, // 10.00 EUR in minor units (cents)
-        currency: "EUR",
-        period: "month",
+        currency: MonriCurrency.EUR,
+        period: SUBSCRIPTION_PERIOD.month,
         // Add other required fields as per Monri API docs
       };
       const plan = await this.createPlan(planData);

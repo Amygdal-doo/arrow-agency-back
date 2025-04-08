@@ -20,6 +20,7 @@ import { SkillModule } from "./modules/skill/skill.module";
 import { MonriModule } from "./modules/monri/monri.module";
 import { PaymentModule } from "./modules/payment/payment.module";
 import { TesseractModule } from "./modules/tesseract/tesseract.module";
+import { SubscriptionPlanModule } from './modules/subscription-plan/subscription-plan.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { TesseractModule } from "./modules/tesseract/tesseract.module";
     PaymentModule,
     MonriModule,
     TesseractModule,
+    SubscriptionPlanModule,
   ],
   controllers: [AppController],
   providers: [SpacesService],

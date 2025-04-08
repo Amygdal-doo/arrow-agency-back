@@ -64,24 +64,22 @@ export interface skills {
 export interface ICvData {
   firstName: string;
   lastName: string;
-
   companyName: string;
   companyLogoUrl: string;
-
   email: string;
   phone: string;
   summary: string;
-
-  skills: skills[];
-  hobies: string[];
-  experience: IExperience[];
-  projects: IProject[];
   educations: IEducation[];
-  certificates: ICertificate[];
-
+  hobies: string[];
   languages: ICvLanguage[];
   socials: ISocial[];
   courses: ICourse[];
+
+  certificates: ICertificate[];
+  skills: skills[];
+  projects: IProject[];
+
+  experience: IExperience[];
 }
 
 export interface ICvDataExtended extends ICvData {

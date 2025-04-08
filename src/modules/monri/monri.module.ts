@@ -7,5 +7,6 @@ import { HttpModule } from "@nestjs/axios";
   imports: [HttpModule],
   providers: [MonriService],
   controllers: [MonriController],
+  exports: [MonriService],
 })
 export class MonriModule {}
