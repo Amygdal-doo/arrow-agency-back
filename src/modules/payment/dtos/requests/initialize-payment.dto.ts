@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { MonriCurrency } from "@prisma/client";
-import { IsEnum, IsString, IsUUID } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class InitializePaymentDto {
   //   @ApiProperty({ description: 'Package data', type: PackageRequestDto })
@@ -13,6 +13,7 @@ export class InitializePaymentDto {
     example: "4b97a2a8-54c1-4f6f-9b9a-4c9a3b0df5f2",
   })
   @IsUUID()
+  @IsNotEmpty()
   jobId: string;
 
   @ApiProperty({
@@ -20,6 +21,7 @@ export class InitializePaymentDto {
     example: "4b97a2a8-54c1-4f6f-9b9a-4c9a3b0df5f2",
   })
   @IsUUID()
+  @IsNotEmpty()
   packageId: string;
 
   // @ApiProperty({
