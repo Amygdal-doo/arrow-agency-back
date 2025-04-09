@@ -17,6 +17,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsDateString,
+  MinLength,
 } from "class-validator";
 
 export class CreateJobDto {
@@ -25,6 +26,7 @@ export class CreateJobDto {
     description: "Whether the job is available worldwide or not",
   })
   @IsBoolean()
+  @IsNotEmpty()
   worldwide: boolean;
 
   @ApiProperty({
@@ -32,6 +34,7 @@ export class CreateJobDto {
     description: "Whether the job is remote or not",
   })
   @IsBoolean()
+  @IsNotEmpty()
   remote: boolean;
 
   @ApiProperty({
@@ -40,6 +43,8 @@ export class CreateJobDto {
   })
   @IsString()
   @MaxLength(100)
+  @MinLength(3)
+  @IsNotEmpty()
   name: string;
 
   @ApiPropertyOptional({
@@ -47,7 +52,8 @@ export class CreateJobDto {
     description: "The description of the job",
   })
   @IsString()
-  @MaxLength(255)
+  @IsOptional()
+  @MinLength(10)
   description?: string | null;
 
   @ApiPropertyOptional({
@@ -64,6 +70,7 @@ export class CreateJobDto {
       "The date before which the job application should be submitted",
   })
   @IsDateString()
+  @IsNotEmpty()
   //   @IsDate()
   applyBeforeDate: string;
 
@@ -80,6 +87,7 @@ export class CreateJobDto {
     example: JobType.FULL_TIME,
     description: "The type of the job",
   })
+  @IsNotEmpty()
   @IsEnum(JobType)
   jobType: JobType;
 
@@ -103,6 +111,7 @@ export class CreateJobDto {
     example: "www.example.com",
     description: "The link or email address for applying to the job",
   })
+  @IsNotEmpty()
   @IsString()
   applicationLinkOrEmail: string;
 
@@ -111,6 +120,7 @@ export class CreateJobDto {
     example: ApplicationType.LINK,
     description: "The type of application link or email",
   })
+  @IsNotEmpty()
   @IsEnum(ApplicationType)
   typeOfApplication: ApplicationType;
 

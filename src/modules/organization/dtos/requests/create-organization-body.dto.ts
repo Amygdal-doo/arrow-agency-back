@@ -3,14 +3,8 @@ import {
   ApiProperty,
   ApiPropertyOptional,
 } from "@nestjs/swagger";
-import { $Enums, CreatedBy, Prisma } from "@prisma/client";
-import {
-  IsBoolean,
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from "class-validator";
+import { CreatedBy, Prisma } from "@prisma/client";
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateOrganizationBodyDto
   implements Prisma.OrganizationCreateInput
@@ -69,6 +63,7 @@ export class CreateOrganizationBodyDto
   location: string;
 
   @ApiHideProperty()
+  @IsOptional()
   createdBy: CreatedBy;
 
   //   @ApiPropertyOptional({
