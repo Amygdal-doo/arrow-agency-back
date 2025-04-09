@@ -38,6 +38,10 @@ import { PaymentCallbackDto } from "./dtos/requests/callback-payment.dto";
 import { PaymentCallbackResponseDto } from "./dtos/response/payment_callback.response.dto";
 import { PaymentFailedException } from "src/common/exceptions/errors/payment/payment_failed.exception";
 import { PackageService } from "../package/package.service";
+import { SubscribeDto } from "./dtos/requests/susbscribe.dto";
+import { SubscriptionPlanService } from "../subscription-plan/subscription-plan.service";
+import { ICreateSubPayment } from "./interfaces/create_sub_payment.interface";
+import { UsersService } from "../users/services/users.service";
 
 @Injectable()
 export class PaymentService {
@@ -46,8 +50,9 @@ export class PaymentService {
     private configService: ConfigService,
     private readonly jobService: JobsService,
     private readonly organizationService: OrganizationService,
-    private readonly packageService: PackageService
-    // private readonly userService: UsersService
+    private readonly packageService: PackageService,
+    private readonly subscriptionPlanService: SubscriptionPlanService,
+    private readonly userService: UsersService
   ) {}
   private readonly paymentModel = this.databaseService.payment;
 
@@ -84,7 +89,7 @@ export class PaymentService {
     return result;
   }
 
-  async create(args: IPayByLinkArgs) {
+  async createPaymentLightBox(args: IPayByLinkArgs) {
     const { jobId, amount, currency, loggedUserInfo, tx, packageId } = args;
     const data: Prisma.PaymentCreateInput = {
       job: { connect: { id: jobId } },
@@ -105,7 +110,7 @@ export class PaymentService {
     return result;
   }
 
-  async createV2(args: IPayByLinkArgs) {
+  async createPaymentPayByLink(args: IPayByLinkArgs) {
     const { jobId, amount, currency, loggedUserInfo, tx } = args;
     const prisma = tx || this.databaseService;
     const data: Prisma.PaymentCreateInput = {
@@ -125,7 +130,25 @@ export class PaymentService {
     });
     return result;
   }
+  // ICreateSubPayment
 
+  async createPaymentSubscription(args: ICreateSubPayment) {
+    const { planId, amount, currency, userId, tx } = args;
+    const prisma = tx || this.databaseService;
+    const data: Prisma.PaymentCreateInput = {
+      subscription: { connect: { id: planId } },
+      // jobId,
+      amount,
+      currency,
+      paymentType: PaymentType.SUBSCRIPTION,
+      status: PaymentStatus.PENDING,
+      user: { connect: { id: userId } },
+    };
+    const result = await prisma.payment.create({
+      data,
+    });
+    return result;
+  }
   async initializeTransaction(
     initializePaymentDto: InitializePaymentDto,
     loggedUserInfoDto?: ILoggedUserInfo
@@ -157,7 +180,7 @@ export class PaymentService {
       const currency = package_.currency;
       const price = package_.price.toString();
 
-      const payment = await this.create({
+      const payment = await this.createPaymentLightBox({
         jobId,
         amount: price,
         currency,
@@ -427,6 +450,12 @@ export class PaymentService {
     const url = this.configService.get("BACKEND_URL");
     const timestamp = Math.floor(Date.now() / 1000).toString();
 
+    let user = null;
+    if (!!loggedUserInfoDto) {
+      user = await this.userService.findById(loggedUserInfoDto.id);
+      if (!user) throw new BadRequestException("User not found");
+    }
+
     const job = await this.jobService.findById(initializePaymentDto.jobId);
 
     if (!job) throw new NotFoundException("Job not found");
@@ -444,9 +473,17 @@ export class PaymentService {
     );
     if (!package_) throw new NotFoundException("Package not found");
 
-    const payment = await this.paymentModel.findFirst({
-      where: { jobId: initializePaymentDto.jobId },
-    });
+    const paymentArgs: Prisma.PaymentFindFirstArgs = {
+      where: {
+        jobId: initializePaymentDto.jobId,
+        paymentType: PaymentType.ONE_TIME,
+      },
+    };
+    if (!!loggedUserInfoDto) {
+      paymentArgs.where.userId = loggedUserInfoDto.id;
+    }
+
+    const payment = await this.paymentModel.findFirst(paymentArgs);
     if (payment) throw new BadRequestException("Job already has payment");
 
     return this.databaseService
@@ -458,12 +495,160 @@ export class PaymentService {
         console.log({ price });
 
         const amountInCents = toCents(Number(price));
-        const payment = await this.createV2({
+        const payment = await this.createPaymentPayByLink({
           jobId: initializePaymentDto.jobId,
           amount: price,
           currency,
           packageId: initializePaymentDto.packageId,
           loggedUserInfo: loggedUserInfoDto ? loggedUserInfoDto : undefined,
+          tx,
+        });
+
+        const paymentDetail = {
+          ch_address: "",
+          ch_city: "",
+          ch_zip: "",
+          ch_country: "",
+          ch_email: "",
+          ch_phone: "",
+          ch_full_name: "",
+          language: "en",
+        };
+        //   const SupportedLocale: {
+        //     en: "en";
+        //     es: "es";
+        //     ba: "ba";
+        //     hr: "hr";
+        // }
+
+        if (!!user) {
+          paymentDetail.ch_email = user.email;
+          paymentDetail.ch_full_name = `${user.firstName} ${user.lastName}`;
+          paymentDetail.ch_phone = user.profile?.phoneNumber
+            ? user.profile.phoneNumber
+            : "";
+          paymentDetail.ch_address = user.profile?.address
+            ? user.profile.address
+            : "";
+
+          // create a costumer on monri
+        }
+
+        return {
+          payment,
+          amountInCents,
+          currency,
+          paymentDetail,
+        };
+      })
+      .then(
+        async ({
+          payment,
+          amountInCents,
+          currency,
+          paymentDetail,
+        }): Promise<PayByLinkResponseDto> => {
+          // check if logged in user has a pan token
+          // const user = await this.userService.findById(payment.userId);
+          // if (user.pan_tokens.length === 0) {
+          //   throw new BadRequestException(
+          //     "User has no pan tokens, Please add a pan token"
+          //   );
+          // }
+          // External API Call (Monri) - done AFTER the transaction is committed
+          const requestPayload = {
+            transaction_type: TransactionTypeEnum.PURCHASE,
+            amount: amountInCents,
+            currency,
+            number_of_installments: "",
+            order_number: payment.id,
+            order_info: `Ordered Job Post with ${payment.jobId} ID and with ammount in cents ${amountInCents} ${currency}`,
+            ...paymentDetail,
+            comment: "",
+            tokenize_pan_offered: true,
+            supported_payment_methods: [...user.pan_tokens, "card"],
+            // supported_payment_methods: ["card"],
+            success_url_override: `${url}/api/payment/success`,
+            cancel_url_override: `${url}/api/payment/cancel`,
+            callback_url_override: `${url}/api/payment/callback`,
+            // moto: false,
+          };
+
+          const bodyString = JSON.stringify(requestPayload);
+          const digestData: IDigestPayByLink = {
+            fullpath,
+            body: bodyString,
+            merchant_key: merchantKey,
+            timestamp,
+            authenticity_token: authenticityToken,
+          };
+
+          const digest = this.digestPayByLink(digestData);
+          const authorizationHeader = `WP3-v2.1 ${authenticityToken} ${timestamp} ${digest}`;
+
+          const headers = {
+            Authorization: authorizationHeader,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          };
+
+          const response = await axios.post(monriUrl, requestPayload, {
+            headers,
+          });
+          const transactionResponse = JSON.parse(JSON.stringify(response.data));
+          await this.update(payment.id, {
+            monriTransactionId: response.data.id,
+            transactionResponse,
+          });
+
+          return {
+            paymentUrl: response.data.payment_url,
+          };
+        }
+      );
+  }
+
+  async subscribe(
+    subscribeDto: SubscribeDto,
+    loggedUserInfoDto: ILoggedUserInfo
+  ): Promise<PayByLinkResponseDto> {
+    // const { bundleId } = body;
+    const fullpath = "/v2/terminal-entry/create-or-update";
+    const monriUrl = `${this.configService.get("MONRI_URL")}${fullpath}`;
+    const authenticityToken = this.configService.get(
+      "MONRI_AUTHENTICITY_TOKEN"
+    );
+    const merchantKey = this.configService.get("MONRI_KEY");
+    const url = this.configService.get("BACKEND_URL");
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+
+    const subPlan = await this.subscriptionPlanService.findById(
+      subscribeDto.planId
+    );
+    if (!subPlan) throw new BadRequestException("Plan does not exist");
+
+    const payment = await this.paymentModel.findFirst({
+      where: {
+        userId: loggedUserInfoDto.id,
+        paymentType: PaymentType.SUBSCRIPTION,
+      },
+    });
+    if (payment) throw new BadRequestException("User is already a subscriber");
+
+    return this.databaseService
+      .$transaction(async (tx) => {
+        // const currency = MonriCurrency.USD;
+        // const price = "6.00";
+        const currency = subPlan.currency;
+        const price = subPlan.price.toString();
+        console.log({ price });
+
+        const amountInCents = toCents(Number(price));
+        const payment = await this.createPaymentSubscription({
+          planId: subPlan.id,
+          amount: price,
+          currency,
+          userId: loggedUserInfoDto.id,
           tx,
         });
 
@@ -512,7 +697,7 @@ export class PaymentService {
             supported_payment_methods: ["card"],
             success_url_override: `${url}/api/payment/success`,
             cancel_url_override: `${url}/api/payment/cancel`,
-            callback_url_override: `${url}/api/payment/callback`,
+            callback_url_override: `${url}/api/payment/subscribe/callback`,
             moto: false,
           };
 
@@ -575,17 +760,17 @@ export class PaymentService {
             tx
           );
 
-          // if (!!body.pan_token) {
-          //   // Fetch user and check if pan_token exists
-          //   const user = await this.userService.findById(order.userId, tx);
-          //   if (!user.pan_tokens?.includes(body.pan_token)) {
-          //     await this.userService.updateUserById(
-          //       order.userId,
-          //       { pan_tokens: { push: body.pan_token } },
-          //       tx
-          //     );
-          //   }
-          // }
+          if (!!body.pan_token) {
+            // Fetch user and check if pan_token exists
+            const user = await this.userService.findById(order.userId, tx);
+            if (!user.pan_tokens?.includes(body.pan_token)) {
+              await this.userService.updateUserById(
+                order.userId,
+                { pan_tokens: { push: body.pan_token } },
+                tx
+              );
+            }
+          }
 
           return { message: "Payment Completed" };
         }
@@ -596,7 +781,7 @@ export class PaymentService {
           { status: PaymentStatus.FAILED, transactionResponse },
           tx
         );
-
+        // also maybe consider user logged created or not
         // delete job
         await this.jobService.delete(order.jobId, tx);
 

@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
 import { ConfigService } from "@nestjs/config";
@@ -8,8 +13,8 @@ import { reqDigest } from "src/common/helper/digest.helper";
 import { ISubscription } from "./interfaces/subscription.interface";
 import { SubscriptionPlanResponseDto } from "./dtos/response/subscription_plan.response.dto";
 import { MonriCurrency, SUBSCRIPTION_PERIOD } from "@prisma/client";
-import { ICustomerSubscription } from "./interfaces/customer_subscription.interface";
 import { ICreateCustomer } from "./interfaces/create_customer.interface";
+import axios from "axios";
 
 @Injectable()
 export class MonriService {
@@ -57,17 +62,27 @@ export class MonriService {
     this.logger.debug({ digest });
     try {
       // const
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `${this.MONRI_API_URL}${fullpath}`,
-          customerData,
-          {
-            headers: {
-              ...this.getHeaders(),
-              Authorization: `${this.SCHEMA} ${this.MONRI_AUTHENTICITY_TOKEN} ${timestamp} ${digest}`,
-            },
-          }
-        )
+      // const response = await firstValueFrom(
+      //   this.httpService.post(
+      //     `${this.MONRI_API_URL}${fullpath}`,
+      //     customerData,
+      //     {
+      //       headers: {
+      //         ...this.getHeaders(),
+      //         Authorization: `${this.SCHEMA} ${this.MONRI_AUTHENTICITY_TOKEN} ${timestamp} ${digest}`,
+      //       },
+      //     }
+      //   )
+      // );
+      const response = await axios.post(
+        `${this.MONRI_API_URL}${fullpath}`,
+        customerData,
+        {
+          headers: {
+            ...this.getHeaders(),
+            Authorization: `${this.SCHEMA} ${this.MONRI_AUTHENTICITY_TOKEN} ${timestamp} ${digest}`,
+          },
+        }
       );
       return response.data;
     } catch (error) {
@@ -131,13 +146,23 @@ export class MonriService {
     const digest = reqDigest(digestData);
     this.logger.debug({ digest, url: `${this.MONRI_API_URL}${fullpath}` });
     try {
-      const response: any = await firstValueFrom(
-        this.httpService.post(`${this.MONRI_API_URL}${fullpath}`, planData, {
+      // const response: any = await firstValueFrom(
+      //   this.httpService.post(`${this.MONRI_API_URL}${fullpath}`, planData, {
+      //     headers: {
+      //       ...this.getHeaders(),
+      //       Authorization: `${this.SCHEMA} ${this.MONRI_AUTHENTICITY_TOKEN} ${timestamp} ${digest}`,
+      //     },
+      //   })
+      // );
+      const response: any = await axios.post(
+        `${this.MONRI_API_URL}${fullpath}`,
+        planData,
+        {
           headers: {
             ...this.getHeaders(),
             Authorization: `${this.SCHEMA} ${this.MONRI_AUTHENTICITY_TOKEN} ${timestamp} ${digest}`,
           },
-        })
+        }
       );
 
       console.log({
@@ -148,6 +173,9 @@ export class MonriService {
       return response;
     } catch (error) {
       this.logger.error("Error creating plan:", error.message, error.status);
+      console.log(error.response);
+      throw new InternalServerErrorException("Error creating plan");
+
       // throw error;
     }
   }

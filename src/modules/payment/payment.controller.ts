@@ -34,6 +34,7 @@ import { plainToInstance } from "class-transformer";
 import { PayByLinkResponseDto } from "./dtos/response/pay-by-link.response.dto";
 import { PaymentCallbackResponseDto } from "./dtos/response/payment_callback.response.dto";
 import { PaymentCallbackDto } from "./dtos/requests/callback-payment.dto";
+import { SubscribeDto } from "./dtos/requests/susbscribe.dto";
 
 @ApiTags("Payment")
 @Controller("payment")
@@ -228,6 +229,40 @@ export class PaymentController {
   @ApiOkResponse({ type: PaymentCallbackResponseDto })
   @HttpCode(HttpStatus.OK)
   async callbackV2(@Body() body: PaymentCallbackDto) {
+    return this.paymentService.paymentCallback(body);
+  }
+
+  @Post("subscribe")
+  // @Version('2')
+  @ApiOperation({
+    summary: "Subscribe to arrow agency",
+    description: "Subscribe to arrow agency",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  @Serialize(PayByLinkResponseDto)
+  @ApiOkResponse()
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @HttpCode(200)
+  async subscribe(
+    @UserLogged() loggedUserInfoDto: ILoggedUserInfo,
+    @Body() subscribeDto: SubscribeDto
+  ) {
+    return this.paymentService.subscribe(subscribeDto, loggedUserInfoDto);
+  }
+
+  @Post("subscribe/callback")
+  @ApiOperation({
+    summary: "Subscribe Payment Callback",
+    description:
+      "Endpoint that handles payment callback after paymnent finishes",
+  })
+  @UseFilters(new HttpExceptionFilter())
+  @ApiBadRequestResponse({ description: "Bad Request" })
+  @ApiOkResponse({ type: PaymentCallbackResponseDto })
+  @HttpCode(HttpStatus.OK)
+  async subscribeCallback(@Body() body: PaymentCallbackDto) {
     return this.paymentService.paymentCallback(body);
   }
 }

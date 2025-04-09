@@ -45,6 +45,7 @@ enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
+  // APPROVED
   // CANCELLED
   REFUNDED
 }

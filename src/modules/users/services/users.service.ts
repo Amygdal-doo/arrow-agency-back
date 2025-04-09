@@ -30,9 +30,11 @@ export class UsersService {
     return result;
   }
 
-  async findById(id: string) {
-    const result = await this.userModel.findUnique({
+  async findById(id: string, tx?: Prisma.TransactionClient) {
+    const prisma = tx || this.databaseService;
+    const result = await prisma.user.findUnique({
       where: { id },
+      include: { profile: true },
     });
     return result;
   }
@@ -44,6 +46,19 @@ export class UsersService {
 
   async update(id: string, data: Prisma.UserUpdateInput) {
     const result = await this.userModel.update({
+      where: { id },
+      data,
+    });
+    return result;
+  }
+
+  async updateUserById(
+    id: string,
+    data: Prisma.UserUpdateInput,
+    tx?: Prisma.TransactionClient
+  ) {
+    const prisma = tx || this.databaseService;
+    const result = await prisma.user.update({
       where: { id },
       data,
     });
