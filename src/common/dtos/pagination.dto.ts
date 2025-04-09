@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Expose, Transform } from "class-transformer";
+import { Expose, Transform, Type } from "class-transformer";
 import {
   IsArray,
+  IsBoolean,
+  IsBooleanString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -79,6 +81,22 @@ export class SearchQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
+}
+
+export class JobSearchQueryDto extends SearchQueryDto {
+  @ApiPropertyOptional({ example: false })
+  // @Type(() => Boolean)
+  @Transform(({ value }) => value === "true") //
+  @IsBoolean()
+  @IsOptional()
+  worldwide: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  // @Type(() => Boolean)
+  @Transform(({ value }) => value === "true") //
+  @IsBoolean()
+  @IsOptional()
+  remote: boolean;
 }
 
 export class ApplicantsBytechnologiesDto {

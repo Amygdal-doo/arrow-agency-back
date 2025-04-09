@@ -25,6 +25,7 @@ import {
 import { HttpExceptionFilter } from "src/common/exceptions/http-exception.filter";
 import { Serialize } from "src/common/interceptors/serialize.interceptor";
 import {
+  JobSearchQueryDto,
   OrderType,
   PaginationQueryDto,
   SearchQueryDto,
@@ -154,12 +155,12 @@ export class JobsController {
   async jobSearchPaginated(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
-    @Query() searchQueryDto: SearchQueryDto
+    @Query() jobSearchQueryDto: JobSearchQueryDto
   ) {
     return this.jobsService.jobSearchPaginated(
       paginationQuery,
       orderType,
-      searchQueryDto
+      jobSearchQueryDto
     );
   }
 
@@ -178,13 +179,13 @@ export class JobsController {
   async MYJobSearchPaginated(
     @Query() paginationQuery: PaginationQueryDto,
     @Query() orderType: OrderType,
-    @Query() searchQueryDto: SearchQueryDto,
+    @Query() jobSearchQueryDto: JobSearchQueryDto,
     @UserLogged() loggedUserInfo: ILoggedUserInfo
   ) {
     return this.jobsService.jobSearchPaginated(
       paginationQuery,
       orderType,
-      searchQueryDto,
+      jobSearchQueryDto,
       loggedUserInfo
     );
   }

@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { DatabaseService } from "src/database/database.service";
 import { CreateJobDto } from "../dtos/requests/create-job.dto";
 import {
+  JobSearchQueryDto,
   OrderType,
   PaginationQueryDto,
   SearchQueryDto,
@@ -189,23 +190,31 @@ export class JobsService {
   async jobSearchPaginated(
     paginationQuery: PaginationQueryDto,
     orderType: OrderType,
-    searchQueryDto: SearchQueryDto,
+    jobSearchQueryDto: JobSearchQueryDto,
     loggedUserInfo?: ILoggedUserInfo
   ): Promise<JobPaginationResponseDto> {
     const orderIn = orderType.type ? orderType.type : SortOrder.ASCENDING;
     const orderBy = "name";
+    console.log({ jobSearchQueryDto });
+
     const query: Prisma.JobFindManyArgs = {
       where: {
         // status: JobStatus.PUBLISHED, // need to return
         // userId,
         [orderBy]: {
-          contains: searchQueryDto.search ? searchQueryDto.search : "",
+          contains: jobSearchQueryDto.search ? jobSearchQueryDto.search : "",
           mode: "insensitive",
         },
       },
     };
     if (!!loggedUserInfo) {
       query.where.userId = loggedUserInfo.id;
+    }
+    if (jobSearchQueryDto.worldwide !== undefined) {
+      query.where.worldwide = jobSearchQueryDto.worldwide;
+    }
+    if (!!jobSearchQueryDto.remote !== undefined) {
+      query.where.remote = jobSearchQueryDto.remote;
     }
 
     const { page, limit } = pageLimit(paginationQuery);
