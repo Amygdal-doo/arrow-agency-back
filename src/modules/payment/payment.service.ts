@@ -565,14 +565,22 @@ export class PaymentService {
             order_info: `Ordered Job Post with ${payment.jobId} ID and with ammount in cents ${amountInCents} ${currency}`,
             ...paymentDetail,
             comment: "",
-            tokenize_pan_offered: true,
-            supported_payment_methods: [...user.pan_tokens, "card"],
+            tokenize_pan_offered: false,
+            supported_payment_methods: ["card"],
             // supported_payment_methods: ["card"],
             success_url_override: `${url}/api/payment/success`,
             cancel_url_override: `${url}/api/payment/cancel`,
             callback_url_override: `${url}/api/payment/callback`,
             // moto: false,
           };
+
+          if (!!loggedUserInfoDto) {
+            requestPayload.supported_payment_methods = [
+              ...user.pan_tokens,
+              "card",
+            ];
+            requestPayload.tokenize_pan_offered = true;
+          }
 
           const bodyString = JSON.stringify(requestPayload);
           const digestData: IDigestPayByLink = {
@@ -760,7 +768,7 @@ export class PaymentService {
             tx
           );
 
-          if (!!body.pan_token) {
+          if (!!body.pan_token && !!order.userId) {
             // Fetch user and check if pan_token exists
             const user = await this.userService.findById(order.userId, tx);
             if (!user.pan_tokens?.includes(body.pan_token)) {
