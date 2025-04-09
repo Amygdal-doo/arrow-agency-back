@@ -461,12 +461,12 @@ export class PaymentService {
     if (!job) throw new NotFoundException("Job not found");
     if (job.status == JobStatus.PUBLISHED)
       throw new BadRequestException("Job already published");
-    // if (!!loggedUserInfoDto) {
-    //   if (job.userId !== loggedUserInfoDto.id)
-    //     throw new ForbiddenException(
-    //       "User not allowed, Cant initialize payment"
-    //     );
-    // }
+    if (!!loggedUserInfoDto) {
+      if (job.userId !== loggedUserInfoDto.id)
+        throw new ForbiddenException(
+          "User not allowed, Cant initialize payment"
+        );
+    }
 
     const package_ = await this.packageService.findById(
       initializePaymentDto.packageId
