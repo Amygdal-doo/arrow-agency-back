@@ -20,8 +20,11 @@ import { SkillModule } from "./modules/skill/skill.module";
 import { MonriModule } from "./modules/monri/monri.module";
 import { PaymentModule } from "./modules/payment/payment.module";
 import { TesseractModule } from "./modules/tesseract/tesseract.module";
-import { SubscriptionPlanModule } from './modules/subscription-plan/subscription-plan.module';
-import { PackageModule } from './modules/package/package.module';
+import { SubscriptionPlanModule } from "./modules/subscription-plan/subscription-plan.module";
+import { PackageModule } from "./modules/package/package.module";
+import { rateLimitoptions } from "./common/config";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { APP_GUARD } from "@nestjs/core";
 
 @Module({
   imports: [
@@ -29,6 +32,7 @@ import { PackageModule } from './modules/package/package.module';
       isGlobal: true,
       // envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([rateLimitoptions]),
     AuthModule,
     UsersModule,
     DatabaseModule,
@@ -49,7 +53,13 @@ import { PackageModule } from './modules/package/package.module';
     PackageModule,
   ],
   controllers: [AppController],
-  providers: [SpacesService],
+  providers: [
+    SpacesService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
