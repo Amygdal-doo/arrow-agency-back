@@ -30,6 +30,14 @@ export class UpdateCvDto {
   firstName?: string;
 
   @ApiPropertyOptional({
+    example: true,
+    description: "Set to true if you want to make your cv public",
+  })
+  @IsBoolean()
+  @IsOptional()
+  public_cv?: boolean;
+
+  @ApiPropertyOptional({
     example: "Doe",
     description: "Last name of the person",
   })

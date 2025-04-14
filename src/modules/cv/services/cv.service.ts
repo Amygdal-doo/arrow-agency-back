@@ -32,6 +32,7 @@ export class CvService {
     updateCvDto: UpdateCvDto,
     templateId: string
   ) {
+    const { public_cv, ...rest } = updateCvDto;
     // Fetch the CV with its Applicant and User
     const cv = await this.databaseService.cv.findUnique({
       where: { id },
@@ -54,23 +55,23 @@ export class CvService {
 
     let companyLogoUpdate = undefined;
 
-    if (updateCvDto.companyLogoId) {
-      if (cv.companyLogo.id !== updateCvDto.companyLogoId) {
+    if (rest.companyLogoId) {
+      if (cv.companyLogo.id !== rest.companyLogoId) {
         const logo = await this.databaseService.file.findUnique({
           where: {
-            id: updateCvDto.companyLogoId,
+            id: rest.companyLogoId,
             userId,
           },
         });
         if (!logo) {
           throw new BadRequestException("Logo not found");
         }
-        companyLogoUpdate = updateCvDto.companyLogoId;
+        companyLogoUpdate = rest.companyLogoId;
       }
     }
 
     // Delete fields
-    await this.deleteFields(updateCvDto.delete, id);
+    await this.deleteFields(rest.delete, id);
 
     // const skills = updateCvDto.skills.map((skill) => skill.toUpperCase());
     const defaultUUID = "00000000-0000-0000-0000-000000000000";
@@ -92,6 +93,7 @@ export class CvService {
         applicant: {
           update: {
             templateId,
+            public_cv,
           },
         },
         companyLogo: companyLogoUpdate
@@ -101,21 +103,21 @@ export class CvService {
               },
             }
           : undefined,
-        firstName: updateCvDto.firstName,
-        lastName: updateCvDto.lastName,
-        companyName: updateCvDto.companyName,
-        primaryColor: updateCvDto.primaryColor,
-        secondaryColor: updateCvDto.secondaryColor,
-        tertiaryColor: updateCvDto.tertiaryColor,
-        showCompanyInfo: updateCvDto.showCompanyInfo,
-        showPersonalInfo: updateCvDto.showPersonalInfo,
-        email: updateCvDto.email,
-        phone: updateCvDto.phone,
-        summary: updateCvDto.summary,
-        hobbies: updateCvDto.hobbies,
-        experience: updateCvDto.experience
+        firstName: rest.firstName,
+        lastName: rest.lastName,
+        companyName: rest.companyName,
+        primaryColor: rest.primaryColor,
+        secondaryColor: rest.secondaryColor,
+        tertiaryColor: rest.tertiaryColor,
+        showCompanyInfo: rest.showCompanyInfo,
+        showPersonalInfo: rest.showPersonalInfo,
+        email: rest.email,
+        phone: rest.phone,
+        summary: rest.summary,
+        hobbies: rest.hobbies,
+        experience: rest.experience
           ? {
-              upsert: updateCvDto.experience.map((exp) => ({
+              upsert: rest.experience.map((exp) => ({
                 where: { id: exp.id || defaultUUID }, // Assumes existing ID or empty string for new
                 update: exp,
                 create: {
@@ -128,9 +130,9 @@ export class CvService {
               })),
             }
           : undefined,
-        projects: updateCvDto.projects
+        projects: rest.projects
           ? {
-              upsert: updateCvDto.projects.map((proj) => ({
+              upsert: rest.projects.map((proj) => ({
                 where: { id: proj.id || defaultUUID },
                 update: proj,
                 create: {
@@ -143,9 +145,9 @@ export class CvService {
               })),
             }
           : undefined,
-        educations: updateCvDto.educations
+        educations: rest.educations
           ? {
-              upsert: updateCvDto.educations.map((edu) => ({
+              upsert: rest.educations.map((edu) => ({
                 where: { id: edu.id || defaultUUID },
                 update: edu,
                 create: {
@@ -158,9 +160,9 @@ export class CvService {
               })),
             }
           : undefined,
-        certificates: updateCvDto.certificates
+        certificates: rest.certificates
           ? {
-              upsert: updateCvDto.certificates.map((cert) => ({
+              upsert: rest.certificates.map((cert) => ({
                 where: { id: cert.id || defaultUUID },
                 update: cert,
                 create: {
@@ -173,9 +175,9 @@ export class CvService {
               })),
             }
           : undefined,
-        courses: updateCvDto.courses
+        courses: rest.courses
           ? {
-              upsert: updateCvDto.courses.map((course) => ({
+              upsert: rest.courses.map((course) => ({
                 where: { id: course.id || defaultUUID },
                 update: course,
                 create: {
@@ -187,9 +189,9 @@ export class CvService {
               })),
             }
           : undefined,
-        socials: updateCvDto.socials
+        socials: rest.socials
           ? {
-              upsert: updateCvDto.socials.map((social) => ({
+              upsert: rest.socials.map((social) => ({
                 where: { id: social.id || defaultUUID },
                 update: social,
                 create: {
@@ -199,9 +201,9 @@ export class CvService {
               })),
             }
           : undefined,
-        languages: updateCvDto.languages
+        languages: rest.languages
           ? {
-              upsert: updateCvDto.languages.map((lang) => ({
+              upsert: rest.languages.map((lang) => ({
                 where: { id: lang.id || defaultUUID },
                 update: lang,
                 create: {
@@ -211,9 +213,9 @@ export class CvService {
               })),
             }
           : undefined,
-        skills: updateCvDto.skills
+        skills: rest.skills
           ? {
-              upsert: updateCvDto.skills.map((skill) => ({
+              upsert: rest.skills.map((skill) => ({
                 where: {
                   id: skill.id || defaultUUID,
                 },
@@ -278,6 +280,33 @@ export class CvService {
     // });
 
     return updatedCv;
+  }
+
+  async getPublicCv(id: string) {
+    const cv = await this.databaseService.cv.findUnique({
+      where: {
+        id,
+        applicant: {
+          public_cv: true,
+        },
+      },
+      include: {
+        experience: true,
+        projects: true,
+        educations: true,
+        certificates: true,
+        languages: true,
+        socials: true,
+        courses: true,
+        skills: true,
+        companyLogo: true,
+      },
+    });
+
+    if (!cv) {
+      throw new NotFoundException("CV not found");
+    }
+    return cv;
   }
 
   async getCv(id: string, userId: string) {

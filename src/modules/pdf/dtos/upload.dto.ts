@@ -5,7 +5,7 @@ import {
   IsString,
   IsUUID,
 } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 
 export class UploadDto {
@@ -28,6 +28,12 @@ export class UploadDto {
     // return typeof value === "string" ? JSON.parse(value) : value;
   })
   technologies: string[];
+
+  @ApiProperty({
+    example: true,
+    description: "Set to true if you want to make your cv public",
+  })
+  public_cv: boolean;
 
   @ApiProperty()
   @IsString()

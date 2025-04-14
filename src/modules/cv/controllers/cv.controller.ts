@@ -38,7 +38,7 @@ export class CvController {
 
   @Get("/:id")
   @ApiOperation({
-    summary: "Get cv",
+    summary: "Get your cv",
     description: "Get a CV ",
   })
   @ApiBearerAuth("Access Token")
@@ -54,6 +54,21 @@ export class CvController {
     @Param("id") id: string
   ) {
     return this.cvService.getCv(id, loggedUserInfo.id);
+  }
+
+  @Get("public/:id")
+  @ApiOperation({
+    summary: "Get Public cv",
+    description: "Get a CV ",
+  })
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  @ApiOkResponse({
+    description: "CV found successfully",
+    type: CvResponseDto,
+  })
+  async getPublicCv(@Param("id") id: string) {
+    return this.cvService.getPublicCv(id);
   }
 
   @Put("/:id")

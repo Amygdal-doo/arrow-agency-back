@@ -40,6 +40,14 @@ export class ApplicantResponseDto implements Applicant {
   email: string;
 
   @ApiProperty({
+    type: Boolean,
+    description: "Public status of the applicant",
+    example: true,
+  })
+  @Expose()
+  public_cv: boolean;
+
+  @ApiProperty({
     type: String,
     description: "Phone number of the applicant",
     example: "+420 123 456 789",
