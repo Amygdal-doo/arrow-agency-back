@@ -154,6 +154,8 @@ model Applicant {
   technologies String[]
   templateId   String
 
+  public_cv       Boolean  @default(false)
+
   cvId   String @unique @db.Uuid
   userId String @db.Uuid
 
