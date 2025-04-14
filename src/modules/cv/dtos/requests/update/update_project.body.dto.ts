@@ -29,14 +29,15 @@ export class UpdateProjectDto {
     example: "2023-01-01",
     description: "Date when the project was started",
   })
-  @IsDateString()
+  // @IsDateString()
+  @IsString()
   startDate?: string;
 
   @ApiPropertyOptional({
     example: "2024-01-01",
     description: "Date when the project was ended",
   })
-  @IsDateString()
+  @IsString()
   @IsOptional()
   endDate?: string;
 
