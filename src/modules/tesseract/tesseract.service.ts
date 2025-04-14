@@ -86,6 +86,10 @@ export class TesseractService {
     let third: string;
     // return { message: 'File uploaded successfully' };
     const pdfText = await this.extractTextFromImageBuffer(file);
+    if (pdfText.length < 30) {
+      this.logger.log("Pdf text is too short...");
+      return null;
+    }
     this.logger.log("Pdf data extracted succesfully...");
 
     first = await this.openaiService.createJsonObjectInstructions(

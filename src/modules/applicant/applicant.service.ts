@@ -292,6 +292,9 @@ export class ApplicantService {
     if (!pdfData) {
       // pdfData = await this.tesseractService.savePdfImageToJson(file);
       pdfData = await this.tesseractService.savePdfImageToJsonDivided(file);
+      if (!pdfData) {
+        throw new BadRequestException("Pdf data not found");
+      }
     }
 
     const image = await this.databaseService.file.findUnique({
