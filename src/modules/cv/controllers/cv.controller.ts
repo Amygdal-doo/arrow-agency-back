@@ -62,7 +62,6 @@ export class CvController {
     description: "Get a CV ",
   })
   @UseFilters(new HttpExceptionFilter())
-  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({
     description: "CV found successfully",
     type: CvResponseDto,
