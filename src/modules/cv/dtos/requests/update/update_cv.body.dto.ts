@@ -35,7 +35,7 @@ export class UpdateCvDto {
   })
   @IsBoolean()
   @IsOptional()
-  public_cv?: boolean;
+  publicCv?: boolean;
 
   @ApiPropertyOptional({
     example: "Doe",

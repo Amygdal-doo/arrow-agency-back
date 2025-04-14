@@ -45,7 +45,7 @@ export class ApplicantResponseDto implements Applicant {
     example: true,
   })
   @Expose()
-  public_cv: boolean;
+  publicCv: boolean;
 
   @ApiProperty({
     type: String,

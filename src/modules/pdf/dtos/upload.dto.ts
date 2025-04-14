@@ -33,7 +33,7 @@ export class UploadDto {
     example: true,
     description: "Set to true if you want to make your cv public",
   })
-  public_cv: boolean;
+  publicCv: boolean;
 
   @ApiProperty()
   @IsString()

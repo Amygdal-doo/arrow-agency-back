@@ -32,7 +32,7 @@ export class CvService {
     updateCvDto: UpdateCvDto,
     templateId: string
   ) {
-    const { public_cv, ...rest } = updateCvDto;
+    const { publicCv, ...rest } = updateCvDto;
     // Fetch the CV with its Applicant and User
     const cv = await this.databaseService.cv.findUnique({
       where: { id },
@@ -93,7 +93,7 @@ export class CvService {
         applicant: {
           update: {
             templateId,
-            public_cv,
+            publicCv,
           },
         },
         companyLogo: companyLogoUpdate
@@ -287,7 +287,7 @@ export class CvService {
       where: {
         id,
         applicant: {
-          public_cv: true,
+          publicCv: true,
         },
       },
       include: {

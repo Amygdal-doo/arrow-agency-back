@@ -283,7 +283,7 @@ export class ApplicantService {
     file: Express.Multer.File,
     body: UploadDto
   ): Promise<Buffer> {
-    const { templateId, logoId, companyName, public_cv, ...rest } = body;
+    const { templateId, logoId, companyName, publicCv, ...rest } = body;
     const exists = await checkFileExists(templateId);
     if (!exists) throw new BadRequestException("Template not found");
 
@@ -369,7 +369,7 @@ export class ApplicantService {
       phone: body.phone,
       templateId: templateId,
       technologies: technologies,
-      public_cv: public_cv,
+      publicCv: publicCv,
       cv: {
         create: {
           firstName: pdfData.firstName,
