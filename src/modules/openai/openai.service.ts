@@ -5,6 +5,7 @@ import {
   ChatCompletionUserMessageParam,
 } from "openai/resources";
 import { IInstructions } from "./interfaces/instructions.interface";
+import * as fs from "fs";
 
 const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.7;
@@ -81,4 +82,25 @@ export class OpenaiService {
       role: message.role,
     };
   }
+
+  // async uploadFile(filePath: string) {
+  //   const form = new FormData();
+  //   form.append('file', fs.createReadStream(filePath));
+  //   form.append('purpose', 'answers'); // Purpose for file (could be 'fine-tune' for training, 'answers' for using with chat)
+
+  //   const headers = {
+  //     ...form.getHeaders(),
+  //     Authorization: `Bearer ${this.apiKey}`,
+  //   };
+
+  //   try {
+  //     const response = await axios.post(this.apiUrl, form, {
+  //       headers,
+  //     });
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Error uploading file to OpenAI:', error.response?.data || error);
+  //     throw error;
+  //   }
+  // }
 }

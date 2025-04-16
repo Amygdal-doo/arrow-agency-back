@@ -1,26 +1,61 @@
-import { Body, Controller, Post, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from "@nestjs/common";
 import { PdfService } from "./pdf.service";
 import { ApiBody, ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { ICvData } from "./interfaces/cv-data.interface";
 import { createPdfDto } from "./dtos/create-pdf.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { FileUploadDto } from "./dtos/fileUpload.dto";
 
 @Controller("pdf")
 export class PdfController {
   constructor(private readonly pdfService: PdfService) {}
 
-  // @Post('upload-file/pdf')
-  // // @UseGuards(AccessTokenGuard)
-  // // @ApiBearerAuth('Access Token')
-  // @ApiConsumes('multipart/form-data')
-  // @UseInterceptors(FileInterceptor('file'))
-  // @ApiBody({
-  //   description: 'List of cats',
-  //   type: UploadPdfFileDto,
-  // })
-  // uploadFile(@UploadedFile() file: Express.Multer.File) {
-  //   console.log(file, 111);
-  //   return 'ssss';
-  // }
+  @Post("upload")
+  // @UseGuards(AccessTokenGuard)
+  // @ApiBearerAuth('Access Token')
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiBody({
+    description: "List of cats",
+    type: FileUploadDto,
+  })
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log(file, 111);
+
+    // const { imageBuffer, imageFilename, extractedText } =
+    //   await this.pdfService.convertPdfToImageAndExtractText(file);
+
+    // // Optionally, return the image as a base64 string
+    // return {
+    //   filename: imageFilename,
+    //   base64Image: imageBuffer.toString("base64"),
+    //   extractedText,
+    // };
+
+    // const text = await this.pdfService.convertPdfToImageAndExtractText2(file);
+    const text = await this.pdfService.convertPdfToImageAndExtractText2(file);
+    console.log(text);
+
+    return { extractedText: text };
+
+    // const buffers = await this.pdfService.convertToImages(file);
+    // // const ss = await this.tesseractService.extractTextFromImageBuffer(
+    // //   buffers[1].buffer
+    // // );
+    // console.log({ buffers });
+
+    // const ss = await this.pdfService.extractTextFromImage(buffers[1].buffer);
+    // console.log(ss);
+    // return ss;
+  }
 
   // @Post("upload")
   // @ApiOperation({
@@ -102,5 +137,29 @@ export class PdfController {
   //   } catch (error) {
   //     res.status(500).send(`Error generating PDF: ${error.message}`);
   //   }
+  // }
+
+  // @Post("extract")
+  // @UseInterceptors(
+  //   FileInterceptor("file", {
+  //     storage: diskStorage({
+  //       destination: "/tmp",
+  //       filename: (req, file, cb) => {
+  //         const uniqueName = `${Date.now()}-${file.originalname}`;
+  //         cb(null, uniqueName);
+  //       },
+  //     }),
+  //   })
+  // )
+  // async extractText(@UploadedFile() file: Express.Multer.File) {
+  //   const text = await this.pdfService.extractTextFromPdf(file.path);
+  //   return { text };
+  // }
+
+  // @Post('upload')
+  // @UseInterceptors(FileInterceptor('file'))
+  // async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  //   const text = await this.pdfOcrService.extractTextFromPdf(file.buffer);
+  //   return { text };
   // }
 }
