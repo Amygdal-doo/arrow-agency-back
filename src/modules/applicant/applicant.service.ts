@@ -321,11 +321,11 @@ export class ApplicantService {
       companyName: companyName,
       companyLogoUrl: image.url,
 
-      primaryColor: body.primaryColor,
-      secondaryColor: body.secondaryColor,
-      tertiaryColor: body.tertiaryColor,
-      showCompanyInfo: body.showCompanyInfo,
-      showPersonalInfo: body.showPersonalInfo,
+      primaryColor: rest.primaryColor,
+      secondaryColor: rest.secondaryColor,
+      tertiaryColor: rest.tertiaryColor,
+      showCompanyInfo: rest.showCompanyInfo,
+      showPersonalInfo: rest.showPersonalInfo,
 
       email: pdfData.email,
       phone: pdfData.phone,
@@ -353,7 +353,7 @@ export class ApplicantService {
       if (file) {
         pdfFile = await this.spacesService.uploadFileBuffer(
           pdfBuffer,
-          `${body.name}_${body.surname}`,
+          `${rest.name}_${rest.surname}`,
           SpacesDestinationPath.PDF
         );
       }
@@ -363,10 +363,10 @@ export class ApplicantService {
 
     const newApplicant = await this.create({
       user: { connect: { id: loggedUserInfo.id } },
-      firstName: body.name,
-      lastName: body.surname,
-      email: body.email,
-      phone: body.phone,
+      firstName: rest.name,
+      lastName: rest.surname,
+      email: rest.email,
+      phone: rest.phone,
       templateId: templateId,
       technologies: technologies,
       publicCv: publicCv,
@@ -377,11 +377,11 @@ export class ApplicantService {
           email: pdfData.email,
           phone: pdfData.phone,
           summary: pdfData.summary,
-          primaryColor: body.primaryColor,
-          secondaryColor: body.secondaryColor,
-          tertiaryColor: body.tertiaryColor,
-          showCompanyInfo: body.showCompanyInfo,
-          showPersonalInfo: body.showPersonalInfo,
+          primaryColor: rest.primaryColor,
+          secondaryColor: rest.secondaryColor,
+          tertiaryColor: rest.tertiaryColor,
+          showCompanyInfo: rest.showCompanyInfo,
+          showPersonalInfo: rest.showPersonalInfo,
           companyName,
           companyLogo: {
             connect: { id: logoId },
