@@ -33,6 +33,8 @@ export class UploadDto {
     example: true,
     description: "Set to true if you want to make your cv public",
   })
+  @Transform(({ value }) => value === "true") //
+  @IsBoolean()
   publicCv: boolean;
 
   @ApiProperty()

@@ -190,36 +190,54 @@ export class PdfService {
         month: "long",
       });
     };
-
     return {
       ...data,
       experience: data.experience.map((exp) => ({
         ...exp,
-        startDate: formatDate(exp.startDate),
-        endDate: exp.endDate ? formatDate(exp.endDate) : undefined,
       })),
       projects: data.projects.map((proj) => ({
         ...proj,
-        startDate: formatDate(proj.startDate),
-        endDate: proj.endDate ? formatDate(proj.endDate) : undefined,
       })),
       educations: data.educations.map((edu) => ({
         ...edu,
-        startDate: formatDate(edu.startDate),
-        endDate: edu.endDate ? formatDate(edu.endDate) : undefined,
       })),
       certificates: data.certificates.map((cert) => ({
         ...cert,
-        issueDate: formatDate(cert.issueDate),
-        expirationDate: cert.expirationDate
-          ? formatDate(cert.expirationDate)
-          : undefined,
       })),
       courses: data.courses.map((course) => ({
         ...course,
-        startDate: formatDate(course.startDate),
-        endDate: course.endDate ? formatDate(course.endDate) : undefined,
       })),
     };
+
+    // return {
+    //   ...data,
+    //   experience: data.experience.map((exp) => ({
+    //     ...exp,
+    //     startDate: formatDate(exp.startDate),
+    //     endDate: exp.endDate ? formatDate(exp.endDate) : undefined,
+    //   })),
+    //   projects: data.projects.map((proj) => ({
+    //     ...proj,
+    //     startDate: formatDate(proj.startDate),
+    //     endDate: proj.endDate ? formatDate(proj.endDate) : undefined,
+    //   })),
+    //   educations: data.educations.map((edu) => ({
+    //     ...edu,
+    //     startDate: formatDate(edu.startDate),
+    //     endDate: edu.endDate ? formatDate(edu.endDate) : undefined,
+    //   })),
+    //   certificates: data.certificates.map((cert) => ({
+    //     ...cert,
+    //     issueDate: formatDate(cert.issueDate),
+    //     expirationDate: cert.expirationDate
+    //       ? formatDate(cert.expirationDate)
+    //       : undefined,
+    //   })),
+    //   courses: data.courses.map((course) => ({
+    //     ...course,
+    //     startDate: formatDate(course.startDate),
+    //     endDate: course.endDate ? formatDate(course.endDate) : undefined,
+    //   })),
+    // };
   }
 }
