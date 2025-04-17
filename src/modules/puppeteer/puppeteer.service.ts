@@ -3,65 +3,22 @@ import {
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import puppeteer, { Browser } from "puppeteer";
+import puppeteer, { Browser } from "puppeteer-core";
+import { existsSync } from "fs";
 
 @Injectable()
 export class PuppeteerService {
-  // async initializeBrowser() {
-  //   try {
-  //     if (!this.browser) {
-  //       this.browser = await puppeteer.launch({
-  //         headless: true,
-  //         args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  //         // userDataDir: "./user_data",
-  //       });
-  //       this.logger.log("Browser launched successfully.");
-
-  //       this.browser.once("disconnected", async () => {
-  //         this.logger.warn("Browser disconnected.");
-  //         await this.browser.close();
-  //         await this.initializeBrowser();
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error(`Error launching browser: ${error}`);
-  //     setTimeout(this.initializeBrowser, 1000);
-  //   }
-  // }
-
-  // async closeBrowser() {
-  //   if (this.browser) {
-  //     await this.browser.close();
-  //     this.browser = null;
-  //     this.logger.log("Browser is closed...");
-  //   }
-  // }
-
-  // async createPdfFile(html: string): Promise<Buffer> {
-  //   let page;
-  //   try {
-  //     await this.initializeBrowser();
-  //     page = await this.browser.newPage();
-  //     await page.setContent(html);
-  //     const pdf = await page.pdf({
-  //       format: "A4",
-  //       printBackground: true,
-  //       margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
-  //     });
-  //     await page.close();
-  //     return Buffer.from(pdf);
-  //   } catch (error) {
-  //     this.logger.error(`Error creating PDF: ${error}`);
-  //     // await page.close();
-  //     throw new InternalServerErrorException("Error creating PDF");
-  //   }
-  // }
-
   private browser: Browser | null = null;
   private logger: Logger = new Logger(PuppeteerService.name);
   private initializationPromise: Promise<void> | null = null;
   private lastInitializationFailure: number = 0;
   private initializationCooldown: number = 60000; // 1 minute in milliseconds
+  private chromiumPaths = [
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
+    "/usr/bin/google-chrome-stable",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+  ];
 
   /**
    * Initializes the browser, ensuring only one initialization attempt runs at a time.
@@ -108,9 +65,19 @@ export class PuppeteerService {
     while (rep < maxRetries) {
       try {
         this.logger.log("Launching browser...");
+        console.log(1);
+
+        const chromiumPath = this.chromiumPaths.find((p) => existsSync(p));
+        console.log(2);
+        if (!chromiumPath) {
+          throw new Error("Chromium not found on system!");
+        }
+        console.log("chromiumPath", chromiumPath);
+
         this.browser = await puppeteer.launch({
           headless: true,
           args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          executablePath: chromiumPath, //'/Applications/Chromium.app/Contents/MacOS/Chromium'
           // userDataDir: './user_data', // Uncomment if needed
         });
         this.logger.log("Browser launched successfully.");
