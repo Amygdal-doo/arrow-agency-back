@@ -16,6 +16,8 @@ export class PuppeteerService {
   private chromiumPaths = [
     "/usr/bin/chromium-browser",
     "/usr/bin/chromium",
+    "/usr/local/bin/chromium-browser",
+    "/usr/local/bin/chromium",
     "/usr/bin/google-chrome-stable",
     "/Applications/Chromium.app/Contents/MacOS/Chromium",
   ];
@@ -66,7 +68,11 @@ export class PuppeteerService {
       try {
         this.logger.log("Launching browser...");
         console.log(1);
-
+        this.chromiumPaths.forEach((path) => {
+          if (existsSync(path)) {
+            console.log(`Chromium found at ${path}`);
+          }
+        });
         const chromiumPath = this.chromiumPaths.find((p) => existsSync(p));
         console.log(2);
         if (!chromiumPath) {
