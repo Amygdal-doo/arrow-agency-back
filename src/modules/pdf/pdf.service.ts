@@ -7,24 +7,25 @@ import {
   OpenaiService,
 } from "../openai/openai.service";
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 import { ICvData, ICvDataExtended } from "./interfaces/cv-data.interface";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 import * as handlebars from "handlebars";
 import { PuppeteerService } from "../puppeteer/puppeteer.service";
 
-// import * as Tesseract from "tesseract.js";
-import Tesseract, { createWorker } from "tesseract.js";
-import { promises as fsPromise } from "fs";
+import { PDFDocument } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import { createCanvas } from "canvas";
+
 import puppeteer from "puppeteer";
-// import { pdfToPng } from 'pdf-to-png-converter';
+import { TesseractService } from "../tesseract/tesseract.service";
 
 @Injectable()
 export class PdfService {
   constructor(
     private readonly openaiService: OpenaiService,
-    private readonly puppeteerService: PuppeteerService
+    private readonly puppeteerService: PuppeteerService,
+    private readonly tesseractService: TesseractService
   ) {}
   private logger = new Logger(PdfService.name);
 
@@ -97,7 +98,7 @@ export class PdfService {
       this.logger.log("Pdf text is too short...");
       return null;
     }
-    this.logger.log("Pdf data extracted succesfully...");
+    this.logger.log("Pdf data/text extracted succesfully...");
 
     first = await this.openaiService.createJsonObjectInstructions(
       pdfText,
@@ -173,9 +174,11 @@ export class PdfService {
     // Read and compile the template
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = handlebars.compile(templateHtml);
+    this.logger.log("Template loaded successfully...");
 
     // Format dates for better readability (optional)
     const formattedData = this.formatCvData(data);
+    this.logger.log("Data formatted successfully...");
 
     // Render HTML with data
     const html = template({
@@ -183,6 +186,7 @@ export class PdfService {
       companyName: data.companyName,
       logoUrl: data.companyLogoUrl,
     });
+    this.logger.log("HTML rendered successfully...");
 
     const pdf = await this.puppeteerService.createPdfFile(html);
 
@@ -230,282 +234,223 @@ export class PdfService {
     };
   }
 
-  // async extractTextFromPdf(filePath: string): Promise<string> {
-  //   const outputDir = path.join("/tmp", `pdf2pic-${Date.now()}`);
-  //   await fsPromise.mkdir(outputDir, { recursive: true });
-
-  //   const converter = fromPath(filePath, {
-  //     density: 150,
-  //     saveFilename: "page",
-  //     savePath: outputDir,
-  //     format: "png",
-  //     width: 1024,
-  //     height: 1024,
-  //   });
-
-  //   try {
-  //     // Convert all pages
-  //     const result = await converter.bulk(-1); // -1 = all pages
-
-  //     let fullText = "";
-  //     for (const page of result) {
-  //       const ocrResult = await Tesseract.recognize(page.path, "eng");
-  //       fullText += ocrResult.data.text + "\n";
-  //     }
-
-  //     return fullText;
-  //   } finally {
-  //     await fsPromise.unlink(filePath).catch(() => {});
-  //     await fsPromise
-  //       .rm(outputDir, { recursive: true, force: true })
-  //       .catch(() => {});
-  //   }
-  // }
-
-  // async extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
-  //   let pdfPath: string | undefined;
-  //   try {
-  //     // Save PDF buffer to a temporary file
-  //     pdfPath = await this.saveToTempFile(pdfBuffer, "pdf");
-
-  //     // Convert PDF to array of image buffers using pdf-to-img
-  //     const imageBuffers = await pdfToImg.convert(pdfPath);
-
-  //     // Initialize Tesseract worker
-  //     const worker = createWorker();
-  //     await worker.load();
-  //     await worker.loadLanguage("eng");
-  //     await worker.initialize("eng");
-
-  //     // Extract text from each image buffer
-  //     const texts: string[] = [];
-  //     for (const imageBuffer of imageBuffers) {
-  //       const {
-  //         data: { text },
-  //       } = await worker.recognize(imageBuffer);
-  //       texts.push(text);
-  //     }
-
-  //     // Terminate the worker
-  //     await worker.terminate();
-
-  //     // Return concatenated text
-  //     return texts.join("\n");
-  //   } finally {
-  //     // Clean up temporary PDF file
-  //     if (pdfPath) {
-  //       await this.deleteTempFile(pdfPath);
-  //     }
-  //   }
-  // }
-
-  // private async saveToTempFile(buffer: Buffer, ext: string): Promise<string> {
-  //   const tempDir = os.tmpdir();
-  //   const fileName = `temp-${Date.now()}.${ext}`;
-  //   const filePath = path.join(tempDir, fileName);
-  //   await fsPromise.writeFile(filePath, buffer);
-  //   return filePath;
-  // }
-
-  // private async deleteTempFile(filePath: string): Promise<void> {
-  //   await fsPromise.unlink(filePath);
-  // }
-
-  // async convertPdfToImageAndExtractText2(
+  // async convertPdfToImagesAndExtractText(
   //   file: Express.Multer.File
   // ): Promise<string> {
-  //   // Generate unique temporary file paths for the PDF and image
-  //   const tempPdfPath = path.join(os.tmpdir(), `${Date.now()}.pdf`);
-  //   const tempImagePath = path.join(os.tmpdir(), `${Date.now()}.png`);
+  //   const tempDir = path.join(process.cwd(), "temp");
+  //   if (!fs.existsSync(tempDir)) {
+  //     fs.mkdirSync(tempDir);
+  //   }
+
+  //   const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  //   const outputText: string[] = [];
 
   //   try {
-  //     // Write the file buffer to a temporary PDF file
-  //     fs.writeFile(tempPdfPath, file.buffer, (err) => {});
+  //     // Step 1: Split PDF into individual pages
+  //     const pagePaths = await this.splitPdfPages(file.buffer, tempDir);
 
-  //     // Launch Puppeteer with options for compatibility (e.g., on platforms like Railway)
   //     const browser = await puppeteer.launch({
-  //       args: ["--no-sandbox", "--disable-setuid-sandbox"],
   //       headless: true,
+  //       args: ["--no-sandbox", "--disable-setuid-sandbox"],
   //     });
-  //     const page = await browser.newPage();
 
-  //     // Load the temporary PDF file into Puppeteer
-  //     await page.goto(`file://${tempPdfPath}`, { waitUntil: "networkidle0" });
+  //     for (let i = 0; i < pagePaths.length; i++) {
+  //       console.log(`Processing page ${i + 1} of ${pagePaths.length}`);
 
-  //     // Capture a screenshot of the PDF (first page) as an image
-  //     await page.screenshot({ path: "./temp.png", fullPage: true });
+  //       const page = await browser.newPage();
+  //       await page.goto(`file://${pagePaths[i]}`, {
+  //         waitUntil: [
+  //           "networkidle0",
+  //           "domcontentloaded",
+  //           "load",
+  //           "networkidle2",
+  //         ],
+  //       });
 
-  //     // Close the Puppeteer browser
+  //       const imagePath = path.join(tempDir, `${uniqueId}-page-${i + 1}.png`);
+  //       await page.setViewport({ width: 1240, height: 900 });
+  //       await page.screenshot({
+  //         path: imagePath,
+  //         fullPage: true,
+  //         fromSurface: false,
+  //       });
+
+  //       // const {
+  //       //   data: { text },
+  //       // } = await Tesseract.recognize(imagePath, "eng");
+  //       // outputText.push(text);
+  //       const text =
+  //         await this.tesseractService.extractTextFromImagePath(imagePath);
+  //       outputText.push(text);
+
+  //       // Clean up individual image
+  //       await fs.promises.unlink(imagePath);
+  //       await fs.promises.unlink(pagePaths[i]);
+  //     }
+
   //     await browser.close();
-
-  //     // Perform OCR on the generated image to extract text
-  //     const {
-  //       data: { text },
-  //     } = await Tesseract.recognize(tempImagePath, "eng");
-
-  //     // Delete the temporary files
-  //     fs.unlink(tempPdfPath, () => {});
-  //     fs.unlink(tempImagePath, () => {});
-
-  //     // Return the extracted text
-  //     return text;
+  //     return outputText.join("\n\n");
   //   } catch (error) {
   //     console.error("Error processing PDF:", error);
-  //     throw new Error("Failed to convert PDF or extract text");
+  //     throw new Error("Failed to process PDF");
   //   }
   // }
 
-  // latest 1
-  // async convertPdfToImageAndExtractText2(
-  //   file: Express.Multer.File
-  // ): Promise<string> {
-  //   const tempPdfPath = path.join(os.tmpdir(), `${Date.now()}.pdf`);
-  //   const tempImagePath = path.join(os.tmpdir(), `${Date.now()}.png`);
+  async savePdfImageToJsonDivided(file: Express.Multer.File): Promise<ICvData> {
+    let first: string;
+    let second: string;
+    let third: string;
+    // return { message: 'File uploaded successfully' };
+    console.time("Pdf to text");
+    const pdfText = await this.convertPdfToImagesAndExtractText2(file);
+    console.timeEnd("Pdf to text");
 
-  //   try {
-  //     // Write the PDF file synchronously or await it
-  //     await fs.promises.writeFile(tempPdfPath, file.buffer);
+    if (pdfText.length < 30) {
+      this.logger.log("Pdf text is too short...");
+      return null;
+    }
+    this.logger.log("Pdf data extracted succesfully...");
 
-  //     // Launch Puppeteer
-  //     const browser = await puppeteer.launch({
-  //       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  //       headless: true,
-  //     });
-  //     const page = await browser.newPage();
-  //     await page.goto(`file://${tempPdfPath}`, { waitUntil: "networkidle0" });
+    first = await this.openaiService.createJsonObjectInstructions(
+      pdfText,
+      CHAT_INSTRUCTIONS_6_1
+    );
+    this.logger.log("Ai created first json succesfully...");
+    // console.log(first);
 
-  //     // Capture screenshot using the correct
-  //     await page.setViewport({ width: 1920, height: 1080 });
-  //     await page.screenshot({ path: tempImagePath, fullPage: true });
-  //     await browser.close();
-  //     console.log(tempImagePath);
+    second = await this.openaiService.createJsonObjectInstructions(
+      pdfText,
+      CHAT_INSTRUCTIONS_6_2
+    );
+    this.logger.log("Ai created second json succesfully...");
+    // console.log(second);
 
-  //     // Perform OCR
-  //     const {
-  //       data: { text },
-  //     } = await Tesseract.recognize(tempImagePath, "eng");
+    third = await this.openaiService.createJsonObjectInstructions(
+      pdfText,
+      CHAT_INSTRUCTIONS_6_3
+    );
+    this.logger.log("Ai created third json succesfully...");
+    // console.log(third);
 
-  //     // Clean up temporary files (optional: handle errors)
-  //     await fs.promises.unlink(tempPdfPath);
-  //     await fs.promises.unlink(tempImagePath);
+    let object1: ICvData;
+    let object2: ICvData;
+    let object3: ICvData;
+    try {
+      object1 = JSON.parse(first) as ICvData;
+      object2 = JSON.parse(second) as ICvData;
+      object3 = JSON.parse(third) as ICvData;
+    } catch (error) {
+      // console.error("Failed to parse JSON object:", error);
+      // throw new BadRequestException("Invalid JSON format");
+      return null;
+    }
 
-  //     return text;
-  //   } catch (error) {
-  //     console.error("Error processing PDF:", error);
-  //     throw new Error("Failed to convert PDF or extract text");
-  //   }
-  // }
+    return {
+      firstName: object1.firstName,
+      lastName: object1.lastName,
+      companyName: object1.companyName,
+      companyLogoUrl: object1.companyLogoUrl,
+      email: object1.email,
+      phone: object1.phone,
+      summary: object1.summary,
+      educations: object1.educations,
+      hobies: object1.hobies,
+      languages: object1.languages,
+      socials: object1.socials,
+      courses: object1.courses,
 
-  //latest 2
-  async convertPdfToImageAndExtractText2(
+      certificates: object2.certificates,
+      skills: object2.skills,
+      projects: object2.projects,
+
+      experience: object3.experience,
+    };
+  }
+
+  // latest 5
+
+  async splitPdfPages(
+    fileBuffer: Buffer,
+    outputDir: string
+  ): Promise<string[]> {
+    const pdfDoc = await PDFDocument.load(fileBuffer);
+    const pageCount = pdfDoc.getPageCount();
+    const pagePaths: string[] = [];
+
+    for (let i = 0; i < pageCount; i++) {
+      const newPdf = await PDFDocument.create();
+      const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+      newPdf.addPage(copiedPage);
+      const pdfBytes = await newPdf.save();
+
+      const tempPath = path.join(outputDir, `page-${i + 1}.pdf`);
+      await fs.promises.writeFile(tempPath, pdfBytes);
+      pagePaths.push(tempPath);
+    }
+
+    return pagePaths;
+  }
+
+  async convertPdfPageToImage(
+    pdfPath: string,
+    pageNum: number
+  ): Promise<string> {
+    const pdfData = new Uint8Array(await fs.promises.readFile(pdfPath));
+    const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+    const page = await pdfDoc.getPage(pageNum);
+    const viewport = page.getViewport({ scale: 2 });
+
+    const canvas = createCanvas(viewport.width, viewport.height);
+    const ctx = canvas.getContext("2d");
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const imagePath = pdfPath.replace(".pdf", ".png");
+    await fs.promises.writeFile(imagePath, canvas.toBuffer("image/png"));
+    return imagePath;
+  }
+
+  async convertPdfToImagesAndExtractText2(
     file: Express.Multer.File
   ): Promise<string> {
     const tempDir = path.join(process.cwd(), "temp");
-
-    // Ensure the temp directory exists
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
     }
 
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const tempPdfPath = path.join(tempDir, `${uniqueSuffix}.pdf`);
-    const tempImagePath = path.join(tempDir, `${uniqueSuffix}.png`);
+    const outputText: string[] = [];
 
     try {
-      // Save the PDF to the local temp folder
-      await fs.promises.writeFile(tempPdfPath, file.buffer);
+      // Step 1: Split PDF into individual pages
+      const pagePaths = await this.splitPdfPages(file.buffer, tempDir);
 
-      // Launch Puppeteer
-      const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        headless: true,
-      });
-      const page = await browser.newPage();
-      await page.goto(`file://${tempPdfPath}`, {
-        waitUntil: ["networkidle0", "domcontentloaded", "load", "networkidle2"],
-      });
+      // Step 2: Process each page
+      for (let i = 0; i < pagePaths.length; i++) {
+        console.log(`Processing page ${i + 1} of ${pagePaths.length}`);
 
-      // Screenshot
-      await page.setViewport({
-        width: 1240,
-        height: 800,
-      });
-      await page.screenshot({
-        path: tempImagePath,
-        fullPage: true, // ussually uncmoneted
-        fromSurface: false, // ussually false
-        // clip: { x: 400, y: 0, width: 500, height: 900 },
-      });
-      await browser.close();
+        // Convert PDF page to image
+        const imagePath = await this.convertPdfPageToImage(pagePaths[i], 1);
 
-      // OCR
-      const {
-        data: { text },
-      } = await Tesseract.recognize(tempImagePath, "eng");
+        // Extract text from image
+        const text =
+          await this.tesseractService.extractTextFromImagePath(imagePath);
+        outputText.push(`--- Page ${i + 1} ---\n${text}`);
 
-      // Clean up
-      await fs.promises.unlink(tempPdfPath);
-      await fs.promises.unlink(tempImagePath);
+        // Clean up individual image and page
+        await fs.promises.unlink(imagePath);
+        await fs.promises.unlink(pagePaths[i]);
+      }
 
-      return text;
+      return outputText.join("\n\n");
     } catch (error) {
       console.error("Error processing PDF:", error);
-      throw new Error("Failed to convert PDF or extract text");
+      // throw new Error("Failed to process PDF");
+      return "";
+    } finally {
+      // Clean up temp directory if empty
+      // if (fs.existsSync(tempDir) && fs.readdirSync(tempDir).length === 0) {
+      //   fs.rmdirSync(tempDir);
+      // }
     }
-  }
-
-  // latest 3
-  async convertPdfToScreenshot(
-    pdfBuffer: Buffer,
-    outputPath: string
-  ): Promise<void> {
-    const tempPdfPath = path.join(
-      process.cwd(),
-      "temp",
-      `pdf-${Date.now()}.pdf`
-    );
-
-    // Ensure temp folder exists
-    fs.mkdirSync(path.dirname(tempPdfPath), { recursive: true });
-
-    // Write the buffer to a file
-    fs.writeFileSync(tempPdfPath, pdfBuffer);
-
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true,
-    });
-
-    const page = await browser.newPage();
-
-    // Set a large viewport to reduce need for too much scrolling
-    await page.setViewport({ width: 1280, height: 1024 });
-
-    // Open the local PDF file
-    await page.goto(`file://${tempPdfPath}`, {
-      waitUntil: "networkidle0",
-      timeout: 500,
-    });
-
-    // Give it a bit of time to render if needed
-    // await page.waitForTimeout(500);
-
-    // Scroll through to load all PDF pages
-    const fullHeight = await page.evaluate(async () => {
-      const totalHeight = document.body.scrollHeight;
-      window.scrollTo(0, totalHeight);
-      return totalHeight;
-    });
-
-    // Set viewport to full height for a single-page screenshot
-    await page.setViewport({ width: 1280, height: fullHeight });
-
-    // Capture the full screenshot
-    await page.screenshot({ path: outputPath, fullPage: true });
-
-    await browser.close();
-
-    // Clean up
-    fs.unlinkSync(tempPdfPath);
   }
 }

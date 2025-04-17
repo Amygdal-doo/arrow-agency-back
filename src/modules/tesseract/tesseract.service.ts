@@ -44,7 +44,7 @@ export class TesseractService {
         throw new Error("Image path is required");
       }
 
-      const worker = await createWorker();
+      const worker = await createWorker("eng", 1);
 
       await worker.load();
       //   await worker.loadLanguage('eng');

@@ -6,7 +6,7 @@ import { PuppeteerModule } from "../puppeteer/puppeteer.module";
 import { TesseractModule } from "../tesseract/tesseract.module";
 
 @Module({
-  imports: [OpenaiModule, PuppeteerModule],
+  imports: [OpenaiModule, PuppeteerModule, TesseractModule],
   providers: [PdfService],
   controllers: [PdfController],
   exports: [PdfService],

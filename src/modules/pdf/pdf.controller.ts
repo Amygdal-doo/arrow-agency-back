@@ -18,43 +18,22 @@ import { FileUploadDto } from "./dtos/fileUpload.dto";
 export class PdfController {
   constructor(private readonly pdfService: PdfService) {}
 
-  @Post("upload")
+  @Post("extract/text")
   // @UseGuards(AccessTokenGuard)
   // @ApiBearerAuth('Access Token')
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("file"))
   @ApiBody({
-    description: "List of cats",
+    description: "Extract text from PDF",
     type: FileUploadDto,
   })
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file, 111);
-
-    // const { imageBuffer, imageFilename, extractedText } =
-    //   await this.pdfService.convertPdfToImageAndExtractText(file);
-
-    // // Optionally, return the image as a base64 string
-    // return {
-    //   filename: imageFilename,
-    //   base64Image: imageBuffer.toString("base64"),
-    //   extractedText,
-    // };
-
-    // const text = await this.pdfService.convertPdfToImageAndExtractText2(file);
-    const text = await this.pdfService.convertPdfToImageAndExtractText2(file);
+    console.time("pdf");
+    const text = await this.pdfService.convertPdfToImagesAndExtractText2(file);
+    console.timeEnd("pdf");
     console.log(text);
 
-    return { extractedText: text };
-
-    // const buffers = await this.pdfService.convertToImages(file);
-    // // const ss = await this.tesseractService.extractTextFromImageBuffer(
-    // //   buffers[1].buffer
-    // // );
-    // console.log({ buffers });
-
-    // const ss = await this.pdfService.extractTextFromImage(buffers[1].buffer);
-    // console.log(ss);
-    // return ss;
+    return text;
   }
 
   // @Post("upload")
