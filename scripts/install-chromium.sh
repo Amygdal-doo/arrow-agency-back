@@ -5,8 +5,29 @@ set -e
 echo "Downloading Chromium..."
 curl -sSL https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1181205/chrome-linux.zip -o /tmp/chromium.zip
 
-echo "Extracting Chromium..."
-busybox unzip /tmp/chromium.zip -d /tmp/
+echo "Unzipping with Node..."
+node << 'EOF'
+import fs from 'fs';
+import path from 'path';
+import { pipeline } from 'stream';
+import unzipper from 'unzipper';
+
+const zipPath = '/tmp/chromium.zip';
+const extractPath = '/tmp';
+
+pipeline(
+  fs.createReadStream(zipPath),
+  unzipper.Extract({ path: extractPath }),
+  (err) => {
+    if (err) {
+      console.error('Unzip failed:', err);
+      process.exit(1);
+    } else {
+      console.log('Unzip successful.');
+    }
+  }
+);
+EOF
 
 echo "Moving to /usr/bin/chromium-browser..."
 mkdir -p /usr/bin
