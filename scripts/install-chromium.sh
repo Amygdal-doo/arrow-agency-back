@@ -31,7 +31,15 @@ EOF
 
 echo "Moving to /usr/bin/chromium-browser..."
 mkdir -p /usr/bin
+
+# Move the extracted Chromium folder to /usr/bin
 mv /tmp/chrome-linux /usr/bin/chromium
+
+# Create symbolic link for chromium-browser
 ln -s /usr/bin/chromium/chrome /usr/bin/chromium-browser
+
+# Set executable permissions on the Chromium binary
+chmod +x /usr/bin/chromium/chrome
+chmod +x /usr/bin/chromium-browser
 
 echo "Chromium installed!"
