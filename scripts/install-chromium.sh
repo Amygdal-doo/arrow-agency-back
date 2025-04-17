@@ -2,13 +2,15 @@
 
 set -e
 
-echo "Downloading Chromium..."
-curl -sSL https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1181205/chrome-linux.zip -o /tmp/chromium.zip
+# Safe Chromium revision that works with older glibc
+REVISION=1108766
+
+echo "Downloading Chromium revision $REVISION..."
+curl -sSL https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/$REVISION/chrome-linux.zip -o /tmp/chromium.zip
 
 echo "Unzipping with Node..."
 node << 'EOF'
 const fs = require('fs');
-const path = require('path');
 const { pipeline } = require('stream');
 const unzipper = require('unzipper');
 
