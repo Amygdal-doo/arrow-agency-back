@@ -61,6 +61,7 @@ export class PuppeteerService {
   // }
 
   async initializeBrowser(): Promise<void> {
+    let rep = 0;
     try {
       if (!this.browser) {
         this.logger.log("Launching browser...");
@@ -81,6 +82,12 @@ export class PuppeteerService {
     } catch (error) {
       this.logger.error(`Error launching browser: ${error}`);
       // Retry after a delay using an arrow function to preserve context
+      rep++;
+      if (rep > 5) {
+        rep = 0;
+        this.logger.error("Error launching browser: Max retries exceeded");
+        return;
+      }
       setTimeout(() => this.initializeBrowser(), 1000);
     }
   }
