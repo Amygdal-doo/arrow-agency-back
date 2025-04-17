@@ -3,7 +3,7 @@
 set -e
 
 echo "Downloading Chromium..."
-wget -q https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1181205/chrome-linux.zip -O /tmp/chromium.zip
+curl -sSL https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1181205/chrome-linux.zip -o /tmp/chromium.zip
 
 echo "Extracting Chromium..."
 unzip -q /tmp/chromium.zip -d /tmp/
