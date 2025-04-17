@@ -40,6 +40,26 @@ export class PuppeteerService {
   //   }
   // }
 
+  // async createPdfFile(html: string): Promise<Buffer> {
+  //   let page;
+  //   try {
+  //     await this.initializeBrowser();
+  //     page = await this.browser.newPage();
+  //     await page.setContent(html);
+  //     const pdf = await page.pdf({
+  //       format: "A4",
+  //       printBackground: true,
+  //       margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
+  //     });
+  //     await page.close();
+  //     return Buffer.from(pdf);
+  //   } catch (error) {
+  //     this.logger.error(`Error creating PDF: ${error}`);
+  //     // await page.close();
+  //     throw new InternalServerErrorException("Error creating PDF");
+  //   }
+  // }
+
   async initializeBrowser(): Promise<void> {
     try {
       if (!this.browser) {
@@ -81,20 +101,34 @@ export class PuppeteerService {
   async createPdfFile(html: string): Promise<Buffer> {
     let page;
     try {
-      await this.initializeBrowser();
+      // Ensure browser is initialized
+      if (!this.browser) {
+        await this.initializeBrowser();
+      }
+      if (!this.browser) {
+        throw new Error("Browser initialization failed");
+      }
+
       page = await this.browser.newPage();
-      await page.setContent(html);
+      await page.setContent(html, { waitUntil: "domcontentloaded" });
       const pdf = await page.pdf({
         format: "A4",
         printBackground: true,
         margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
       });
-      await page.close();
       return Buffer.from(pdf);
     } catch (error) {
       this.logger.error(`Error creating PDF: ${error}`);
-      // await page.close();
       throw new InternalServerErrorException("Error creating PDF");
+    } finally {
+      // Ensure page is closed to prevent resource leaks
+      if (page) {
+        try {
+          await page.close();
+        } catch (error) {
+          this.logger.error(`Error closing page: ${error}`);
+        }
+      }
     }
   }
 
