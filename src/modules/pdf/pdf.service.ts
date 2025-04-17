@@ -17,7 +17,6 @@ import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
 import { createCanvas } from "canvas";
 
-import puppeteer from "puppeteer";
 import { TesseractService } from "../tesseract/tesseract.service";
 
 @Injectable()
@@ -177,12 +176,12 @@ export class PdfService {
     this.logger.log("Template loaded successfully...");
 
     // Format dates for better readability (optional)
-    const formattedData = this.formatCvData(data);
-    this.logger.log("Data formatted successfully...");
+    // const formattedData = this.formatCvData(data);
+    // this.logger.log("Data formatted successfully...");
 
     // Render HTML with data
     const html = template({
-      ...formattedData,
+      ...data,
       companyName: data.companyName,
       logoUrl: data.companyLogoUrl,
     });
