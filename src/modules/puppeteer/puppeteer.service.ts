@@ -10,33 +10,71 @@ export class PuppeteerService {
   private browser: Browser = null;
   logger: Logger = new Logger(PuppeteerService.name);
 
-  async initializeBrowser() {
+  // async initializeBrowser() {
+  //   try {
+  //     if (!this.browser) {
+  //       this.browser = await puppeteer.launch({
+  //         headless: true,
+  //         args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  //         // userDataDir: "./user_data",
+  //       });
+  //       this.logger.log("Browser launched successfully.");
+
+  //       this.browser.once("disconnected", async () => {
+  //         this.logger.warn("Browser disconnected.");
+  //         await this.browser.close();
+  //         await this.initializeBrowser();
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error launching browser: ${error}`);
+  //     setTimeout(this.initializeBrowser, 1000);
+  //   }
+  // }
+
+  // async closeBrowser() {
+  //   if (this.browser) {
+  //     await this.browser.close();
+  //     this.browser = null;
+  //     this.logger.log("Browser is closed...");
+  //   }
+  // }
+
+  async initializeBrowser(): Promise<void> {
     try {
       if (!this.browser) {
+        this.logger.log("Launching browser...");
         this.browser = await puppeteer.launch({
           headless: true,
           args: ["--no-sandbox", "--disable-setuid-sandbox"],
-          // userDataDir: "./user_data",
+          // userDataDir: './user_data', // Uncomment if needed
         });
         this.logger.log("Browser launched successfully.");
 
         this.browser.once("disconnected", async () => {
           this.logger.warn("Browser disconnected.");
-          await this.browser.close();
-          await this.initializeBrowser();
+          await this.closeBrowser();
+          // Retry initialization after a delay
+          setTimeout(() => this.initializeBrowser(), 1000);
         });
       }
     } catch (error) {
-      console.error(`Error launching browser: ${error}`);
-      setTimeout(this.initializeBrowser, 1000);
+      this.logger.error(`Error launching browser: ${error}`);
+      // Retry after a delay using an arrow function to preserve context
+      setTimeout(() => this.initializeBrowser(), 1000);
     }
   }
 
-  async closeBrowser() {
+  async closeBrowser(): Promise<void> {
     if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-      this.logger.log("Browser is closed...");
+      try {
+        await this.browser.close();
+        this.logger.log("Browser closed successfully.");
+      } catch (error) {
+        this.logger.error(`Error closing browser: ${error}`);
+      } finally {
+        this.browser = null;
+      }
     }
   }
 
