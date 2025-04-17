@@ -7,9 +7,6 @@ import puppeteer, { Browser } from "puppeteer";
 
 @Injectable()
 export class PuppeteerService {
-  private browser: Browser = null;
-  logger: Logger = new Logger(PuppeteerService.name);
-
   // async initializeBrowser() {
   //   try {
   //     if (!this.browser) {
@@ -60,10 +57,56 @@ export class PuppeteerService {
   //   }
   // }
 
+  private browser: Browser | null = null;
+  private logger: Logger = new Logger(PuppeteerService.name);
+  private initializationPromise: Promise<void> | null = null;
+  private lastInitializationFailure: number = 0;
+  private initializationCooldown: number = 60000; // 1 minute in milliseconds
+
+  /**
+   * Initializes the browser, ensuring only one initialization attempt runs at a time.
+   * Respects a cooldown period after repeated failures.
+   */
   async initializeBrowser(): Promise<void> {
-    let rep = 0;
+    if (this.browser) {
+      return; // Browser is already initialized
+    }
+
+    const now = Date.now();
+    if (
+      this.lastInitializationFailure &&
+      now - this.lastInitializationFailure < this.initializationCooldown
+    ) {
+      throw new Error("Initialization failed recently, please try again later");
+    }
+
+    // If an initialization is already in progress, wait for it
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    // Start a new initialization attempt
+    this.initializationPromise = this.doInitializeBrowser();
     try {
-      if (!this.browser) {
+      await this.initializationPromise;
+    } catch (error) {
+      this.lastInitializationFailure = Date.now(); // Set cooldown on failure
+      throw error;
+    } finally {
+      this.initializationPromise = null; // Reset promise after completion
+    }
+  }
+
+  /**
+   * Performs the actual browser initialization with retry logic.
+   * @private
+   */
+  private async doInitializeBrowser(): Promise<void> {
+    const maxRetries = 5;
+    let rep = 0;
+
+    while (rep < maxRetries) {
+      try {
         this.logger.log("Launching browser...");
         this.browser = await puppeteer.launch({
           headless: true,
@@ -72,26 +115,32 @@ export class PuppeteerService {
         });
         this.logger.log("Browser launched successfully.");
 
+        // Handle browser disconnection
         this.browser.once("disconnected", async () => {
           this.logger.warn("Browser disconnected.");
           await this.closeBrowser();
           // Retry initialization after a delay
-          setTimeout(() => this.initializeBrowser(), 1000);
+          setTimeout(() => {
+            this.initializeBrowser().catch((error) => {
+              this.logger.error(`Failed to reinitialize browser: ${error}`);
+            });
+          }, 5000); // 5-second delay before retrying
         });
+        return; // Success, exit the method
+      } catch (error) {
+        this.logger.error(`Error launching browser: ${error}`);
+        rep++;
+        if (rep >= maxRetries) {
+          throw new Error("Max retries exceeded"); // All retries failed
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retrying
       }
-    } catch (error) {
-      this.logger.error(`Error launching browser: ${error}`);
-      // Retry after a delay using an arrow function to preserve context
-      rep++;
-      if (rep > 5) {
-        rep = 0;
-        this.logger.error("Error launching browser: Max retries exceeded");
-        return;
-      }
-      setTimeout(() => this.initializeBrowser(), 1000);
     }
   }
 
+  /**
+   * Closes the browser and cleans up resources.
+   */
   async closeBrowser(): Promise<void> {
     if (this.browser) {
       try {
