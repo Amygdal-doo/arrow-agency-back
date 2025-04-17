@@ -27,11 +27,11 @@ export class UpdateSkillsDto {
   @IsOptional()
   efficiency: EfficiencyLevel;
 
-  @ApiPropertyOptional({
-    example: "3298457942857024704",
-    description: "Identifier of the associated CV",
-  })
-  @IsString()
-  @IsOptional()
-  cvId: string;
+  // @ApiPropertyOptional({
+  //   example: "3298457942857024704",
+  //   description: "Identifier of the associated CV",
+  // })
+  // @IsString()
+  // @IsOptional()
+  // cvId: string;
 }
