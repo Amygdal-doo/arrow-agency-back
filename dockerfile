@@ -1,8 +1,10 @@
 # Use a base image with all Puppeteer deps
 FROM alpine:3.21
 
-# Puppeteer deps
+# Puppeteer dependencies
 RUN apt-get update && apt-get install -y \
+  wget \
+  ca-certificates \
   fonts-liberation \
   libappindicator3-1 \
   libasound2 \
@@ -22,27 +24,32 @@ RUN apt-get update && apt-get install -y \
   libxss1 \
   libxtst6 \
   xdg-utils \
-  ca-certificates \
-  wget \
-  --no-install-recommends && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+  --no-install-recommends \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install deps
+# Copy files and install dependencies
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
-# Copy rest of the app
+# Copy the rest of the app
 COPY . .
 
 # Build the NestJS app
-RUN yarn run build
+RUN yarn build
 
-# Expose port (optional if set via Railway)
-EXPOSE 3000
+# Expose Puppeteer Chromium path explicitly in environment
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+# Tell Puppeteer not to download Chromium (you’ll provide your own)
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Optional: install Chromium from a reliable Debian repo
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt install -y ./google-chrome-stable_current_amd64.deb && \
+    rm google-chrome-stable_current_amd64.deb
 
 # Start the app
-CMD ["yarn", "run", "start:prod"]
+CMD ["yarn", "start:prod"]
