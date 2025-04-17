@@ -7,10 +7,10 @@ curl -sSL https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/11
 
 echo "Unzipping with Node..."
 node << 'EOF'
-import fs from 'fs';
-import path from 'path';
-import { pipeline } from 'stream';
-import unzipper from 'unzipper';
+const fs = require('fs');
+const path = require('path');
+const { pipeline } = require('stream');
+const unzipper = require('unzipper');
 
 const zipPath = '/tmp/chromium.zip';
 const extractPath = '/tmp';
