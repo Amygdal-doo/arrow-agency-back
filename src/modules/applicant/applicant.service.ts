@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { DatabaseService } from "src/database/database.service";
 import { PdfService } from "../pdf/pdf.service";
@@ -17,16 +17,17 @@ import {
 import { SortOrder } from "src/common/enums/order.enum";
 import { pageLimit } from "src/common/helper/pagination.helper";
 import { checkFileExists } from "src/common/helper/file-exist.helper";
-import { TesseractService } from "../tesseract/tesseract.service";
 
 @Injectable()
 export class ApplicantService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly pdfService: PdfService,
-    private readonly spacesService: SpacesService,
-    private readonly tesseractService: TesseractService
+    private readonly spacesService: SpacesService
+    // private readonly tesseractService: TesseractService
   ) {}
+
+  private readonly logger = new Logger(ApplicantService.name);
 
   // DB Queries
 
@@ -288,13 +289,21 @@ export class ApplicantService {
     if (!exists) throw new BadRequestException("Template not found");
 
     // let pdfData = await this.pdfService.savePdfFileToJson(file);
-    let pdfData = await this.pdfService.savePdfFileToJsonDivided(file);
+    // let pdfData = await this.pdfService.savePdfFileToJsonDivided(file);
+    // if (!pdfData) {
+    //   // pdfData = await this.tesseractService.savePdfImageToJson(file);
+    //   this.logger.log("First Method failed, trying OCR method...");
+    //   pdfData = await this.pdfService.savePdfImageToJsonDivided(file);
+    //   if (!pdfData) {
+    //     throw new BadRequestException(
+    //       "Pdf file doesnt contain enough data/text"
+    //     );
+    //   }
+    // }
+
+    let pdfData = await this.pdfService.savePdfImageToJsonDivided(file);
     if (!pdfData) {
-      // pdfData = await this.tesseractService.savePdfImageToJson(file);
-      pdfData = await this.tesseractService.savePdfImageToJsonDivided(file);
-      if (!pdfData) {
-        throw new BadRequestException("Pdf data not found");
-      }
+      throw new BadRequestException("Pdf file doesnt contain enough data/text");
     }
 
     const image = await this.databaseService.file.findUnique({
@@ -313,7 +322,7 @@ export class ApplicantService {
       skill.efficiency ?? "null";
     });
 
-    console.log({ pdfData, body });
+    // console.log({ pdfData, body });
     const cvData: ICvDataExtended = {
       firstName: pdfData.firstName,
       lastName: pdfData.lastName,
@@ -425,7 +434,7 @@ export class ApplicantService {
         },
       },
     });
-    console.log({ newApplicant });
+    // console.log({ newApplicant });
     return pdfBuffer;
   }
 

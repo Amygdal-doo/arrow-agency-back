@@ -1,26 +1,40 @@
-import { Body, Controller, Post, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from "@nestjs/common";
 import { PdfService } from "./pdf.service";
 import { ApiBody, ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { ICvData } from "./interfaces/cv-data.interface";
 import { createPdfDto } from "./dtos/create-pdf.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { FileUploadDto } from "./dtos/fileUpload.dto";
 
 @Controller("pdf")
 export class PdfController {
   constructor(private readonly pdfService: PdfService) {}
 
-  // @Post('upload-file/pdf')
-  // // @UseGuards(AccessTokenGuard)
-  // // @ApiBearerAuth('Access Token')
-  // @ApiConsumes('multipart/form-data')
-  // @UseInterceptors(FileInterceptor('file'))
-  // @ApiBody({
-  //   description: 'List of cats',
-  //   type: UploadPdfFileDto,
-  // })
-  // uploadFile(@UploadedFile() file: Express.Multer.File) {
-  //   console.log(file, 111);
-  //   return 'ssss';
-  // }
+  @Post("extract/text")
+  // @UseGuards(AccessTokenGuard)
+  // @ApiBearerAuth('Access Token')
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiBody({
+    description: "Extract text from PDF",
+    type: FileUploadDto,
+  })
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.time("pdf");
+    const text = await this.pdfService.convertPdfToImagesAndExtractText2(file);
+    console.timeEnd("pdf");
+    console.log(text);
+
+    return text;
+  }
 
   // @Post("upload")
   // @ApiOperation({
@@ -102,5 +116,29 @@ export class PdfController {
   //   } catch (error) {
   //     res.status(500).send(`Error generating PDF: ${error.message}`);
   //   }
+  // }
+
+  // @Post("extract")
+  // @UseInterceptors(
+  //   FileInterceptor("file", {
+  //     storage: diskStorage({
+  //       destination: "/tmp",
+  //       filename: (req, file, cb) => {
+  //         const uniqueName = `${Date.now()}-${file.originalname}`;
+  //         cb(null, uniqueName);
+  //       },
+  //     }),
+  //   })
+  // )
+  // async extractText(@UploadedFile() file: Express.Multer.File) {
+  //   const text = await this.pdfService.extractTextFromPdf(file.path);
+  //   return { text };
+  // }
+
+  // @Post('upload')
+  // @UseInterceptors(FileInterceptor('file'))
+  // async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  //   const text = await this.pdfOcrService.extractTextFromPdf(file.buffer);
+  //   return { text };
   // }
 }
