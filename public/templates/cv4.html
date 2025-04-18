@@ -385,7 +385,10 @@
             <div>
               <h3 class="experience-title">{{position}}</h3>
               <div class="experience-company">{{company}}</div>
-              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+              <div class="experience-date">
+                {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                endDate}} - {{/if}}{{/if}}{{#if endDate}}{{endDate}}{{/if}}
+              </div>
               <p class="item-description">{{description}}</p>
             </div>
           </div>
@@ -401,7 +404,10 @@
           <div class="experience-item">
             <div>
               <h3 class="experience-title">{{name}}</h3>
-              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+              <div class="experience-date">
+                {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                endDate}} - {{/if}}{{/if}}{{#if endDate}}{{endDate}}{{/if}}
+              </div>
               <p class="item-description">{{description}}</p>
               {{#if url}}
               <a
@@ -427,7 +433,10 @@
           <div class="experience-item">
             <div>
               <h3 class="experience-title">{{name}}</h3>
-              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+              <div class="experience-date">
+                {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                endDate}} - {{/if}}{{/if}}{{#if endDate}}{{endDate}}{{/if}}
+              </div>
               {{#if url}}
               <a
                 href="{{url}}"
@@ -453,7 +462,10 @@
             <div>
               <h3 class="experience-title">{{degree}} {{field}}</h3>
               <div class="experience-company">{{institution}}</div>
-              <div class="experience-date">{{startDate}} - {{endDate}}</div>
+              <div class="experience-date">
+                {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                endDate}} - {{/if}}{{/if}}{{#if endDate}}{{endDate}}{{/if}}
+              </div>
             </div>
           </div>
           {{/each}}
@@ -470,7 +482,9 @@
               <h3 class="experience-title">{{name}}</h3>
               <div class="experience-company">{{issuer}}</div>
               <div class="experience-date">
-                {{issueDate}}{{#if expirationDate}} - {{expirationDate}}{{/if}}
+                {{#if issueDate}}{{issueDate}}{{/if}}{{#if issueDate}}{{#if
+                expirationDate}} - {{/if}}{{/if}}{{#if
+                expirationDate}}{{expirationDate}}{{/if}}
               </div>
               {{#if url}}
               <a
