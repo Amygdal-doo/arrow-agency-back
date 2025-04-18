@@ -334,7 +334,11 @@
                   <h3>{{position}}</h3>
                   <p class="item-content">{{company}}</p>
                 </div>
-                <span class="item-date">{{startDate}} - {{endDate}}</span>
+                <span class="item-date">
+                  {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                  endDate}} - {{/if}}{{/if}}{{#if
+                  endDate}}{{endDate}}{{/if}}</span
+                >
               </div>
               <p class="item-description">{{description}}</p>
             </div>
@@ -347,7 +351,11 @@
             <div class="item">
               <h3>{{degree}} in {{field}}</h3>
               <p class="item-content">{{institution}}</p>
-              <span class="item-date">{{startDate}} - {{endDate}}</span>
+              <span class="item-date">
+                {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                endDate}} - {{/if}}{{/if}}{{#if
+                endDate}}{{endDate}}{{/if}}</span
+              >
             </div>
             {{/each}}
           </div>
@@ -370,7 +378,11 @@
                   >
                   {{/if}}
                 </div>
-                <span class="item-date">{{startDate}} - {{endDate}}</span>
+                <span class="item-date">
+                  {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                  endDate}} - {{/if}}{{/if}}{{#if
+                  endDate}}{{endDate}}{{/if}}</span
+                >
               </div>
             </div>
             {{/each}}
@@ -393,7 +405,11 @@
                   >
                   {{/if}}
                 </div>
-                <span class="item-date">{{startDate}} - {{endDate}}</span>
+                <span class="item-date">
+                  {{#if startDate}}{{startDate}}{{/if}}{{#if startDate}}{{#if
+                  endDate}} - {{/if}}{{/if}}{{#if
+                  endDate}}{{endDate}}{{/if}}</span
+                >
               </div>
             </div>
             {{/each}}
@@ -417,9 +433,11 @@
                   >
                   {{/if}}
                 </div>
-                <span class="item-date"
-                  >{{issueDate}}{{#if expirationDate}} -
-                  {{expirationDate}}{{/if}}</span
+                <span class="item-date">
+                  {{#if issueDate}}{{issueDate}}{{/if}}{{#if issueDate}}{{#if
+                  expirationDate}} - {{/if}}{{/if}}{{#if
+                  expirationDate}}{{expirationDate}}{{/if}}
+                </span>
                 >
               </div>
             </div>
