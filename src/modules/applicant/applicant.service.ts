@@ -339,7 +339,7 @@ export class ApplicantService {
       email: pdfData.email,
       phone: pdfData.phone,
       summary: pdfData.summary,
-      skills: skills,
+      skills: pdfData.skills,
       experience: pdfData.experience,
       projects: pdfData.projects,
       educations: pdfData.educations,
@@ -396,7 +396,7 @@ export class ApplicantService {
             connect: { id: logoId },
           },
           skills: {
-            create: skills,
+            create: pdfData.skills,
           },
           hobbies: pdfData.hobies,
           experience: {
