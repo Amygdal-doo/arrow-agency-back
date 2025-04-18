@@ -317,10 +317,6 @@ export class ApplicantService {
     // const skillsOnly = pdfData.skills.map((skill) => skill.name);
 
     const technologies = body.technologies.map((skill) => skill.toUpperCase());
-    const skills = pdfData.skills.filter((skill) => {
-      skill.name.toUpperCase();
-      skill.efficiency ?? "null";
-    });
 
     // console.log({ pdfData, body });
     const cvData: ICvDataExtended = {
@@ -370,7 +366,7 @@ export class ApplicantService {
       throw new BadRequestException("Something went wrong with file upload");
     }
 
-    const newApplicant = await this.create({
+    await this.create({
       user: { connect: { id: loggedUserInfo.id } },
       firstName: rest.name,
       lastName: rest.surname,
@@ -419,6 +415,114 @@ export class ApplicantService {
           },
           courses: {
             create: pdfData.courses,
+          },
+        },
+      },
+      file: {
+        create: {
+          name: pdfFile.name,
+          url: pdfFile.url,
+          extension: pdfFile.extension,
+          fileCreatedAt: pdfFile.createdAt,
+          user: {
+            connect: { id: loggedUserInfo.id },
+          },
+        },
+      },
+    });
+    // console.log({ newApplicant });
+    return pdfBuffer;
+  }
+
+  async generatePdfAndSaveV2NoFile(
+    loggedUserInfo: ILoggedUserInfo,
+    body: UploadDto
+  ): Promise<Buffer> {
+    const { templateId, logoId, companyName, publicCv, ...rest } = body;
+    const exists = await checkFileExists(templateId);
+    if (!exists) throw new BadRequestException("Template not found");
+
+    const image = await this.databaseService.file.findUnique({
+      where: {
+        id: logoId,
+      },
+    });
+    if (!image || image.userId !== loggedUserInfo.id)
+      throw new BadRequestException("Logo not found");
+
+    // const skillsOnly = pdfData.skills.map((skill) => skill.name);
+
+    const technologies = body.technologies.map((skill) => skill.toUpperCase());
+    // console.log({ pdfData, body });
+    const cvData: ICvDataExtended = {
+      firstName: rest.name,
+      lastName: rest.surname,
+
+      companyName: companyName,
+      companyLogoUrl: image.url,
+
+      primaryColor: rest.primaryColor,
+      secondaryColor: rest.secondaryColor,
+      tertiaryColor: rest.tertiaryColor,
+      showCompanyInfo: rest.showCompanyInfo,
+      showPersonalInfo: rest.showPersonalInfo,
+
+      email: rest.email,
+      phone: rest.phone,
+      summary: "",
+      skills: [],
+      experience: [],
+      projects: [],
+      educations: [],
+      certificates: [],
+      hobies: [],
+
+      languages: [],
+      socials: [],
+      courses: [],
+    };
+    // const pdfBuffer = await this.pdfService.generateCvPdf(cvData);
+
+    const pdfBuffer = await this.pdfService.generateCvPdfPuppeteer(
+      cvData,
+      templateId
+    );
+
+    let pdfFile: IUploadedFile | null = null;
+    try {
+      pdfFile = await this.spacesService.uploadFileBuffer(
+        pdfBuffer,
+        `${rest.name}_${rest.surname}`,
+        SpacesDestinationPath.PDF
+      );
+    } catch (error) {
+      throw new BadRequestException("Something went wrong with file upload");
+    }
+
+    await this.create({
+      user: { connect: { id: loggedUserInfo.id } },
+      firstName: rest.name,
+      lastName: rest.surname,
+      email: rest.email,
+      phone: rest.phone,
+      templateId: templateId,
+      technologies: technologies,
+      publicCv: publicCv,
+      cv: {
+        create: {
+          firstName: rest.name,
+          lastName: rest.surname,
+          email: rest.email,
+          phone: rest.phone,
+          summary: "",
+          primaryColor: rest.primaryColor,
+          secondaryColor: rest.secondaryColor,
+          tertiaryColor: rest.tertiaryColor,
+          showCompanyInfo: rest.showCompanyInfo,
+          showPersonalInfo: rest.showPersonalInfo,
+          companyName,
+          companyLogo: {
+            connect: { id: logoId },
           },
         },
       },

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   FileTypeValidator,
@@ -190,24 +191,33 @@ export class ApplicantController {
   @UseInterceptors(FileInterceptor("file"))
   @ApiBody({ type: UploadDto })
   async create(
+    @Body() body: UploadDto, // Extract text data
+    @UserLogged() loggedUserInfo: ILoggedUserInfo,
+    @Response() res: any,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB limit
           new FileTypeValidator({ fileType: "application/pdf" }),
         ],
+        fileIsRequired: false,
       })
     )
-    file: Express.Multer.File,
-    @Body() body: UploadDto, // Extract text data
-    @UserLogged() loggedUserInfo: ILoggedUserInfo,
-    @Response() res: any
+    file?: Express.Multer.File
   ) {
-    const pdfBuffer = await this.applicantService.generatePdfAndSaveV2(
-      loggedUserInfo,
-      file,
-      body
-    );
+    let pdfBuffer: Buffer<ArrayBufferLike>;
+    if (!!file) {
+      pdfBuffer = await this.applicantService.generatePdfAndSaveV2(
+        loggedUserInfo,
+        file,
+        body
+      );
+    } else {
+      pdfBuffer = await this.applicantService.generatePdfAndSaveV2NoFile(
+        loggedUserInfo,
+        body
+      );
+    }
 
     let filename = `cv-${body.name}_${body.surname}.pdf`;
     filename = sanitizeFilename(filename);

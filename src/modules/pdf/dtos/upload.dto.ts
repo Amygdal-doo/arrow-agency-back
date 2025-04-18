@@ -9,8 +9,8 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 
 export class UploadDto {
-  @ApiProperty({ type: "string", format: "binary" })
-  file: any; // File will be handled separately
+  @ApiPropertyOptional({ type: "string", format: "binary" })
+  file?: any; // File will be handled separately
 
   @ApiProperty({ type: [String] })
   //   @IsArray()
