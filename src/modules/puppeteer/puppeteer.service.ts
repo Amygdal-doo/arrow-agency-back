@@ -5,9 +5,12 @@ import {
 } from "@nestjs/common";
 import puppeteer, { Browser } from "puppeteer-core";
 import { existsSync } from "fs";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class PuppeteerService {
+  constructor(private configService: ConfigService) {}
+
   private browser: Browser | null = null;
   private logger: Logger = new Logger(PuppeteerService.name);
   private initializationPromise: Promise<void> | null = null;
@@ -68,23 +71,29 @@ export class PuppeteerService {
       try {
         this.logger.log("Launching browser...");
         console.log(1);
-        this.chromiumPaths.forEach((path) => {
-          if (existsSync(path)) {
-            console.log(`Chromium found at ${path}`);
-          }
-        });
-        const chromiumPath = this.chromiumPaths.find((p) => existsSync(p));
-        console.log(2);
-        if (!chromiumPath) {
-          throw new Error("Chromium not found on system!");
-        }
-        console.log("chromiumPath", chromiumPath);
+        // this.chromiumPaths.forEach((path) => {
+        //   if (existsSync(path)) {
+        //     console.log(`Chromium found at ${path}`);
+        //   }
+        // });
+        // const chromiumPath = this.chromiumPaths.find((p) => existsSync(p));
+        // console.log(2);
+        // if (!chromiumPath) {
+        //   throw new Error("Chromium not found on system!");
+        // }
+        // console.log("chromiumPath", chromiumPath);
 
-        this.browser = await puppeteer.launch({
-          headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
-          executablePath: chromiumPath, //'/Applications/Chromium.app/Contents/MacOS/Chromium'
+        this.browser = await puppeteer.connect({
+          // headless: true,
+          // args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          // ignoreDefaultArgs: ['--disable-extensions'],
+          // executablePath: chromiumPath, //'/Applications/Chromium.app/Contents/MacOS/Chromium'
+
           // userDataDir: './user_data', // Uncomment if needed
+
+          browserWSEndpoint: this.configService.get<string>(
+            "BROWSER_WS_ENDPOINT"
+          ),
         });
         this.logger.log("Browser launched successfully.");
 
