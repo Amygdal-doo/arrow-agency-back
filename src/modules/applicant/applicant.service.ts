@@ -289,22 +289,22 @@ export class ApplicantService {
     if (!exists) throw new BadRequestException("Template not found");
 
     // let pdfData = await this.pdfService.savePdfFileToJson(file);
-    // let pdfData = await this.pdfService.savePdfFileToJsonDivided(file);
-    // if (!pdfData) {
-    //   // pdfData = await this.tesseractService.savePdfImageToJson(file);
-    //   this.logger.log("First Method failed, trying OCR method...");
-    //   pdfData = await this.pdfService.savePdfImageToJsonDivided(file);
-    //   if (!pdfData) {
-    //     throw new BadRequestException(
-    //       "Pdf file doesnt contain enough data/text"
-    //     );
-    //   }
-    // }
-
-    let pdfData = await this.pdfService.savePdfImageToJsonDivided(file);
+    let pdfData = await this.pdfService.savePdfFileToJsonDivided(file);
     if (!pdfData) {
-      throw new BadRequestException("Pdf file doesnt contain enough data/text");
+      // pdfData = await this.tesseractService.savePdfImageToJson(file);
+      this.logger.log("First Method failed, trying OCR method...");
+      pdfData = await this.pdfService.savePdfImageToJsonDivided(file);
+      if (!pdfData) {
+        throw new BadRequestException(
+          "Pdf file doesnt contain enough data/text"
+        );
+      }
     }
+
+    // let pdfData = await this.pdfService.savePdfImageToJsonDivided(file);
+    // if (!pdfData) {
+    //   throw new BadRequestException("Pdf file doesnt contain enough data/text");
+    // }
 
     const image = await this.databaseService.file.findUnique({
       where: {
