@@ -16,6 +16,7 @@ export class UpdateProjectDto {
     description: "Name of the project",
   })
   @IsString()
+  @IsOptional()
   name?: string;
 
   @ApiPropertyOptional({
@@ -23,6 +24,7 @@ export class UpdateProjectDto {
     description: "Description of the project",
   })
   @IsString()
+  @IsOptional()
   description?: string;
 
   @ApiPropertyOptional({
@@ -31,6 +33,7 @@ export class UpdateProjectDto {
   })
   // @IsDateString()
   @IsString()
+  @IsOptional()
   startDate?: string;
 
   @ApiPropertyOptional({

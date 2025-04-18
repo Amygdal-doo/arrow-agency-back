@@ -15,6 +15,7 @@ export class UpdateEducationDto {
     example: "Stanford University",
     description: "Name of the institution",
   })
+  @IsOptional()
   @IsString()
   institution?: string;
 
@@ -22,6 +23,7 @@ export class UpdateEducationDto {
     example: "Bachelor's degree",
     description: "Name of the degree",
   })
+  @IsOptional()
   @IsString()
   degree?: string;
 
@@ -29,6 +31,7 @@ export class UpdateEducationDto {
     example: "Computer Science",
     description: "Field of the degree",
   })
+  @IsOptional()
   @IsString()
   field?: string;
 
@@ -36,6 +39,7 @@ export class UpdateEducationDto {
     example: "2023-01-01T00:00:00.000Z",
     description: "Date when the education entry was started",
   })
+  @IsOptional()
   @IsString()
   startDate?: string;
 
@@ -43,6 +47,7 @@ export class UpdateEducationDto {
     example: "2024-01-01T00:00:00.000Z",
     description: "Date when the education entry was ended",
   })
+  @IsOptional()
   @IsString()
   endDate?: string;
 }

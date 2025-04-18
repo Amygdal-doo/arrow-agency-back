@@ -16,6 +16,7 @@ export class UpdateSocialDto {
     description: "Name of the social media",
   })
   @IsString()
+  @IsOptional()
   name?: string;
 
   @ApiPropertyOptional({
@@ -23,5 +24,6 @@ export class UpdateSocialDto {
     description: "Url of the social media",
   })
   @IsString()
+  @IsOptional()
   url?: string;
 }
