@@ -92,6 +92,7 @@ export class PdfService {
     let second: string;
     let third: string;
     // return { message: 'File uploaded successfully' };
+    this.logger.log("Using pdf reader...");
     const pdfText = await this.getPdfText(file.buffer);
     if (pdfText.length < 30) {
       this.logger.log("Pdf text is too short...");
@@ -104,21 +105,21 @@ export class PdfService {
       CHAT_INSTRUCTIONS_6_1
     );
     this.logger.log("Ai created first json succesfully...");
-    console.log(first);
+    // console.log(first);
 
     second = await this.openaiService.createJsonObjectInstructions(
       pdfText,
       CHAT_INSTRUCTIONS_6_2
     );
     this.logger.log("Ai created second json succesfully...");
-    console.log(second);
+    // console.log(second);
 
     third = await this.openaiService.createJsonObjectInstructions(
       pdfText,
       CHAT_INSTRUCTIONS_6_3
     );
     this.logger.log("Ai created third json succesfully...");
-    console.log(third);
+    // console.log(third);
 
     let object1: ICvData;
     let object2: ICvData;
