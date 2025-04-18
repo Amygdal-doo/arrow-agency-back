@@ -1,4 +1,9 @@
-import { MonriCurrency, PrismaClient, Role } from "@prisma/client";
+import {
+  MonriCurrency,
+  PrismaClient,
+  Role,
+  SUBSCRIPTION_PERIOD,
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -291,6 +296,35 @@ async function main() {
       currency: MonriCurrency.USD,
     },
   ];
+
+  const subPlans = [
+    {
+      name: "Basic Plan",
+      description: "Monthly subscription plan",
+      price: 1000,
+      period: SUBSCRIPTION_PERIOD.month,
+      currency: MonriCurrency.USD,
+    },
+    {
+      name: "Great Plan",
+      description: "Monthly subscription plan",
+      price: 2500,
+      period: SUBSCRIPTION_PERIOD.month,
+      currency: MonriCurrency.USD,
+    },
+    {
+      name: "Super Plan",
+      description: "Monthly subscription plan",
+      price: 5000,
+      period: SUBSCRIPTION_PERIOD.month,
+      currency: MonriCurrency.USD,
+    },
+  ];
+
+  for (const subPlan of subPlans) {
+    await prisma.subscriptionPlan.create({ data: subPlan });
+  }
+  console.log("Subscriptions created...");
 
   for (const package_ of packages) {
     await prisma.package.create({ data: package_ });
