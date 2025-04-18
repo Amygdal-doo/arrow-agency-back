@@ -3,59 +3,12 @@ import {
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import puppeteer, { Browser } from "puppeteer";
+import { ConfigService } from "@nestjs/config";
+import puppeteer, { Browser } from "puppeteer-core";
 
 @Injectable()
 export class PuppeteerService {
-  // async initializeBrowser() {
-  //   try {
-  //     if (!this.browser) {
-  //       this.browser = await puppeteer.launch({
-  //         headless: true,
-  //         args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  //         // userDataDir: "./user_data",
-  //       });
-  //       this.logger.log("Browser launched successfully.");
-
-  //       this.browser.once("disconnected", async () => {
-  //         this.logger.warn("Browser disconnected.");
-  //         await this.browser.close();
-  //         await this.initializeBrowser();
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error(`Error launching browser: ${error}`);
-  //     setTimeout(this.initializeBrowser, 1000);
-  //   }
-  // }
-
-  // async closeBrowser() {
-  //   if (this.browser) {
-  //     await this.browser.close();
-  //     this.browser = null;
-  //     this.logger.log("Browser is closed...");
-  //   }
-  // }
-
-  // async createPdfFile(html: string): Promise<Buffer> {
-  //   let page;
-  //   try {
-  //     await this.initializeBrowser();
-  //     page = await this.browser.newPage();
-  //     await page.setContent(html);
-  //     const pdf = await page.pdf({
-  //       format: "A4",
-  //       printBackground: true,
-  //       margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
-  //     });
-  //     await page.close();
-  //     return Buffer.from(pdf);
-  //   } catch (error) {
-  //     this.logger.error(`Error creating PDF: ${error}`);
-  //     // await page.close();
-  //     throw new InternalServerErrorException("Error creating PDF");
-  //   }
-  // }
+  constructor(private readonly configService: ConfigService) {}
 
   private browser: Browser | null = null;
   private logger: Logger = new Logger(PuppeteerService.name);
@@ -108,10 +61,15 @@ export class PuppeteerService {
     while (rep < maxRetries) {
       try {
         this.logger.log("Launching browser...");
-        this.browser = await puppeteer.launch({
-          headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
-          // userDataDir: './user_data', // Uncomment if needed
+        // this.browser = await puppeteer.launch({
+        //   headless: true,
+        //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        //   // userDataDir: './user_data', // Uncomment if needed
+        // });
+        this.browser = await puppeteer.connect({
+          browserWSEndpoint: this.configService.get<string>(
+            "BROWSER_WS_ENDPOINT"
+          ),
         });
         this.logger.log("Browser launched successfully.");
 
