@@ -28,6 +28,17 @@ async function main() {
           phoneNumber: "1234567890",
         },
       },
+      customer: {
+        create: {
+          email: SUPER_ADMIN_EMAIL,
+          fullName: "Harun Ibrahimovic",
+          address: "Istanbul",
+          city: "Istanbul",
+          zip: "34197",
+          country: "Turkey",
+          phone: "1234567890",
+        },
+      },
       // isEmailConfirmed: true,
     },
   });
@@ -46,6 +57,17 @@ async function main() {
         create: {
           address: "Istanbul",
           phoneNumber: "1234567890",
+        },
+      },
+      customer: {
+        create: {
+          email: USER_EMAIL,
+          fullName: "Aisa Bektas",
+          address: "Istanbul",
+          city: "Istanbul",
+          zip: "34197",
+          country: "Turkey",
+          phone: "1234567890",
         },
       },
       // isEmailConfirmed: true,
@@ -301,21 +323,21 @@ async function main() {
     {
       name: "Basic Plan",
       description: "Monthly subscription plan",
-      price: 1000,
+      price: "11.99",
       period: SUBSCRIPTION_PERIOD.month,
       currency: MonriCurrency.USD,
     },
     {
       name: "Great Plan",
       description: "Monthly subscription plan",
-      price: 2500,
+      price: "24.99",
       period: SUBSCRIPTION_PERIOD.month,
       currency: MonriCurrency.USD,
     },
     {
       name: "Super Plan",
       description: "Monthly subscription plan",
-      price: 5000,
+      price: "50.00",
       period: SUBSCRIPTION_PERIOD.month,
       currency: MonriCurrency.USD,
     },
