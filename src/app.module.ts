@@ -25,6 +25,8 @@ import { PackageModule } from "./modules/package/package.module";
 import { rateLimitoptions } from "./common/config";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
+import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { CustomerModule } from './modules/customer/customer.module';
 
 @Module({
   imports: [
@@ -51,6 +53,8 @@ import { APP_GUARD } from "@nestjs/core";
     TesseractModule,
     SubscriptionPlanModule,
     PackageModule,
+    SubscriptionModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [

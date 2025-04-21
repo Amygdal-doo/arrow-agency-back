@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { ConfigService } from "@nestjs/config";
 import {
+  Customer,
   JobStatus,
   MonriCurrency,
   Organization,
@@ -42,6 +43,9 @@ import { SubscribeDto } from "./dtos/requests/susbscribe.dto";
 import { SubscriptionPlanService } from "../subscription-plan/subscription-plan.service";
 import { ICreateSubPayment } from "./interfaces/create_sub_payment.interface";
 import { UsersService } from "../users/services/users.service";
+import { SubscriptionService } from "../subscription/subscription.service";
+import { connect } from "http2";
+import { CustomerService } from "../customer/customer.service";
 
 @Injectable()
 export class PaymentService {
@@ -52,7 +56,9 @@ export class PaymentService {
     private readonly organizationService: OrganizationService,
     private readonly packageService: PackageService,
     private readonly subscriptionPlanService: SubscriptionPlanService,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    private readonly subscriptionService: SubscriptionService,
+    private readonly customerService: CustomerService
   ) {}
   private readonly paymentModel = this.databaseService.payment;
 
@@ -136,7 +142,7 @@ export class PaymentService {
     const { planId, amount, currency, userId, tx } = args;
     const prisma = tx || this.databaseService;
     const data: Prisma.PaymentCreateInput = {
-      subscription: { connect: { id: planId } },
+      subscription: { create: { planId } },
       // jobId,
       amount,
       currency,
@@ -452,7 +458,7 @@ export class PaymentService {
 
     let user = null;
     if (!!loggedUserInfoDto) {
-      user = await this.userService.findById(loggedUserInfoDto.id);
+      let user = await this.userService.findById(loggedUserInfoDto.id);
       if (!user) throw new BadRequestException("User not found");
     }
 
@@ -479,8 +485,16 @@ export class PaymentService {
         paymentType: PaymentType.ONE_TIME,
       },
     };
+
+    // create customer if not exist
+    const customer: Customer | null = null;
+    if (!!user) {
+      customer = await this.customerService.findByUserId(user.id);
+    }
+
     if (!!loggedUserInfoDto) {
-      paymentArgs.where.userId = loggedUserInfoDto.id;
+      // maybe shoukd check for customer exiasting
+      paymentArgs.where.customerId = user.customer.id;
     }
 
     const payment = await this.paymentModel.findFirst(paymentArgs);
@@ -525,10 +539,10 @@ export class PaymentService {
           paymentDetail.ch_email = user.email;
           paymentDetail.ch_full_name = `${user.firstName} ${user.lastName}`;
           paymentDetail.ch_phone = user.profile?.phoneNumber
-            ? user.profile.phoneNumber
+            ? user.profile?.phoneNumber
             : "";
           paymentDetail.ch_address = user.profile?.address
-            ? user.profile.address
+            ? user.profile?.address
             : "";
 
           // create a costumer on monri
@@ -637,7 +651,7 @@ export class PaymentService {
 
     const payment = await this.paymentModel.findFirst({
       where: {
-        userId: loggedUserInfoDto.id,
+        // userId: loggedUserInfoDto.id,   // this is for checking if user is already a subscriber   FIXXXX IT
         paymentType: PaymentType.SUBSCRIPTION,
       },
     });
@@ -651,7 +665,18 @@ export class PaymentService {
         const price = subPlan.price.toString();
         console.log({ price });
 
+        const startDate = new Date();
+
         const amountInCents = toCents(Number(price));
+        // const subscription = await this.subscriptionService.create(
+        //   {
+        //     // userId: { connect: { id: loggedUserInfoDto.id } },
+        //     plan: { connect: { id: subPlan.id } },
+        //     startDate,
+        //   },
+        //   tx
+        // );
+        // i need to create subscription for each monthly payment maybe ?
         const payment = await this.createPaymentSubscription({
           planId: subPlan.id,
           amount: price,
@@ -697,14 +722,15 @@ export class PaymentService {
             currency,
             number_of_installments: "",
             order_number: payment.id,
-            order_info: `Ordered Job Post with ${payment.jobId} ID and with ammount in cents ${amountInCents} ${currency}`,
+            order_info: "Subscription Initial Payment",
             ...paymentDetail,
             comment: "",
-            tokenize_pan_offered: false,
+            // tokenize_pan_offered: false,
+            tokenize_pan: true,
             // supported_payment_methods: [...user.pan_tokens, 'card'],
             supported_payment_methods: ["card"],
-            success_url_override: `${url}/api/payment/success`,
-            cancel_url_override: `${url}/api/payment/cancel`,
+            success_url_override: `${url}/api/payment/subscribe/success`,
+            cancel_url_override: `${url}/api/payment/subscribe/cancel`,
             callback_url_override: `${url}/api/payment/subscribe/callback`,
             moto: false,
           };

@@ -1,6 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { SUBSCRIPTION_PERIOD } from "@prisma/client";
-import { IsString, IsNumber, IsEnum, IsNotEmpty } from "class-validator";
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsNotEmpty,
+  IsDecimal,
+} from "class-validator";
 
 export class CreateSubscriptionPlanDto {
   @IsString()
@@ -16,13 +22,13 @@ export class CreateSubscriptionPlanDto {
   })
   description: string;
 
-  @IsNumber()
-  @IsNotEmpty()
   @ApiProperty({
-    example: 1000,
-    description: "Price of the plan in minor units",
+    example: "9.99",
+    description: "Price of the plan",
   })
-  price: number;
+  @IsDecimal({ decimal_digits: "2" })
+  @IsNotEmpty()
+  price: string;
 
   // @IsEnum(MonriCurrency)
   // @IsNotEmpty()
