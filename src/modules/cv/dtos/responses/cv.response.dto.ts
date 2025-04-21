@@ -10,6 +10,7 @@ import { CvSocialResponseDto } from "./cv_social.response.dto";
 import { CvExperienceResponseDto } from "./cv_experience.response.dto";
 import { CvSkillResponseDto } from "./cv_skills.response";
 import { FileResponseDto } from "src/modules/file/dtos/file.response.dto";
+import { ApplicantResponseDto } from "src/modules/applicant/dtos/applicant.response.dto";
 
 export class CvResponseDto implements Cv {
   @ApiProperty({
@@ -18,6 +19,15 @@ export class CvResponseDto implements Cv {
   })
   @Expose()
   id: string;
+
+  @ApiProperty({
+    type: () => ApplicantResponseDto,
+    example: ApplicantResponseDto,
+    description: "Cv owner",
+  })
+  @Type(() => ApplicantResponseDto)
+  @Expose()
+  applicant?: ApplicantResponseDto;
 
   @ApiProperty({
     example: "John",

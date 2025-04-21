@@ -300,6 +300,11 @@ export class CvService {
         courses: true,
         skills: true,
         companyLogo: true,
+        applicant: {
+          include: {
+            file: true,
+          },
+        },
       },
     });
 
