@@ -25,8 +25,8 @@ export class CreatePackageDto {
   description: string;
 
   @ApiProperty({
-    example: "1000",
-    description: "Price of the package in minor units",
+    example: "10.00",
+    description: "Price of the package",
   })
   @IsDecimal({ decimal_digits: "2" })
   @IsNotEmpty()
