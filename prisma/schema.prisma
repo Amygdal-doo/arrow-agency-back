@@ -120,13 +120,16 @@ model User {
 }
 
 model Profile {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  phoneNumber String? @db.VarChar(50)
-  address     String? // Address of the customer
-
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phoneNumber               String?  @db.VarChar(50)
+  address                   String? // Address of the customer
+  countryOrigin             String?
+  preferredWorkCountries    String[]
+  nonPreferredWorkCountries String[]
+  nonPreferredProjects      String[]
   // companyName String
   // companyUrl  String?
-  companyLogos File[] @relation(name: "companyLogos")
+  companyLogos              File[]   @relation(name: "companyLogos")
 
   userId String @unique @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -154,7 +157,7 @@ model Applicant {
   technologies String[]
   templateId   String
 
-  publicCv       Boolean  @default(false)
+  publicCv Boolean @default(false)
 
   cvId   String @unique @db.Uuid
   userId String @db.Uuid
@@ -501,8 +504,8 @@ model SubscriptionPlan {
 
   monriPlanId Int
 
-  period      SUBSCRIPTION_PERIOD @default(month)
-  status      SUBSCRIPTION_STATUS
+  period SUBSCRIPTION_PERIOD @default(month)
+  status SUBSCRIPTION_STATUS
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -533,29 +536,28 @@ model Payment {
   monriTransactionId  Int?
   transactionResponse Json? // Store Monri's transaction response
 
-  userId              String?       @db.Uuid
-  jobId               String?       @unique @db.Uuid // Removed unique constraint, made optional
-  subscriptionId      String?       @db.Uuid // Added for subscription payments
-  packageId           String? @db.Uuid
+  userId         String? @db.Uuid
+  jobId          String? @unique @db.Uuid // Removed unique constraint, made optional
+  subscriptionId String? @db.Uuid // Added for subscription payments
+  packageId      String? @db.Uuid
 
-  user                User?         @relation("userPayments", fields: [userId], references: [id])
-  job                 Job?          @relation("jobPayments", fields: [jobId], references: [id])
-  subscription        Subscription? @relation("subscriptionPayments", fields: [subscriptionId], references: [id])
-  package             Package?      @relation("packagePayments", fields: [packageId], references: [id])
+  user         User?         @relation("userPayments", fields: [userId], references: [id])
+  job          Job?          @relation("jobPayments", fields: [jobId], references: [id])
+  subscription Subscription? @relation("subscriptionPayments", fields: [subscriptionId], references: [id])
+  package      Package?      @relation("packagePayments", fields: [packageId], references: [id])
 
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-
 model Package {
-  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String        @unique @db.VarChar(100)
-  price      Decimal       @db.Money
-  currency   MonriCurrency
-  description String?      @db.Text
-  payments   Payment[] @relation("packagePayments")
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String        @unique @db.VarChar(100)
+  price       Decimal       @db.Money
+  currency    MonriCurrency
+  description String?       @db.Text
+  payments    Payment[]     @relation("packagePayments")
 
-    createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
