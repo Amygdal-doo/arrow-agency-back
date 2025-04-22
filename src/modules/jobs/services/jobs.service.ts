@@ -23,13 +23,15 @@ import { EasyApplyDto } from "../dtos/requests/easy-apply.dto";
 import { CvService } from "src/modules/cv/services/cv.service";
 import { SendgridService } from "src/modules/sendgrid/sendgrid.service";
 import { isValidEmail } from "src/common/helper/is_email.helper";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class JobsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly cvService: CvService,
-    private readonly sendgridService: SendgridService
+    private readonly sendgridService: SendgridService,
+    private readonly configService: ConfigService
   ) {}
   private readonly logger: Logger = new Logger(JobsService.name);
 
@@ -339,11 +341,8 @@ export class JobsService {
 
     const cv = await this.cvService.findById(cvId, loggedUserInfo.id);
     if (!cv) throw new NotFoundException("CV not found");
-
-    await this.sendgridService.easyApply(
-      job.applicationLinkOrEmail,
-      cv.applicant.file.url
-    );
+    const cvUrl = `${this.configService.get<string>("FRONTEND_URL")}/public-cv/${cv.id}`;
+    await this.sendgridService.easyApply(job.applicationLinkOrEmail, cvUrl);
     return { status: "success", message: "Job applied successfully" };
   }
 }
