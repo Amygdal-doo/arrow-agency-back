@@ -333,14 +333,14 @@ export class JobsService {
     if (job.applyBeforeDate < new Date())
       throw new BadRequestException("Job is expired");
     if (job.typeOfApplication === "LINK")
-      throw new BadRequestException("Job type is link");
+      throw new BadRequestException("Action not allowed");
     if (!isValidEmail(job.applicationLinkOrEmail))
       throw new BadRequestException("Job email is invalid");
 
     const cv = await this.cvService.findById(cvId, loggedUserInfo.id);
     if (!cv) throw new NotFoundException("CV not found");
 
-    const easyApply = await this.sendgridService.easyApply(
+    await this.sendgridService.easyApply(
       job.applicationLinkOrEmail,
       cv.applicant.file.url
     );

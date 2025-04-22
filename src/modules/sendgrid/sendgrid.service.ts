@@ -32,6 +32,7 @@ export class SendgridService {
 
   async easyApply(email: string, cvUrl: string) {
     const mail: sgMail.MailDataRequired = {
+      subject: "Easy Apply - Arrow agency",
       to: email,
       from: this.FROM,
       html: template_easy_apply({ cvUrl }),

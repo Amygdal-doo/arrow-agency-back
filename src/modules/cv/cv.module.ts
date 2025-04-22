@@ -7,5 +7,6 @@ import { PdfModule } from "../pdf/pdf.module";
   imports: [PdfModule],
   providers: [CvService],
   controllers: [CvController],
+  exports: [CvService],
 })
 export class CvModule {}
