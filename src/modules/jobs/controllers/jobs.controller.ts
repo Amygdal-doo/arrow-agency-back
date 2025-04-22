@@ -36,6 +36,7 @@ import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.in
 import { PermissionsGuard } from "src/modules/auth/permission-guard/permissions.guard";
 import { Roles } from "src/modules/auth/decorators/roles.decorator";
 import { Role } from "@prisma/client";
+import { EasyApplyDto } from "../dtos/requests/easy-apply.dto";
 
 @ApiTags("jobs")
 @Controller("jobs")
@@ -204,5 +205,27 @@ export class JobsController {
   @ApiOkResponse({ type: JobResponseDto })
   async getJob(@Query("id", ParseUUIDPipe) id: string) {
     return this.jobsService.getJob(id);
+  }
+
+  @Post("easy-apply")
+  @ApiOperation({
+    summary: "Easy apply",
+    description: "",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  // @Serialize(JobResponseDto)
+  @ApiOkResponse({
+    schema: {
+      example: { status: "success", message: "Job applied successfully" },
+    },
+  })
+  async createJob(
+    @Body() data: EasyApplyDto,
+    @UserLogged() loggedUserInfo: ILoggedUserInfo
+  ) {
+    return this.jobsService.easyApllyJob(data, loggedUserInfo);
   }
 }

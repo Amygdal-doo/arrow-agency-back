@@ -1,4 +1,9 @@
-import { Injectable, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from "@nestjs/common";
 import { DatabaseService } from "src/database/database.service";
 import { CreateJobDto } from "../dtos/requests/create-job.dto";
 import {
@@ -14,10 +19,18 @@ import { pageLimit } from "src/common/helper/pagination.helper";
 import { ILoggedUserInfo } from "src/modules/auth/interfaces/logged-user-info.interface";
 import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { EasyApplyDto } from "../dtos/requests/easy-apply.dto";
+import { CvService } from "src/modules/cv/services/cv.service";
+import { SendgridService } from "src/modules/sendgrid/sendgrid.service";
+import { isValidEmail } from "src/common/helper/is_email.helper";
 
 @Injectable()
 export class JobsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly cvService: CvService,
+    private readonly sendgridService: SendgridService
+  ) {}
   private readonly logger: Logger = new Logger(JobsService.name);
 
   private readonly JobModel = this.databaseService.job;
@@ -309,5 +322,28 @@ export class JobsService {
         },
       },
     });
+  }
+
+  async easyApllyJob(data: EasyApplyDto, loggedUserInfo: ILoggedUserInfo) {
+    const { jobId, cvId } = data;
+    const job = await this.findById(jobId);
+    if (!job) throw new NotFoundException("Job not found");
+    if (job.status == JobStatus.DRAFT)
+      throw new BadRequestException("Job is not published yet");
+    if (job.applyBeforeDate < new Date())
+      throw new BadRequestException("Job is expired");
+    if (job.typeOfApplication === "LINK")
+      throw new BadRequestException("Job type is link");
+    if (!isValidEmail(job.applicationLinkOrEmail))
+      throw new BadRequestException("Job email is invalid");
+
+    const cv = await this.cvService.findById(cvId, loggedUserInfo.id);
+    if (!cv) throw new NotFoundException("CV not found");
+
+    const easyApply = await this.sendgridService.easyApply(
+      job.applicationLinkOrEmail,
+      cv.applicant.file.url
+    );
+    return { status: "success", message: "Job applied successfully" };
   }
 }

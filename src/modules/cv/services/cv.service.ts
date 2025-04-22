@@ -341,6 +341,24 @@ export class CvService {
     return cv;
   }
 
+  async findById(id: string, userId: string) {
+    return this.databaseService.cv.findFirst({
+      where: {
+        id,
+        applicant: {
+          userId,
+        },
+      },
+      include: {
+        applicant: {
+          include: {
+            file: true,
+          },
+        },
+      },
+    });
+  }
+
   async deleteFields(deleteFields: DeleteCvFieldsByIdDto, cvId: string) {
     if (deleteFields.expirience) {
       await this.databaseService.experience.deleteMany({
