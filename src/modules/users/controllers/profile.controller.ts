@@ -74,17 +74,17 @@ export class UserProfileController {
     @UserLogged() loggedUserInfo: ILoggedUserInfo,
     @Body() update: UpdateUserAndProfileDto
   ) {
+    const { firstName, lastName, ...rest } = update;
     const profileUpdate: UpdateUserProfileDto = {
-      address: update.address ? update.address : undefined,
-      phoneNumber: update.phoneNumber ? update.phoneNumber : undefined,
+      ...rest,
     };
     await this.userProfileService.updateOrCreate(
       loggedUserInfo.id,
       profileUpdate
     );
     await this.userService.update(loggedUserInfo.id, {
-      firstName: update.firstName ? update.firstName : undefined,
-      lastName: update.lastName ? update.lastName : undefined,
+      firstName: firstName ? update.firstName : undefined,
+      lastName: lastName ? update.lastName : undefined,
     });
     return {
       message: "Updated successfully",

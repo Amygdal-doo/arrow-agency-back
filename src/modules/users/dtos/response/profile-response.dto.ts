@@ -53,4 +53,37 @@ export class UserProfileResponseDto implements Profile {
   @Expose()
   @Type(() => FileResponseDto)
   companyLogos: FileResponseDto[];
+
+  @ApiProperty({
+    type: String,
+    description: "Country of origin",
+    example: "Poland",
+    nullable: true,
+  })
+  @Expose()
+  countryOrigin: string;
+
+  @ApiProperty({
+    type: [String],
+    description: "Preferred work countries",
+    example: ["Poland", "Germany"],
+  })
+  @Expose()
+  preferredWorkCountries: string[];
+
+  @ApiProperty({
+    type: [String],
+    description: "Non preferred work countries",
+    example: ["Poland", "Germany"],
+  })
+  @Expose()
+  nonPreferredWorkCountries: string[];
+
+  @ApiProperty({
+    type: [String],
+    description: "Non preferred projects",
+    example: ["Project 1", "Project 2"],
+  })
+  @Expose()
+  nonPreferredProjects: string[];
 }
