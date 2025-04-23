@@ -29,6 +29,13 @@ enum SUBSCRIPTION_PERIOD {
   year
 }
 
+enum SUBSCRIPTION_STATUS {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PENDING
+}
+
 enum PaymentType {
   ONE_TIME
   SUBSCRIPTION
@@ -395,7 +402,7 @@ model SubscriptionPlan {
   id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String              @unique @db.VarChar(255)
   description   String              @db.Text
-  price         Decimal       @db.Money // int
+  price         Decimal             @db.Money // int
   currency      MonriCurrency
   features      Json? // Store features like job posting limits
   subscriptions Subscription[]
@@ -406,23 +413,23 @@ model SubscriptionPlan {
 }
 
 model Subscription {
-  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   // organizationId      String           @db.Uuid
-  planId              String           @db.Uuid
-  status              String // e.g., "active", "canceled", "past_due"
+  planId              String              @db.Uuid
+  status              SUBSCRIPTION_STATUS // e.g., "active", "canceled", "past_due"
   startDate           DateTime
   nextBillingDate     DateTime?
   monriSubscriptionId String? // Monri's subscription identifier
-  customerId          String           @db.Uuid
-  customer            Customer         @relation(fields: [customerId], references: [id])
+  customerId          String              @db.Uuid
+  customer            Customer            @relation(fields: [customerId], references: [id])
   panToken            String
-  ammount             Decimal          @db.Money
+  ammount             Decimal             @db.Money
   // organization        Organization  @relation(fields: [organizationId], references: [id])
-  plan                SubscriptionPlan @relation(fields: [planId], references: [id])
-  payments            Payment[]        @relation("subscriptionPayments")
+  plan                SubscriptionPlan    @relation(fields: [planId], references: [id])
+  payments            Payment[]           @relation("subscriptionPayments")
   // jobs                Job[]         @relation("jobSubscription")
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 }
 
 // Transaction
@@ -432,17 +439,16 @@ model Payment {
   paymentType         PaymentType // Distinguish between one-time and subscription
   currency            MonriCurrency
   status              PaymentStatus @default(PENDING)
-  amountPaid          Decimal       @db.Money
   monriTransactionId  Int?
   transactionResponse Json? // Store Monri's transaction response
   jobId               String?       @unique @db.Uuid // Removed unique constraint, made optional
   subscriptionId      String?       @db.Uuid // Added for subscription payments
   packageId           String?       @db.Uuid
-  customerId          String?       @db.Uuid
+  customerId          String        @db.Uuid
   job                 Job?          @relation("jobPayments", fields: [jobId], references: [id])
   subscription        Subscription? @relation("subscriptionPayments", fields: [subscriptionId], references: [id])
   package             Package?      @relation("packagePayments", fields: [packageId], references: [id])
-  customer            Customer?     @relation("customerPayments", fields: [customerId], references: [id])
+  customer            Customer      @relation("customerPayments", fields: [customerId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
