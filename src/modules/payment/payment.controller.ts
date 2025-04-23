@@ -41,37 +41,37 @@ import { SubscribeDto } from "./dtos/requests/susbscribe.dto";
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  @Post("initialize")
-  @ApiOperation({
-    summary: "Payment initialization",
-    description: "Payment initialization",
-  })
-  @ApiBearerAuth("Access Token")
-  @UseFilters(new HttpExceptionFilter())
-  @UseGuards(AccessTokenGuard)
-  //   @Serialize(InitializeTransactionResponseDto)
-  //   @ApiOkResponse({ type: InitializeTransactionResponseDto })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
-  @HttpCode(200)
-  async initialize(
-    @UserLogged() loggedUserInfoDto: ILoggedUserInfo,
-    @Body() body: InitializePaymentDto
-  ) {
-    return this.paymentService.initializeTransaction(body, loggedUserInfoDto);
-  }
+  // @Post("initialize")
+  // @ApiOperation({
+  //   summary: "Payment initialization",
+  //   description: "Payment initialization",
+  // })
+  // @ApiBearerAuth("Access Token")
+  // @UseFilters(new HttpExceptionFilter())
+  // @UseGuards(AccessTokenGuard)
+  // //   @Serialize(InitializeTransactionResponseDto)
+  // //   @ApiOkResponse({ type: InitializeTransactionResponseDto })
+  // @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  // @HttpCode(200)
+  // async initialize(
+  //   @UserLogged() loggedUserInfoDto: ILoggedUserInfo,
+  //   @Body() body: InitializePaymentDto
+  // ) {
+  //   return this.paymentService.initializeTransaction(body, loggedUserInfoDto);
+  // }
 
-  @Post("initialize/not-logged")
-  @ApiOperation({
-    summary: "Payment initialization",
-    description: "Payment initialization",
-  })
-  @UseFilters(new HttpExceptionFilter())
-  //   @Serialize(InitializeTransactionResponseDto)
-  //   @ApiOkResponse({ type: InitializeTransactionResponseDto })
-  @HttpCode(200)
-  async initializeNotLogged(@Body() body: InitializePaymentDto) {
-    return this.paymentService.initializeTransaction(body);
-  }
+  // @Post("initialize/not-logged")
+  // @ApiOperation({
+  //   summary: "Payment initialization",
+  //   description: "Payment initialization",
+  // })
+  // @UseFilters(new HttpExceptionFilter())
+  // //   @Serialize(InitializeTransactionResponseDto)
+  // //   @ApiOkResponse({ type: InitializeTransactionResponseDto })
+  // @HttpCode(200)
+  // async initializeNotLogged(@Body() body: InitializePaymentDto) {
+  //   return this.paymentService.initializeTransaction(body);
+  // }
 
   @Post("pay-by-link")
   // @Version('2')
@@ -262,7 +262,34 @@ export class PaymentController {
   @ApiBadRequestResponse({ description: "Bad Request" })
   @ApiOkResponse({ type: PaymentCallbackResponseDto })
   @HttpCode(HttpStatus.OK)
-  async subscribeCallback(@Body() body: PaymentCallbackDto) {
-    return this.paymentService.paymentCallback(body);
+  async subscribeCallback(@Body() body: any) {
+    console.log(body);
+    if (!body) throw new BadRequestException("Body is empty");
+    if (!body.transaction_response)
+      throw new BadRequestException("Body is empty");
+    console.log("🚀 ~ PaymentController ~ initializeTransaction ~ body:", body);
+    const parsed = JSON.parse(body.transaction_response);
+
+    // parsed.id , parsed.order_number
+    console.log(
+      "🚀 ~ PaymentController ~ initializeTransaction ~ parsed:",
+      parsed
+    );
+    let parsedResponse: PaymentCallbackDto;
+    try {
+      parsedResponse = plainToInstance(PaymentCallbackDto, parsed, {
+        enableCircularCheck: true,
+      });
+      let parsedResponse2 = plainToInstance(MonriTransactionDto, parsed, {
+        enableCircularCheck: true,
+      });
+      console.log({ parsedResponse, parsedResponse2 });
+      return this.paymentService.paymentCallback(parsedResponse);
+    } catch (error) {
+      console.log("err111", error);
+      throw new BadRequestException(error.message);
+    }
+    // console.log(body);
+    // return this.paymentService.paymentCallback(body);
   }
 }

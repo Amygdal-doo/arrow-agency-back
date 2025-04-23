@@ -9,6 +9,9 @@ export class CustomerService {
   async findById(id: string, tx?: Prisma.TransactionClient) {
     const prisma = tx || this.databaseService;
     return prisma.customer.findUnique({
+      include: {
+        user: true,
+      },
       where: {
         id,
       },
@@ -34,17 +37,17 @@ export class CustomerService {
     });
   }
   // upsert
-  async upsert(
-    data: Prisma.CustomerCreateInput,
-    tx?: Prisma.TransactionClient
-  ) {
-    const prisma = tx || this.databaseService;
-    return prisma.customer.upsert({
-      where: {
-        userId: data.userId,
-      },
-      update: data,
-      create: data,
-    });
-  }
+  // async upsert(
+  //   data: Prisma.CustomerCreateInput,
+  //   tx?: Prisma.TransactionClient
+  // ) {
+  //   const prisma = tx || this.databaseService;
+  //   return prisma.customer.upsert({
+  //     where: {
+  //       userId: data.userId,
+  //     },
+  //     update: data,
+  //     create: data,
+  //   });
+  // }
 }
