@@ -264,11 +264,9 @@ export class PaymentController {
   @HttpCode(HttpStatus.OK)
   async subscribeCallback(@Body() body: any) {
     console.log("ASDAS", body);
-    // if (!body) throw new BadRequestException("Body is empty");
-    // if (!body.transaction_response)
-    //   throw new BadRequestException("Body is empty");
+    if (!body) throw new BadRequestException("Body is empty");
     console.log("🚀 ~ PaymentController ~ initializeTransaction ~ body:", body);
-    const parsed = JSON.parse(body.transaction_response);
+    const parsed = JSON.parse(body);
 
     // parsed.id , parsed.order_number
     console.log(
@@ -280,13 +278,10 @@ export class PaymentController {
       parsedResponse = plainToInstance(PaymentCallbackDto, parsed, {
         enableCircularCheck: true,
       });
-      let parsedResponse2 = plainToInstance(MonriTransactionDto, parsed, {
-        enableCircularCheck: true,
-      });
-      console.log({ parsedResponse, parsedResponse2 });
+      console.log({ parsedResponse });
       return this.paymentService.paymentCallback(parsedResponse);
     } catch (error) {
-      console.log("err111", error);
+      console.log("Payment Callback err: ", error);
       throw new BadRequestException(error.message);
     }
     // console.log(body);
