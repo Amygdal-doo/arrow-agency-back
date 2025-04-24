@@ -329,6 +329,8 @@ export class ApplicantService {
       primaryColor: rest.primaryColor,
       secondaryColor: rest.secondaryColor,
       tertiaryColor: rest.tertiaryColor,
+      fontSize: rest?.fontSize ? rest.fontSize : "12px",
+
       showCompanyInfo: rest.showCompanyInfo,
       showPersonalInfo: rest.showPersonalInfo,
 
@@ -385,6 +387,7 @@ export class ApplicantService {
           primaryColor: rest.primaryColor,
           secondaryColor: rest.secondaryColor,
           tertiaryColor: rest.tertiaryColor,
+          fontSize: rest?.fontSize ? rest.fontSize : "12px",
           showCompanyInfo: rest.showCompanyInfo,
           showPersonalInfo: rest.showPersonalInfo,
           companyName,
@@ -464,6 +467,8 @@ export class ApplicantService {
       primaryColor: rest.primaryColor,
       secondaryColor: rest.secondaryColor,
       tertiaryColor: rest.tertiaryColor,
+      fontSize: rest?.fontSize ? rest.fontSize : "12px",
+
       showCompanyInfo: rest.showCompanyInfo,
       showPersonalInfo: rest.showPersonalInfo,
 
@@ -518,6 +523,7 @@ export class ApplicantService {
           primaryColor: rest.primaryColor,
           secondaryColor: rest.secondaryColor,
           tertiaryColor: rest.tertiaryColor,
+          fontSize: rest?.fontSize ? rest.fontSize : "12px",
           showCompanyInfo: rest.showCompanyInfo,
           showPersonalInfo: rest.showPersonalInfo,
           companyName,

@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
 } from "class-validator";
@@ -86,6 +87,14 @@ export class UploadDto {
   @IsString()
   @IsNotEmpty()
   tertiaryColor: string;
+
+  @ApiPropertyOptional({
+    example: "12px",
+    description: "Font size for the CV",
+  })
+  @IsString()
+  @IsOptional()
+  fontSize: string;
 
   @ApiProperty()
   @IsBoolean()

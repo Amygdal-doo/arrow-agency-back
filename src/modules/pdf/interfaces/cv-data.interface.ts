@@ -59,6 +59,7 @@ export interface ICertificate {
 export interface skills {
   name: string;
   efficiency: string; // default 'null' EfficiencyLevel
+  efficiencyTypeNumber: boolean;
 }
 
 export interface ICvData {
@@ -85,6 +86,7 @@ export interface ICvData {
 export interface ICvDataExtended extends ICvData {
   primaryColor: string;
   secondaryColor: string;
+  fontSize: string;
   tertiaryColor: string;
   showCompanyInfo: boolean;
   showPersonalInfo: boolean;

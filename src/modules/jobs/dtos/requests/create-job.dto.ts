@@ -31,6 +31,14 @@ export class CreateJobDto {
 
   @ApiProperty({
     example: false,
+    description: "Whether the job is available for B2B or not",
+  })
+  @IsBoolean()
+  @IsNotEmpty()
+  workWithB2b: boolean;
+
+  @ApiProperty({
+    example: false,
     description: "Whether the job is remote or not",
   })
   @IsBoolean()

@@ -25,6 +25,12 @@ export class CvSkillResponseDto implements Skills {
   efficiency: string;
 
   @ApiProperty({
+    example: false,
+  })
+  @Expose()
+  efficiencyTypeNumber: boolean;
+
+  @ApiProperty({
     example: "3298457942857024704",
     description: "Identifier of the associated CV",
   })

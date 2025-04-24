@@ -86,6 +86,13 @@ export class CvResponseDto implements Cv {
   tertiaryColor: string;
 
   @ApiProperty({
+    example: "16px",
+    description: "Font size for the cv",
+  })
+  @Expose()
+  fontSize: string;
+
+  @ApiProperty({
     type: String,
     description: "Cv file of the applicant",
     example: FileResponseDto,

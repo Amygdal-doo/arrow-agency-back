@@ -31,6 +31,13 @@ export class JobResponseDto implements Job {
 
   @ApiProperty({
     example: false,
+    description: "Whether the job is available for B2B or not",
+  })
+  @Expose()
+  workWithB2b: boolean;
+
+  @ApiProperty({
+    example: false,
     description: "Whether the job is remote or not",
   })
   @Expose()

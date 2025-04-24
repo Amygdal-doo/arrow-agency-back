@@ -223,6 +223,7 @@ export class CvService {
                 create: {
                   name: skill.name,
                   efficiency: skill.efficiency,
+                  efficiencyTypeNumber: skill.effiencyTypeNumber,
                 },
               })),
             }
@@ -445,6 +446,7 @@ export class CvService {
       primaryColor: cv.primaryColor,
       secondaryColor: cv.secondaryColor,
       tertiaryColor: cv.tertiaryColor,
+      fontSize: cv.fontSize,
       showCompanyInfo: cv.showCompanyInfo,
       showPersonalInfo: cv.showPersonalInfo,
 
@@ -454,6 +456,7 @@ export class CvService {
         ? cv.skills.map((skill) => ({
             name: skill.name,
             efficiency: skill.efficiency,
+            efficiencyTypeNumber: skill.efficiencyTypeNumber,
           }))
         : [],
       experience: cv.experience

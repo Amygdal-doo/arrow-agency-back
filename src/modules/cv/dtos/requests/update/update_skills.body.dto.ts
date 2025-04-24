@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEnum, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsEnum, IsOptional, IsString } from "class-validator";
 import { EfficiencyLevel } from "src/modules/pdf/interfaces/cv-data.interface";
 
 export class UpdateSkillsDto {
@@ -26,6 +26,13 @@ export class UpdateSkillsDto {
   @IsEnum(EfficiencyLevel)
   @IsOptional()
   efficiency: EfficiencyLevel;
+
+  @ApiPropertyOptional({
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  effiencyTypeNumber: boolean;
 
   // @ApiPropertyOptional({
   //   example: "3298457942857024704",
