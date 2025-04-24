@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { Prisma, SUBSCRIPTION_STATUS } from "@prisma/client";
 import { DatabaseService } from "src/database/database.service";
 
 @Injectable()
@@ -20,6 +20,25 @@ export class SubscriptionService {
     return prisma.subscription.update({
       where: { id },
       data,
+    });
+  }
+
+  async dueSubscriptions() {
+    return this.databaseService.subscription.findMany({
+      where: {
+        status: SUBSCRIPTION_STATUS.ACTIVE,
+        nextBillingDate: {
+          lte: new Date(),
+        },
+      },
+      include: {
+        plan: true,
+        customer: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
   }
 }

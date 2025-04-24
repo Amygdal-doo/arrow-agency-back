@@ -1,6 +1,6 @@
 import { MonriCurrency, Prisma } from "@prisma/client";
 
-export interface ICreateSubPayment {
+export interface ICreateInitSubPayment {
   amount: string;
   currency: MonriCurrency;
   startDate: Date;
@@ -8,4 +8,11 @@ export interface ICreateSubPayment {
   customerId: string;
   tx?: Prisma.TransactionClient;
   planId: string;
+}
+
+export interface ICreateSubPayment {
+  amount: string;
+  currency: MonriCurrency;
+  customerId: string;
+  tx?: Prisma.TransactionClient;
 }

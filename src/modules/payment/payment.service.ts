@@ -43,11 +43,16 @@ import { PaymentFailedException } from "src/common/exceptions/errors/payment/pay
 import { PackageService } from "../package/package.service";
 import { SubscribeDto } from "./dtos/requests/susbscribe.dto";
 import { SubscriptionPlanService } from "../subscription-plan/subscription-plan.service";
-import { ICreateSubPayment } from "./interfaces/create_sub_payment.interface";
+import {
+  ICreateInitSubPayment,
+  ICreateSubPayment,
+} from "./interfaces/create_sub_payment.interface";
 import { UsersService } from "../users/services/users.service";
 import { SubscriptionService } from "../subscription/subscription.service";
 import { CustomerService } from "../customer/customer.service";
 import { getFirstDayOfNextMonth } from "src/common/helper/first_of_next_month.helper";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { MonriService } from "../monri/monri.service";
 
 @Injectable()
 export class PaymentService {
@@ -60,7 +65,8 @@ export class PaymentService {
     private readonly subscriptionPlanService: SubscriptionPlanService,
     private readonly userService: UsersService,
     private readonly subscriptionService: SubscriptionService,
-    private readonly customerService: CustomerService
+    private readonly customerService: CustomerService,
+    private readonly monriService: MonriService
   ) {}
   private readonly paymentModel = this.databaseService.payment;
 
@@ -134,7 +140,7 @@ export class PaymentService {
   }
   // ICreateSubPayment
 
-  async createPaymentSubscription(args: ICreateSubPayment) {
+  async createInitialSubscription(args: ICreateInitSubPayment) {
     const { planId, amount, currency, customerId, startDate, tx } = args;
     const prisma = tx || this.databaseService;
     const data: Prisma.PaymentCreateInput = {
@@ -148,6 +154,23 @@ export class PaymentService {
           panToken: "",
         },
       },
+      // jobId,
+      amount,
+      currency,
+      paymentType: PaymentType.SUBSCRIPTION,
+      status: PaymentStatus.PENDING,
+      customer: { connect: { id: customerId } },
+    };
+    const result = await prisma.payment.create({
+      data,
+    });
+    return result;
+  }
+
+  async createSubscription(args: ICreateSubPayment) {
+    const { amount, currency, customerId, tx } = args;
+    const prisma = tx || this.databaseService;
+    const data: Prisma.PaymentCreateInput = {
       // jobId,
       amount,
       currency,
@@ -753,7 +776,7 @@ export class PaymentService {
         //   tx
         // );
         // i need to create subscription for each monthly payment maybe ?
-        const payment = await this.createPaymentSubscription({
+        const payment = await this.createInitialSubscription({
           planId: subPlan.id,
           amount: price,
           currency,
@@ -1004,5 +1027,60 @@ export class PaymentService {
         console.error("🚀 ~ PaymentService ~ paymentCallback ~ Error:", error);
         throw new PaymentFailedException();
       });
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async cronJobSubscription() {
+    this.logger.log("Subscription Cron job started...");
+    // const subscriptions = await this.subscriptionService.findAll({
+    //   where: {
+    //     status: SUBSCRIPTION_STATUS.ACTIVE,
+    //     nextBillingDate: {
+    //       lte: new Date(),
+    //     },
+    //   },
+    // });
+    const dueSubscriptions = await this.subscriptionService.dueSubscriptions();
+    this.logger.log("Subscriptions to be processed: ", dueSubscriptions.length);
+
+    for (const sub of dueSubscriptions) {
+      const amount = sub.plan.price.toString();
+      const payment = await this.createSubscription({
+        amount,
+        currency: sub.plan.currency,
+        customerId: sub.customerId,
+      });
+      const amountInCents = Number(toCents(Number(amount)));
+
+      const result = await this.monriService.proccessSubPayment({
+        amount: amountInCents,
+        currency: sub.plan.currency,
+        customer: sub.customer,
+        pan_token: sub.panToken,
+        order_number: payment.id,
+        plan_name: sub.plan.name,
+      }); // monriService.chargeSavedCard(sub.userId, payment); // pseudocode
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: result.success ? "SUCCEEDED" : "FAILED",
+        },
+      });
+
+      if (result.success) {
+        await prisma.subscription.update({
+          where: { id: sub.id },
+          data: {
+            currentPeriodEnd: addMonths(sub.currentPeriodEnd, 1), // use date-fns or dayjs
+          },
+        });
+      } else {
+        await prisma.subscription.update({
+          where: { id: sub.id },
+          data: { status: "PAST_DUE" },
+        });
+      }
+    }
   }
 }

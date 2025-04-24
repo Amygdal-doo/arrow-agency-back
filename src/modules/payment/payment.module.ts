@@ -8,6 +8,7 @@ import { SubscriptionPlanModule } from "../subscription-plan/subscription-plan.m
 import { UsersModule } from "../users/users.module";
 import { SubscriptionModule } from "../subscription/subscription.module";
 import { CustomerModule } from "../customer/customer.module";
+import { MonriModule } from "../monri/monri.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CustomerModule } from "../customer/customer.module";
     UsersModule,
     SubscriptionModule,
     CustomerModule,
+    MonriModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],
