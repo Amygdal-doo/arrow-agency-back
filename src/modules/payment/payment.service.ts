@@ -16,6 +16,7 @@ import {
   PaymentStatus,
   PaymentType,
   Prisma,
+  Role,
   SUBSCRIPTION_STATUS,
 } from "@prisma/client";
 import { calculateDigest } from "src/common/helper/digest.helper";
@@ -46,6 +47,7 @@ import { ICreateSubPayment } from "./interfaces/create_sub_payment.interface";
 import { UsersService } from "../users/services/users.service";
 import { SubscriptionService } from "../subscription/subscription.service";
 import { CustomerService } from "../customer/customer.service";
+import { getFirstDayOfNextMonth } from "src/common/helper/first_of_next_month.helper";
 
 @Injectable()
 export class PaymentService {
@@ -78,7 +80,7 @@ export class PaymentService {
     const prisma = tx || this.databaseService;
     return prisma.payment.findUnique({
       where: { id },
-      include: { job: true, customer: true },
+      include: { job: true, customer: true, package: true, subscription: true },
     });
   }
 
@@ -907,6 +909,98 @@ export class PaymentService {
       })
       .catch(async (error) => {
         await this.update(order.id, { status: PaymentStatus.FAILED });
+        console.error("🚀 ~ PaymentService ~ paymentCallback ~ Error:", error);
+        throw new PaymentFailedException();
+      });
+  }
+
+  async subscribeCallback(
+    body: PaymentCallbackDto
+  ): Promise<PaymentCallbackResponseDto> {
+    const order = await this.findById(body.order_number);
+    const transactionResponse = JSON.parse(JSON.stringify(body));
+
+    return this.databaseService
+      .$transaction(async (tx) => {
+        if (!order) throw new PaymentFailedException();
+
+        if (body.status === "approved") {
+          if (!body.pan_token) {
+            this.logger.error(
+              "Pan token not found in payment callback response"
+            );
+            throw new PaymentFailedException();
+          }
+
+          // Update order status
+          await this.update(
+            order.id,
+            { status: PaymentStatus.COMPLETED, transactionResponse },
+            tx
+          );
+          console.log({ body });
+
+          // const subPlanId = payment.subscription.planId
+          const userId = order.customer.userId;
+
+          await this.userService.updateUserById(
+            userId,
+            {
+              role: Role.HR,
+            },
+            tx
+          );
+          const updatedSubscription = await this.subscriptionService.update(
+            order.subscription.id,
+            {
+              status: SUBSCRIPTION_STATUS.ACTIVE,
+              nextBillingDate: getFirstDayOfNextMonth(
+                order.subscription.startDate
+              ),
+              panToken: body.pan_token,
+            },
+            tx
+          );
+
+          // Fetch user and check if pan_token exists
+          const customer = await this.customerService.findById(
+            order.customerId,
+            tx
+          );
+
+          if (!customer.user?.pan_tokens?.includes(body.pan_token)) {
+            await this.userService.updateUserById(
+              customer.user.id,
+              { pan_tokens: { push: body.pan_token } },
+              tx
+            );
+          }
+
+          return { message: "Payment Completed" };
+        }
+
+        // If payment failed, set order status to FAILED
+        await this.update(
+          order.id,
+          { status: PaymentStatus.FAILED, transactionResponse },
+          tx
+        );
+
+        await this.subscriptionService.update(order.subscriptionId, {
+          status: SUBSCRIPTION_STATUS.CANCELED,
+        });
+
+        throw new PaymentFailedException();
+      })
+      .catch(async (error) => {
+        await this.update(order.id, {
+          status: PaymentStatus.FAILED,
+          transactionResponse,
+        });
+
+        await this.subscriptionService.update(order.subscriptionId, {
+          status: SUBSCRIPTION_STATUS.CANCELED,
+        });
         console.error("🚀 ~ PaymentService ~ paymentCallback ~ Error:", error);
         throw new PaymentFailedException();
       });

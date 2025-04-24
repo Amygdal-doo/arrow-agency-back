@@ -279,7 +279,7 @@ export class PaymentController {
         enableCircularCheck: true,
       });
       console.log({ parsedResponse });
-      return this.paymentService.paymentCallback(parsedResponse);
+      return this.paymentService.subscribeCallback(parsedResponse);
     } catch (error) {
       console.log("Payment Callback err: ", error);
       throw new BadRequestException(error.message);
