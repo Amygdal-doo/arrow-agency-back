@@ -212,6 +212,7 @@ model Cv {
   primaryColor   String
   secondaryColor String
   tertiaryColor  String
+  fontSize       String @default("12px")
 
   showPersonalInfo Boolean @default(false)
   showCompanyInfo  Boolean @default(false)
@@ -239,9 +240,10 @@ model Cv {
 }
 
 model Skills {
-  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String
-  efficiency String @default("null")
+  id                   String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  efficiency           String  @default("medium")
+  efficiencyTypeNumber Boolean @default(false)
 
   cvId String @db.Uuid
   cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
@@ -352,7 +354,7 @@ model Social {
 model CvLanguage {
   id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String
-  efficiency String
+  efficiency String @default("medium")
 
   cvId String @db.Uuid
   cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
@@ -423,6 +425,7 @@ model Job {
   id                     String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   worldwide              Boolean
   remote                 Boolean
+  workWithB2b            Boolean
   experienceRequired     JobExperienceLevel?
   payment                Payment?            @relation("jobPayments")
   // code                   String          @db.VarChar(10)
