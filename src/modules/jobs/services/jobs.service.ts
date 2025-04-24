@@ -336,8 +336,13 @@ export class JobsService {
       throw new BadRequestException("Job is expired");
     if (job.typeOfApplication === "LINK")
       throw new BadRequestException("Action not allowed");
-    if (!isValidEmail(job.applicationLinkOrEmail))
-      throw new BadRequestException("Job email is invalid");
+    if (this.configService.get<string>("NODE_ENV") === "production") {
+      if (!isValidEmail(job.applicationLinkOrEmail))
+        throw new BadRequestException("Job email is invalid");
+    } else {
+      if (!isValidEmail(job.applicationLinkOrEmail, false))
+        throw new BadRequestException("Job email is invalid");
+    }
 
     const cv = await this.cvService.findById(cvId, loggedUserInfo.id);
     if (!cv) throw new NotFoundException("CV not found");

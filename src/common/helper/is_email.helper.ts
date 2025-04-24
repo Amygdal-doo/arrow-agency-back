@@ -4,7 +4,7 @@
  * @param email The string to check.
  * @returns `true` if the string is a valid email address, `false` otherwise.
  */
-export function isValidEmail(email: string): boolean {
+export function isValidEmail(email: string, strict: boolean = true): boolean {
   if (!email) {
     return false; // Email is empty
   }
@@ -16,7 +16,12 @@ export function isValidEmail(email: string): boolean {
   // - One or more characters that are not whitespace, plus, or equals sign after the @ symbol
   // - A dot (.)
   // - Two or more characters after the dot
-  const emailRegex = /^[^\s+@=]+@[^\s+@=]+\.[^\s+@=]{2,}$/;
+  let emailRegex: RegExp;
+  if (strict) {
+    emailRegex = /^[^\s+@=]+@[^\s+@=]+\.[^\s+@=]{2,}$/;
+  } else {
+    emailRegex = /^[^\s=@]+@[^\s+@=]+\.[^\s+@=]{2,}$/;
+  }
 
   return emailRegex.test(email);
 }
