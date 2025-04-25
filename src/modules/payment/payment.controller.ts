@@ -266,16 +266,16 @@ export class PaymentController {
     console.log("ASDAS", body);
     if (!body) throw new BadRequestException("Body is empty");
     console.log("🚀 ~ PaymentController ~ initializeTransaction ~ body:", body);
-    const parsed = JSON.parse(body);
+    // const parsed = JSON.parse(body);
 
     // parsed.id , parsed.order_number
-    console.log(
-      "🚀 ~ PaymentController ~ initializeTransaction ~ parsed:",
-      parsed
-    );
+    // console.log(
+    //   "🚀 ~ PaymentController ~ initializeTransaction ~ parsed:",
+    //   parsed
+    // );
     let parsedResponse: PaymentCallbackDto;
     try {
-      parsedResponse = plainToInstance(PaymentCallbackDto, parsed, {
+      parsedResponse = plainToInstance(PaymentCallbackDto, body, {
         enableCircularCheck: true,
       });
       console.log({ parsedResponse });
