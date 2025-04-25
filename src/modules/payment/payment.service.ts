@@ -829,15 +829,13 @@ export class PaymentService {
             order_info: `Subscription Initial Payment with package - ${subPlan.name} and price - ${subPlan.price}`,
             ...paymentDetail,
             comment: "",
-            // tokenize_pan_offered: false,
             tokenize_pan: true,
             supported_payment_methods: [...user.pan_tokens, "card"],
             future_usage: "recurring",
-            // supported_payment_methods: ["card"],
             success_url_override: `${url}/api/payment/success`,
             cancel_url_override: `${url}/api/payment/cancel`,
             callback_url_override: `${url}/api/payment/subscribe/callback`,
-            moto: false,
+            moto: true,
           };
 
           const bodyString = JSON.stringify(requestPayload);
