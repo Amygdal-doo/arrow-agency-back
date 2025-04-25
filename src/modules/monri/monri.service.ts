@@ -8,8 +8,8 @@ import { HttpService } from "@nestjs/axios";
 import { firstValueFrom, Subscription } from "rxjs";
 import { ConfigService } from "@nestjs/config";
 import { addMonths, format } from "date-fns";
-import { IReqDigest } from "src/common/interfaces/digest.interface";
-import { reqDigest } from "src/common/helper/digest.helper";
+import { IDigest, IReqDigest } from "src/common/interfaces/digest.interface";
+import { calculateDigest, reqDigest } from "src/common/helper/digest.helper";
 import { ISubscription } from "./interfaces/subscription.interface";
 import { SubscriptionPlanResponseDto } from "./dtos/response/subscription_plan.response.dto";
 import { Customer, MonriCurrency, SUBSCRIPTION_PERIOD } from "@prisma/client";
@@ -20,6 +20,7 @@ import {
   MonriTransactionRequest,
 } from "./interfaces/transaction.interface";
 import { ISubPaymentParams } from "./interfaces/sub-payment-params.interface";
+import { ICardOnFileResponse } from "./interfaces/card_on_file_response.interface";
 
 @Injectable()
 export class MonriService {
@@ -280,7 +281,9 @@ export class MonriService {
     }
   }
 
-  async proccessSubPayment(data: ISubPaymentParams): Promise<any> {
+  async cardOnFilePayment(
+    data: ISubPaymentParams
+  ): Promise<ICardOnFileResponse> {
     const fullpath = "/v2/transaction";
     const timestamp = new Date().getTime();
     // still not finished
@@ -300,12 +303,24 @@ export class MonriService {
         currency: data.currency,
         digest: "",
         order_number: data.order_number,
-        authenticity_token: "",
+        authenticity_token: this.MONRI_AUTHENTICITY_TOKEN,
         language: "en",
         pan_token: data.pan_token,
         moto: true,
       },
     };
+
+    const bodyDigestInput: IDigest = {
+      currency: data.currency,
+      order_number: data.order_number,
+      amount: data.amount.toString(),
+    };
+
+    // Calculate body digest: SHA512(merchant_key + order_number + amount + currency)
+    // Body digest is used to verify the integrity of the request
+    const bodyDigest = calculateDigest(this.MONRI_API_TOKEN, bodyDigestInput);
+    requestBody.transaction["digest"] = bodyDigest;
+
     const digestData: IReqDigest = {
       fullpath,
       timestamp,
@@ -314,6 +329,8 @@ export class MonriService {
       body: JSON.stringify(requestBody),
     };
     this.logger.debug({ digestData });
+    // Calculate request digest: SHA512(merchant_key + timestamp + authenticity_token + fullpath + body)
+    // Request digest is used to verify the integrity of the request
     const digest = reqDigest(digestData);
     this.logger.debug({ digest, url: `${this.MONRI_API_URL}${fullpath}` });
     try {
@@ -329,7 +346,14 @@ export class MonriService {
       );
       console.log("1221", response.data);
 
-      return response.data;
+      const { status, transaction_id } = response.data;
+
+      return {
+        success: status === "approved",
+        status: status,
+        monriTransactionId: transaction_id,
+        rawResponse: response.data,
+      };
     } catch (error) {
       //   this.logger.error(
       //     "Error creating customer:",
@@ -341,7 +365,11 @@ export class MonriService {
         data: error.response?.data,
       });
       //   throw new BadRequestException(error.response?.data);
-      return;
+      return {
+        success: false,
+        status: "invalid",
+        message: error.response?.data?.message || error.message,
+      };
     }
   }
 }

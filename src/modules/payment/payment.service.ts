@@ -53,6 +53,7 @@ import { CustomerService } from "../customer/customer.service";
 import { getFirstDayOfNextMonth } from "src/common/helper/first_of_next_month.helper";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { MonriService } from "../monri/monri.service";
+import { addMonths } from "date-fns";
 
 @Injectable()
 export class PaymentService {
@@ -1044,6 +1045,9 @@ export class PaymentService {
     this.logger.log("Subscriptions to be processed: ", dueSubscriptions.length);
 
     for (const sub of dueSubscriptions) {
+      this.logger.log(
+        `Processing subscription for user: ${sub.customer.userId}, plan: ${sub.plan.name}`
+      );
       const amount = sub.plan.price.toString();
       const payment = await this.createSubscription({
         amount,
@@ -1052,7 +1056,10 @@ export class PaymentService {
       });
       const amountInCents = Number(toCents(Number(amount)));
 
-      const result = await this.monriService.proccessSubPayment({
+      this.logger.log(
+        `Creating payment for subscription: ${sub.id}, amount: ${amountInCents}`
+      );
+      const result = await this.monriService.cardOnFilePayment({
         amount: amountInCents,
         currency: sub.plan.currency,
         customer: sub.customer,
@@ -1060,25 +1067,32 @@ export class PaymentService {
         order_number: payment.id,
         plan_name: sub.plan.name,
       }); // monriService.chargeSavedCard(sub.userId, payment); // pseudocode
-
-      await prisma.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: result.success ? "SUCCEEDED" : "FAILED",
-        },
+      this.logger.log(
+        `Payment result for subscription: ${sub.id}, success: ${result.success}`
+      );
+      this.logger.log(
+        `Payment result for subscription: ${sub.id}, response: ${result.rawResponse}`
+      );
+      await this.update(payment.id, {
+        status: result.success ? PaymentStatus.COMPLETED : PaymentStatus.FAILED,
+        monriTransactionId: result.monriTransactionId,
+        transactionResponse: result.rawResponse,
       });
 
       if (result.success) {
-        await prisma.subscription.update({
-          where: { id: sub.id },
-          data: {
-            currentPeriodEnd: addMonths(sub.currentPeriodEnd, 1), // use date-fns or dayjs
-          },
+        await this.subscriptionService.update(sub.id, {
+          nextBillingDate: addMonths(sub.nextBillingDate, 1), // use date-fns or dayjs
         });
       } else {
-        await prisma.subscription.update({
-          where: { id: sub.id },
-          data: { status: "PAST_DUE" },
+        // Handle payment failure
+
+        // remove user HR role
+        await this.userService.updateUserById(sub.customer.userId, {
+          role: Role.USER,
+        });
+
+        await this.subscriptionService.update(sub.id, {
+          status: SUBSCRIPTION_STATUS.PAST_DUE, // use date-fns or dayjs
         });
       }
     }
