@@ -153,6 +153,7 @@ export class PaymentService {
           ammount: amount,
           startDate,
           panToken: "",
+          cITId: "",
         },
       },
       // jobId,
@@ -831,6 +832,7 @@ export class PaymentService {
             // tokenize_pan_offered: false,
             tokenize_pan: true,
             supported_payment_methods: [...user.pan_tokens, "card"],
+            future_usage: "recurring",
             // supported_payment_methods: ["card"],
             success_url_override: `${url}/api/payment/success`,
             cancel_url_override: `${url}/api/payment/cancel`,
@@ -982,6 +984,7 @@ export class PaymentService {
                 order.subscription.startDate
               ),
               panToken: body.pan_token,
+              cITId: body.cit_id,
             },
             tx
           );
@@ -1000,6 +1003,14 @@ export class PaymentService {
             );
           }
 
+          await this.customerService.update(
+            customer.id,
+            {
+              cITId: body.cit_id,
+            },
+            tx
+          );
+
           return { message: "Payment Completed" };
         }
 
@@ -1010,9 +1021,13 @@ export class PaymentService {
           tx
         );
 
-        await this.subscriptionService.update(order.subscriptionId, {
-          status: SUBSCRIPTION_STATUS.CANCELED,
-        });
+        await this.subscriptionService.update(
+          order.subscriptionId,
+          {
+            status: SUBSCRIPTION_STATUS.CANCELED,
+          },
+          tx
+        );
 
         throw new PaymentFailedException();
       })

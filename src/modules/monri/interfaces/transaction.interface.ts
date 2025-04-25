@@ -14,6 +14,7 @@ export interface MonriTransaction {
   digest: string;
   order_number: string;
   authenticity_token: string;
+  merchant_initiated_transaction: boolean;
   language: string;
   pan_token: string;
   moto: boolean;

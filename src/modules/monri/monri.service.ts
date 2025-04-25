@@ -304,6 +304,7 @@ export class MonriService {
         digest: "",
         order_number: data.order_number,
         authenticity_token: this.MONRI_AUTHENTICITY_TOKEN,
+        merchant_initiated_transaction: true,
         language: "en",
         pan_token: data.pan_token,
         moto: true,

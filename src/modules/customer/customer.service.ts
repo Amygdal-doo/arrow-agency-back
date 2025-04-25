@@ -27,6 +27,20 @@ export class CustomerService {
     });
   }
 
+  async update(
+    id: string,
+    data: Prisma.CustomerUpdateInput,
+    tx?: Prisma.TransactionClient
+  ) {
+    const prisma = tx || this.databaseService;
+    return prisma.customer.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+
   async create(
     data: Prisma.CustomerCreateInput,
     tx?: Prisma.TransactionClient
