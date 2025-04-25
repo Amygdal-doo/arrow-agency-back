@@ -21,6 +21,7 @@ import {
 } from "./interfaces/transaction.interface";
 import { ISubPaymentParams } from "./interfaces/sub-payment-params.interface";
 import { ICardOnFileResponse } from "./interfaces/card_on_file_response.interface";
+import { getServerIp } from "src/common/helper/get_server_ip.helper";
 
 @Injectable()
 export class MonriService {
@@ -284,6 +285,8 @@ export class MonriService {
   async cardOnFilePayment(
     data: ISubPaymentParams
   ): Promise<ICardOnFileResponse> {
+    const ip = getServerIp();
+    this.logger.debug({ ip });
     const fullpath = "/v2/transaction";
     const timestamp = new Date().getTime();
     // still not finished
@@ -291,7 +294,7 @@ export class MonriService {
       transaction: {
         transaction_type: "purchase",
         amount: data.amount,
-        // ip: string;
+        ip,
         order_info: `Subscription payment for ${data.plan_name} plan`,
         ch_address: data.customer.address,
         ch_city: data.customer.city,

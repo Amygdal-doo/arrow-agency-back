@@ -949,9 +949,9 @@ export class PaymentService {
         if (!order) throw new PaymentFailedException();
 
         if (body.status === "approved") {
-          if (!body.pan_token) {
+          if (!body.pan_token || !body.cit_id) {
             this.logger.error(
-              "Pan token not found in payment callback response"
+              "Pan token or cit_id not found in payment callback response"
             );
             throw new PaymentFailedException();
           }
