@@ -423,6 +423,7 @@ model Subscription {
   customerId          String              @db.Uuid
   customer            Customer            @relation(fields: [customerId], references: [id])
   panToken            String
+  cITId               String
   ammount             Decimal             @db.Money
   // organization        Organization  @relation(fields: [organizationId], references: [id])
   plan                SubscriptionPlan    @relation(fields: [planId], references: [id])
@@ -476,6 +477,7 @@ model Customer {
   zip           String
   country       String
   phone         String
+  cITId         String? 
   userId        String?        @unique @db.Uuid
   user          User?          @relation(fields: [userId], references: [id])
   subscriptions Subscription[]
