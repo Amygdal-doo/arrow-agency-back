@@ -835,7 +835,7 @@ export class PaymentService {
             success_url_override: `${url}/api/payment/success`,
             cancel_url_override: `${url}/api/payment/cancel`,
             callback_url_override: `${url}/api/payment/subscribe/callback`,
-            moto: true,
+            moto: false,
           };
 
           const bodyString = JSON.stringify(requestPayload);
