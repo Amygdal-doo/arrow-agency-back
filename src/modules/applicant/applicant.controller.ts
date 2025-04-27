@@ -205,6 +205,15 @@ export class ApplicantController {
     )
     file?: Express.Multer.File
   ) {
+    if (loggedUserInfo.role !== Role.USER) {
+      const numberOfApplicants =
+        await this.applicantService.countNumOfApplicants(loggedUserInfo.id);
+      if (numberOfApplicants >= 1) {
+        throw new BadRequestException(
+          "You have reached the maximum number of applicants"
+        );
+      }
+    }
     let pdfBuffer: Buffer<ArrayBufferLike>;
     if (!!file) {
       pdfBuffer = await this.applicantService.generatePdfAndSaveV2(
