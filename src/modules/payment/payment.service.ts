@@ -1089,7 +1089,7 @@ export class PaymentService {
     );
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async cronJobSubscription() {
     this.logger.log("Subscription Cron job started...");
     // const subscriptions = await this.subscriptionService.findAll({
