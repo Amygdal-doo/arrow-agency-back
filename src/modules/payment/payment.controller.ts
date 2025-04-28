@@ -263,7 +263,7 @@ export class PaymentController {
   @ApiOkResponse({ type: PaymentCallbackResponseDto })
   @HttpCode(HttpStatus.OK)
   async subscribeCallback(@Body() body: any) {
-    console.log("ASDAS", body);
+    console.log("Subscribe Payment Callback", body);
     if (!body) throw new BadRequestException("Body is empty");
     console.log("🚀 ~ PaymentController ~ initializeTransaction ~ body:", body);
     // const parsed = JSON.parse(body);

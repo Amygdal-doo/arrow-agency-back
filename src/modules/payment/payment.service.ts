@@ -826,7 +826,7 @@ export class PaymentService {
             currency,
             number_of_installments: "",
             order_number: payment.id,
-            order_info: `Subscription Initial Payment with package - ${subPlan.name} and price - ${subPlan.price}`,
+            order_info: `Subscription Initial Payment with package - ${subPlan.name} and price - ${subPlan.price.toString()} ${currency}`,
             ...paymentDetail,
             comment: "",
             tokenize_pan: true,
@@ -941,106 +941,153 @@ export class PaymentService {
   async subscribeCallback(
     body: PaymentCallbackDto
   ): Promise<PaymentCallbackResponseDto> {
+    // get order from db
     const order = await this.findById(body.order_number);
+    if (!order) throw new PaymentFailedException();
+
+    // parse callback body
     const transactionResponse = JSON.parse(JSON.stringify(body));
 
-    return this.databaseService
-      .$transaction(async (tx) => {
-        if (!order) throw new PaymentFailedException();
+    // starting transaction
+    return (
+      this.databaseService
+        .$transaction(async (tx) => {
+          // Check if payment is approved
+          if (body.status === "approved") {
+            // Check if pan_token exists
+            if (!body.pan_token) {
+              this.logger.error(
+                "Pan token not found in payment callback response"
+              );
+              throw new PaymentFailedException();
+            }
 
-        if (body.status === "approved") {
-          if (!body.pan_token || !body.cit_id) {
-            this.logger.error(
-              "Pan token or cit_id not found in payment callback response"
-            );
-            throw new PaymentFailedException();
-          }
-
-          // Update order status
-          await this.update(
-            order.id,
-            { status: PaymentStatus.COMPLETED, transactionResponse },
-            tx
-          );
-          console.log({ body });
-
-          // const subPlanId = payment.subscription.planId
-          const userId = order.customer.userId;
-
-          await this.userService.updateUserById(
-            userId,
-            {
-              role: Role.HR,
-            },
-            tx
-          );
-          const updatedSubscription = await this.subscriptionService.update(
-            order.subscription.id,
-            {
-              status: SUBSCRIPTION_STATUS.ACTIVE,
-              nextBillingDate: getFirstDayOfNextMonth(
-                order.subscription.startDate
-              ),
-              panToken: body.pan_token,
-              cITId: body.cit_id,
-            },
-            tx
-          );
-
-          // Fetch user and check if pan_token exists
-          const customer = await this.customerService.findById(
-            order.customerId,
-            tx
-          );
-
-          if (!customer.user?.pan_tokens?.includes(body.pan_token)) {
-            await this.userService.updateUserById(
-              customer.user.id,
-              { pan_tokens: { push: body.pan_token } },
+            // Update order status
+            await this.update(
+              order.id,
+              { status: PaymentStatus.COMPLETED, transactionResponse },
               tx
             );
+            console.log({ body });
+
+            // const subPlanId = payment.subscription.planId
+            const userId = order.customer.userId;
+
+            // Update Subscription status
+            await this.subscriptionService.update(
+              order.subscription.id,
+              {
+                status: SUBSCRIPTION_STATUS.ACTIVE,
+                nextBillingDate: getFirstDayOfNextMonth(
+                  order.subscription.startDate
+                ),
+                panToken: body.pan_token,
+                cITId: body.cit_id ? body.cit_id : undefined,
+              },
+              tx
+            );
+
+            // Fetch user and check if pan_token exists
+            const customer = await this.customerService.findById(
+              order.customerId,
+              tx
+            );
+
+            // update user pan_token
+            if (!customer.user?.pan_tokens?.includes(body.pan_token)) {
+              await this.userService.updateUserById(
+                customer.user.id,
+                { pan_tokens: { push: body.pan_token } },
+                tx
+              );
+            }
+
+            if (this.configService.get("NODE_ENV") === "production") {
+              // if cit_id is null its test API - beacuse test always returns null
+
+              if (body.cit_id == null) {
+                this.logger.error(
+                  "Cit id is null in payment callback response"
+                );
+                throw new PaymentFailedException();
+              }
+
+              await this.customerService.update(
+                customer.id,
+                {
+                  cITId: body.cit_id,
+                },
+                tx
+              );
+            } else {
+              await this.customerService.update(
+                customer.id,
+                {
+                  cITId: body.cit_id,
+                },
+                tx
+              );
+            }
+            // if cit_id is null its test API - beacuse test always returns null
+            if (body.cit_id !== null) {
+              await this.customerService.update(
+                customer.id,
+                {
+                  cITId: body.cit_id,
+                },
+                tx
+              );
+            }
+
+            //
+            await this.userService.updateUserById(
+              userId,
+              {
+                role: Role.HR,
+              },
+              tx
+            );
+
+            // return approved response
+            this.logger.log("Payment updated successfully");
+            return { message: "Payment Completed" };
           }
 
-          await this.customerService.update(
-            customer.id,
+          // If payment failed, set order status to FAILED
+          await this.update(
+            order.id,
+            { status: PaymentStatus.FAILED, transactionResponse },
+            tx
+          );
+
+          await this.subscriptionService.update(
+            order.subscriptionId,
             {
-              cITId: body.cit_id,
+              status: SUBSCRIPTION_STATUS.CANCELED,
             },
             tx
           );
 
-          return { message: "Payment Completed" };
-        }
+          throw new PaymentFailedException();
+        })
+        // If unexpected error occurs, set order status to FAILED
+        // and log the error
+        .catch(async (error) => {
+          await this.update(order.id, {
+            status: PaymentStatus.FAILED,
+            transactionResponse,
+          });
 
-        // If payment failed, set order status to FAILED
-        await this.update(
-          order.id,
-          { status: PaymentStatus.FAILED, transactionResponse },
-          tx
-        );
-
-        await this.subscriptionService.update(
-          order.subscriptionId,
-          {
+          await this.subscriptionService.update(order.subscriptionId, {
             status: SUBSCRIPTION_STATUS.CANCELED,
-          },
-          tx
-        );
-
-        throw new PaymentFailedException();
-      })
-      .catch(async (error) => {
-        await this.update(order.id, {
-          status: PaymentStatus.FAILED,
-          transactionResponse,
-        });
-
-        await this.subscriptionService.update(order.subscriptionId, {
-          status: SUBSCRIPTION_STATUS.CANCELED,
-        });
-        console.error("🚀 ~ PaymentService ~ paymentCallback ~ Error:", error);
-        throw new PaymentFailedException();
-      });
+          });
+          console.error(
+            "🚀 ~ PaymentService ~ paymentCallback ~ Error:",
+            error
+          );
+          throw new PaymentFailedException();
+        })
+    );
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
