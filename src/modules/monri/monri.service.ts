@@ -325,6 +325,7 @@ export class MonriService {
     // Body digest is used to verify the integrity of the request
     const bodyDigest = calculateDigest(this.MONRI_API_TOKEN, bodyDigestInput);
     requestBody.transaction["digest"] = bodyDigest;
+    console.log({ requestBody });
 
     const digestData: IReqDigest = {
       fullpath,
@@ -337,6 +338,7 @@ export class MonriService {
     // Calculate request digest: SHA512(merchant_key + timestamp + authenticity_token + fullpath + body)
     // Request digest is used to verify the integrity of the request
     const digest = reqDigest(digestData);
+    this.logger.debug({ digest });
     this.logger.debug({ digest, url: `${this.MONRI_API_URL}${fullpath}` });
     try {
       const response = await axios.post(
