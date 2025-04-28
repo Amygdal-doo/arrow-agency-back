@@ -14,5 +14,6 @@ export interface ICreateSubPayment {
   amount: string;
   currency: MonriCurrency;
   customerId: string;
+  subscriptionId: string;
   tx?: Prisma.TransactionClient;
 }
