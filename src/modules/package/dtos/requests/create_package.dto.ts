@@ -25,6 +25,13 @@ export class CreatePackageDto {
   description: string;
 
   @ApiProperty({
+    example: ["feature1", "feature2"],
+    description: "Features of the package",
+  })
+  @IsString({ each: true })
+  features: string[];
+
+  @ApiProperty({
     example: "10.00",
     description: "Price of the package",
   })

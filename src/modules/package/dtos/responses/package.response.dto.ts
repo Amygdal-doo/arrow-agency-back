@@ -19,6 +19,13 @@ export class PackageResponseDto implements Package {
   name: string;
 
   @ApiProperty({
+    example: ["feature1", "feature2"],
+    description: "Features of the package",
+  })
+  @Expose()
+  features: string[];
+
+  @ApiProperty({
     example: "1000",
     description: "Price of the package in minor units",
   })
