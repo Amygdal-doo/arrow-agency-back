@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsUUID, IsNotEmpty } from "class-validator";
+import { IsUUID, IsNotEmpty, IsBoolean } from "class-validator";
 
 export class SubscribeDto {
   @ApiProperty({
@@ -9,4 +9,13 @@ export class SubscribeDto {
   @IsUUID()
   @IsNotEmpty()
   planId: string;
+
+  @ApiProperty({
+    example: true,
+    description:
+      "Set to true if user accepts the terms and conditions(otherwise subscription will not be created). I agree to a monthly subscription of [amount] [currency] starting [date] and authorize [Your Business Name] to charge my card automatically each month. I have read and agree to the [Terms and Conditions] and [Cancellation Policy]. ",
+  })
+  @IsNotEmpty()
+  @IsBoolean()
+  consent: boolean;
 }

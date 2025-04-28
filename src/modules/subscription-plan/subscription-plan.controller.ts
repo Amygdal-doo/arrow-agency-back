@@ -1,4 +1,13 @@
-import { Body, Controller, Post, UseFilters, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UseFilters,
+  UseGuards,
+} from "@nestjs/common";
 import { SubscriptionPlanService } from "./subscription-plan.service";
 import {
   ApiBearerAuth,
@@ -12,8 +21,6 @@ import { Roles } from "../auth/decorators/roles.decorator";
 import { AccessTokenGuard } from "../auth/guards/access-token.guard";
 import { SubscriptionPlanResponseDto } from "../monri/dtos/response/subscription_plan.response.dto";
 import { CreateSubscriptionPlanDto } from "./dtos/requests/create-subscription-plan.dto";
-import { UserLogged } from "../auth/decorators/user.decorator";
-import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
 import { PermissionsGuard } from "../auth/permission-guard/permissions.guard";
 
 @Controller("subscription-plan")
@@ -22,16 +29,20 @@ export class SubscriptionPlanController {
     private readonly subscriptionPlanService: SubscriptionPlanService
   ) {}
 
+  @Get("")
   @ApiProperty({ type: [SubscriptionPlanResponseDto] })
+  @ApiOperation({ summary: "Get all subscription plans" })
   async findAll() {
     return this.subscriptionPlanService.findAll();
   }
 
-  async findById(id: string) {
+  @Get(":id")
+  @ApiOperation({ summary: "Get subscription plan by id" })
+  async findById(@Param("id", ParseUUIDPipe) id: string) {
     return this.subscriptionPlanService.findById(id);
   }
 
-  @Post("subscription-plan")
+  @Post("")
   @ApiBearerAuth("Access Token")
   @UseFilters(new HttpExceptionFilter())
   @Roles(Role.SUPER_ADMIN)
@@ -41,9 +52,9 @@ export class SubscriptionPlanController {
   // @ApiOkResponse({ type: JobResponseDto })
   @ApiOperation({ summary: "Create a subscription plan - Super Admin" })
   async create(
-    @UserLogged() loggedUserInfo: ILoggedUserInfo,
+    // @UserLogged() loggedUserInfo: ILoggedUserInfo,
     @Body() data: CreateSubscriptionPlanDto
   ) {
-    return this.subscriptionPlanService.createSubPlan(data, loggedUserInfo);
+    return this.subscriptionPlanService.createSubPlan(data);
   }
 }

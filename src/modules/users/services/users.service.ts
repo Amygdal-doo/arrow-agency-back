@@ -34,7 +34,7 @@ export class UsersService {
     const prisma = tx || this.databaseService;
     const result = await prisma.user.findUnique({
       where: { id },
-      include: { profile: true },
+      include: { profile: true, customer: true },
     });
     return result;
   }

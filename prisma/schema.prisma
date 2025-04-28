@@ -29,11 +29,11 @@ enum SUBSCRIPTION_PERIOD {
   year
 }
 
-//approved, invalid-request or error
 enum SUBSCRIPTION_STATUS {
-  approved
-  invalid_request
-  error
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PENDING
 }
 
 enum PaymentType {
@@ -94,12 +94,11 @@ enum JobStatus {
 }
 
 model User {
-  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName String @db.VarChar(256)
-  lastName  String @db.VarChar(256)
-  email     String @unique(map: "user_email_unique") @db.VarChar(256)
-  password  String
-
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName     String         @db.VarChar(256)
+  lastName      String         @db.VarChar(256)
+  email         String         @unique(map: "user_email_unique") @db.VarChar(256)
+  password      String
   role          Role           @default(USER)
   refreshToken  RefreshToken?
   profile       Profile?
@@ -107,10 +106,8 @@ model User {
   files         File[]
   organizations Organization[]
   jobs          Job[]
-  payments      Payment[]      @relation("userPayments")
-
-  pan_tokens String[]
-  customerId String?
+  pan_tokens    String[]
+  customer      Customer?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -174,29 +171,26 @@ model Applicant {
 }
 
 model File {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  url           String
-  name          String
-  extension     String
-  height        Int?
-  width         Int?
-  fileCreatedAt DateTime
-
-  userId         String? @db.Uuid
-  profileId      String? @db.Uuid
-  applicantId    String? @unique @db.Uuid
-  cvId           String? @unique @db.Uuid
-  organizationId String? @unique @db.Uuid
-  jobId          String? @unique @db.Uuid
-
-  user         User?         @relation(fields: [userId], references: [id])
-  applicant    Applicant?    @relation(fields: [applicantId], references: [id])
-  profile      Profile?      @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "companyLogos")
-  cv           Cv?           @relation(fields: [cvId], references: [id])
-  organization Organization? @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url            String
+  name           String
+  extension      String
+  height         Int?
+  width          Int?
+  fileCreatedAt  DateTime
+  userId         String?       @db.Uuid
+  profileId      String?       @db.Uuid
+  applicantId    String?       @unique @db.Uuid
+  cvId           String?       @unique @db.Uuid
+  organizationId String?       @unique @db.Uuid
+  jobId          String?       @unique @db.Uuid
+  user           User?         @relation(fields: [userId], references: [id])
+  applicant      Applicant?    @relation(fields: [applicantId], references: [id])
+  profile        Profile?      @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "companyLogos")
+  cv             Cv?           @relation(fields: [cvId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([id], map: "file_Id_Index")
 }
@@ -255,82 +249,73 @@ model Skills {
 }
 
 model Experience {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   position    String
   company     String
   startDate   String?
   endDate     String?
   description String
-  cvId        String  @db.Uuid
-  cv          Cv      @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  cvId        String   @db.Uuid
+  cv          Cv       @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([cvId], map: "experience_Cv_Id_Index")
 }
 
 model Project {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
   description String
   startDate   String?
   endDate     String?
   url         String?
-
-  cvId String @db.Uuid
-  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  cvId        String   @db.Uuid
+  cv          Cv       @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([cvId], map: "project_Cv_Id_Index")
 }
 
 model Education {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   institution String
   degree      String
   field       String
   startDate   String?
   endDate     String?
-
-  cvId String @db.Uuid
-  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  cvId        String   @db.Uuid
+  cv          Cv       @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([cvId], map: "education_Cv_Id_Index")
 }
 
 model Certificate {
-  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name           String
   issuer         String
   issueDate      String
   expirationDate String?
   url            String?
-
-  cvId String @db.Uuid
-  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  cvId           String   @db.Uuid
+  cv             Cv       @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([cvId], map: "certificate_Cv_Id_Index")
 }
 
 model Course {
-  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   url       String
   startDate String?
   endDate   String?
-
-  cvId String @db.Uuid
-  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
+  cvId      String   @db.Uuid
+  cv        Cv       @relation(fields: [cvId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -338,13 +323,11 @@ model Course {
 }
 
 model Social {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String
-  url  String
-
-  cvId String @db.Uuid
-  cv   Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  url       String
+  cvId      String   @db.Uuid
+  cv        Cv       @relation(fields: [cvId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -352,7 +335,7 @@ model Social {
 }
 
 model CvLanguage {
-  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String
   efficiency String @default("medium")
 
@@ -366,59 +349,32 @@ model CvLanguage {
 }
 
 model JobCategory {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   // code        String?  @unique @db.VarChar(10)
-  name        String  @unique @db.VarChar(100)
-  description String? @db.Text
+  name        String   @unique @db.VarChar(100)
+  description String?  @db.Text
   jobs        Job[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-// model JobPlatform {
-//   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-//   code        String  @db.VarChar(10)
-//   name        String  @db.VarChar(100)
-//   description String? @db.Text
-//   jobs        Job[]
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
-
-// model JobPosition {
-//   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-//   code        String  @db.VarChar(10) @unique
-//   name        String  @db.VarChar(100) @unique
-//   description String? @db.Text
-//   jobs        Job[]
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
-
 model Organization {
-  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  logo     File?
-  name     String  @unique @db.VarChar(100)
-  about    String  @db.Text
-  culture  String? @db.Text
-  benefits String? @db.Text
-  email    String  @db.VarChar(150)
-  location String  @db.VarChar(100)
-  verified Boolean @default(false)
-
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  logo      File?
+  name      String    @unique @db.VarChar(100)
+  about     String    @db.Text
+  culture   String?   @db.Text
+  benefits  String?   @db.Text
+  email     String    @db.VarChar(150)
+  location  String    @db.VarChar(100)
+  verified  Boolean   @default(false)
   createdBy CreatedBy
-
-  status JobStatus @default(DRAFT)
-
-  userId String? @db.Uuid
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobs   Job[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    JobStatus @default(DRAFT)
+  userId    String?   @db.Uuid
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs      Job[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Job {
@@ -428,35 +384,25 @@ model Job {
   workWithB2b            Boolean
   experienceRequired     JobExperienceLevel?
   payment                Payment?            @relation("jobPayments")
-  // code                   String          @db.VarChar(10)
   name                   String              @db.VarChar(100)
   description            String?             @db.Text
   salary                 String?             @db.VarChar(100)
-  // datePublished  DateTime
   applyBeforeDate        DateTime
   noOfVacancies          Int?
   applicationLinkOrEmail String
   typeOfApplication      ApplicationType
   status                 JobStatus           @default(DRAFT)
   createdBy              CreatedBy
-
-  jobCategoryId  String  @db.Uuid
-  userId         String? @db.Uuid
-  // jobPositionId  String @db.Uuid
-  // jobPlatformId  String @db.Uuid
-  organizationId String  @db.Uuid
-  user           User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  jobType   JobType
-  jobSkills JobSkill[]
-
-  jobCategory  JobCategory  @relation(fields: [jobCategoryId], references: [id])
-  // jobPosition  JobPosition  @relation(fields: [jobPositionId], references: [id])
-  organization Organization @relation(fields: [organizationId], references: [id])
-  // jobPlatform  JobPlatform  @relation(fields: [jobPlatformId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  jobCategoryId          String              @db.Uuid
+  userId                 String?             @db.Uuid
+  organizationId         String              @db.Uuid
+  user                   User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobType                JobType
+  jobSkills              JobSkill[]
+  jobCategory            JobCategory         @relation(fields: [jobCategoryId], references: [id])
+  organization           Organization        @relation(fields: [organizationId], references: [id])
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
 }
 
 model Skill {
@@ -464,72 +410,55 @@ model Skill {
   name        String     @unique @db.VarChar(100)
   description String?    @db.Text
   jobSkills   JobSkill[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model JobSkill {
   jobId   String @db.Uuid
   skillId String @db.Uuid
-
-  job   Job   @relation(fields: [jobId], references: [id])
-  skill Skill @relation(fields: [skillId], references: [id])
+  job     Job    @relation(fields: [jobId], references: [id])
+  skill   Skill  @relation(fields: [skillId], references: [id])
 
   @@id([jobId, skillId])
 }
 
-// model Payment {
-//   id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-//   userId              String        @db.Uuid
-//   jobId               String        @unique @db.Uuid
-//   amount              Decimal       @db.Money
-//   currency            MonriCurrency
-//   status              PaymentStatus
-//   monriTransactionId  String
-//   transactionResponse Json? // Optional field to store the full Monri transaction response
-//   createdAt           DateTime      @default(now())
-//   updatedAt           DateTime      @updatedAt
-
-//   // Relationships
-//   user User @relation("userPayments", fields: [userId], references: [id])
-//   job  Job  @relation("jobPayment", fields: [jobId], references: [id])
-// }
-
 model SubscriptionPlan {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String         @unique @db.VarChar(255)
-  description   String         @db.Text
-  price         Int // in minor units
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String              @unique @db.VarChar(255)
+  description   String              @db.Text
+  price         Decimal             @db.Money // int
   currency      MonriCurrency
   features      Json? // Store features like job posting limits
   subscriptions Subscription[]
-
-  monriPlanId Int
-
-  period SUBSCRIPTION_PERIOD @default(month)
-  status SUBSCRIPTION_STATUS
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // mostPopular   Boolean
+  period        SUBSCRIPTION_PERIOD @default(month)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 }
 
 model Subscription {
-  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId      String           @db.Uuid
-  planId              String           @db.Uuid
-  status              String // e.g., "active", "canceled", "past_due"
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // organizationId      String           @db.Uuid
+  planId              String              @db.Uuid
+  status              SUBSCRIPTION_STATUS // e.g., "active", "canceled", "past_due"
   startDate           DateTime
   nextBillingDate     DateTime?
   monriSubscriptionId String? // Monri's subscription identifier
+  customerId          String              @db.Uuid
+  customer            Customer            @relation(fields: [customerId], references: [id])
+  panToken            String
+  cITId               String?
+  ammount             Decimal             @db.Money
   // organization        Organization  @relation(fields: [organizationId], references: [id])
-  plan                SubscriptionPlan @relation(fields: [planId], references: [id])
-  payments            Payment[]        @relation("subscriptionPayments")
+  plan                SubscriptionPlan    @relation(fields: [planId], references: [id])
+  payments            Payment[]           @relation("subscriptionPayments")
   // jobs                Job[]         @relation("jobSubscription")
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 }
 
+// Transaction
 model Payment {
   id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   amount              Decimal       @db.Money
@@ -538,16 +467,14 @@ model Payment {
   status              PaymentStatus @default(PENDING)
   monriTransactionId  Int?
   transactionResponse Json? // Store Monri's transaction response
-
-  userId         String? @db.Uuid
-  jobId          String? @unique @db.Uuid // Removed unique constraint, made optional
-  subscriptionId String? @db.Uuid // Added for subscription payments
-  packageId      String? @db.Uuid
-
-  user         User?         @relation("userPayments", fields: [userId], references: [id])
-  job          Job?          @relation("jobPayments", fields: [jobId], references: [id])
-  subscription Subscription? @relation("subscriptionPayments", fields: [subscriptionId], references: [id])
-  package      Package?      @relation("packagePayments", fields: [packageId], references: [id])
+  jobId               String?       @unique @db.Uuid // Removed unique constraint, made optional
+  subscriptionId      String?       @db.Uuid // Added for subscription payments
+  packageId           String?       @db.Uuid
+  customerId          String        @db.Uuid
+  job                 Job?          @relation("jobPayments", fields: [jobId], references: [id])
+  subscription        Subscription? @relation("subscriptionPayments", fields: [subscriptionId], references: [id])
+  package             Package?      @relation("packagePayments", fields: [packageId], references: [id])
+  customer            Customer      @relation("customerPayments", fields: [customerId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -560,7 +487,54 @@ model Package {
   currency    MonriCurrency
   description String?       @db.Text
   payments    Payment[]     @relation("packagePayments")
+  // features   String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Customer {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String //@unique 
+  fullName      String
+  address       String
+  city          String
+  zip           String
+  country       String
+  phone         String
+  cITId         String? 
+  userId        String?        @unique @db.Uuid
+  user          User?          @relation(fields: [userId], references: [id])
+  subscriptions Subscription[]
+  payments      Payment[]      @relation("customerPayments")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId], map: "customer_User_Id_Index")
+}
+
+// model Subscription { 
+//   id Int @id @default(autoincrement()) 
+//   customerId Int @db.Uuid
+//   customer Customer @relation(fields: [customerId], references: [id]) 
+//   panToken String 
+//   amount Int 
+//   currency String @default("BAM") 
+//   status String @default("active") // active, canceled 
+//   createdAt DateTime @default(now()) 
+//   updatedAt DateTime @updatedAt 
+//   transactions Transaction[] 
+//   }
+
+// model Transaction { 
+//   id Int @id @default(autoincrement()) 
+//   subscriptionId String  
+//   subscription Subscription @relation(fields: [subscriptionId], references: [id]) 
+//   customerId String 
+//   customer Customer @relation(fields: [customerId], references: [id]) 
+//   orderNumber String @unique 
+//   status String // approved, declined, invalid 
+//   amount Int 
+//   currency String 
+//   createdAt DateTime @default(now()) 
+//   }

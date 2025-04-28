@@ -5,16 +5,23 @@ import {
   Logger,
 } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, Subscription } from "rxjs";
 import { ConfigService } from "@nestjs/config";
 import { addMonths, format } from "date-fns";
-import { IReqDigest } from "src/common/interfaces/digest.interface";
-import { reqDigest } from "src/common/helper/digest.helper";
+import { IDigest, IReqDigest } from "src/common/interfaces/digest.interface";
+import { calculateDigest, reqDigest } from "src/common/helper/digest.helper";
 import { ISubscription } from "./interfaces/subscription.interface";
 import { SubscriptionPlanResponseDto } from "./dtos/response/subscription_plan.response.dto";
-import { MonriCurrency, SUBSCRIPTION_PERIOD } from "@prisma/client";
+import { Customer, MonriCurrency, SUBSCRIPTION_PERIOD } from "@prisma/client";
 import { ICreateCustomer } from "./interfaces/create_customer.interface";
 import axios from "axios";
+import {
+  MonriTransaction,
+  MonriTransactionRequest,
+} from "./interfaces/transaction.interface";
+import { ISubPaymentParams } from "./interfaces/sub-payment-params.interface";
+import { ICardOnFileResponse } from "./interfaces/card_on_file_response.interface";
+import { getServerIp } from "src/common/helper/get_server_ip.helper";
 
 @Injectable()
 export class MonriService {
@@ -272,6 +279,104 @@ export class MonriService {
     } catch (error) {
       this.logger.error("Error in subscription process:", error);
       throw error;
+    }
+  }
+
+  async cardOnFilePayment(
+    data: ISubPaymentParams
+  ): Promise<ICardOnFileResponse> {
+    const ip = getServerIp();
+    this.logger.debug({ ip });
+    const fullpath = "/v2/transaction";
+    const timestamp = new Date().getTime();
+    // still not finished
+    const requestBody: MonriTransactionRequest = {
+      transaction: {
+        transaction_type: "purchase",
+        amount: data.amount,
+        ip,
+        order_info: `Subscription payment for ${data.plan_name} plan`,
+        ch_address: data.customer.address,
+        ch_city: data.customer.city,
+        ch_country: data.customer.country,
+        ch_email: data.customer.email,
+        ch_full_name: data.customer.fullName,
+        ch_phone: data.customer.phone,
+        ch_zip: data.customer.zip,
+        currency: data.currency,
+        tkn_cit_id: data.tkn_cit_id,
+        digest: "",
+        order_number: data.order_number,
+        authenticity_token: this.MONRI_AUTHENTICITY_TOKEN,
+        merchant_initiated_transaction: true,
+        language: "en",
+        pan_token: data.pan_token,
+        moto: true,
+      },
+    };
+
+    const bodyDigestInput: IDigest = {
+      currency: data.currency,
+      order_number: data.order_number,
+      amount: data.amount.toString(),
+    };
+
+    // Calculate body digest: SHA512(merchant_key + order_number + amount + currency)
+    // Body digest is used to verify the integrity of the request
+    const bodyDigest = calculateDigest(this.MONRI_API_TOKEN, bodyDigestInput);
+    requestBody.transaction["digest"] = bodyDigest;
+    console.log({ requestBody });
+
+    const digestData: IReqDigest = {
+      fullpath,
+      timestamp,
+      merchantKey: this.MONRI_API_TOKEN,
+      authenticityToken: this.MONRI_AUTHENTICITY_TOKEN,
+      body: JSON.stringify(requestBody),
+    };
+    this.logger.debug({ digestData });
+    // Calculate request digest: SHA512(merchant_key + timestamp + authenticity_token + fullpath + body)
+    // Request digest is used to verify the integrity of the request
+    const digest = reqDigest(digestData);
+    this.logger.debug({ digest });
+    this.logger.debug({ digest, url: `${this.MONRI_API_URL}${fullpath}` });
+    try {
+      const response = await axios.post(
+        `${this.MONRI_API_URL}${fullpath}`,
+        requestBody,
+        {
+          headers: {
+            ...this.getHeaders(),
+            Authorization: `${this.SCHEMA} ${this.MONRI_AUTHENTICITY_TOKEN} ${timestamp} ${digest}`,
+          },
+        }
+      );
+      console.log("1221", response.data);
+
+      const { status, transaction_id } = response.data;
+
+      return {
+        success: status === "approved",
+        status: status,
+        monriTransactionId: transaction_id,
+        rawResponse: response.data,
+      };
+    } catch (error) {
+      //   this.logger.error(
+      //     "Error creating customer:",
+      //     error.response?.data || error.message
+      //   );
+      this.logger.error("here");
+      this.logger.debug({
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      //   throw new BadRequestException(error.response?.data);
+      return {
+        success: false,
+        status: "invalid",
+        message: error.response?.data?.message || error.message,
+      };
     }
   }
 }

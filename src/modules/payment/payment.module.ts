@@ -6,6 +6,9 @@ import { OrganizationModule } from "../organization/organization.module";
 import { PackageModule } from "../package/package.module";
 import { SubscriptionPlanModule } from "../subscription-plan/subscription-plan.module";
 import { UsersModule } from "../users/users.module";
+import { SubscriptionModule } from "../subscription/subscription.module";
+import { CustomerModule } from "../customer/customer.module";
+import { MonriModule } from "../monri/monri.module";
 
 @Module({
   imports: [
@@ -14,6 +17,9 @@ import { UsersModule } from "../users/users.module";
     PackageModule,
     SubscriptionPlanModule,
     UsersModule,
+    SubscriptionModule,
+    CustomerModule,
+    MonriModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],

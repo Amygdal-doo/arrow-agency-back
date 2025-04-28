@@ -25,7 +25,9 @@ import { PackageModule } from "./modules/package/package.module";
 import { rateLimitoptions } from "./common/config";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
-import { SendgridModule } from './modules/sendgrid/sendgrid.module';
+import { SendgridModule } from "./modules/sendgrid/sendgrid.module";
+import { SubscriptionModule } from "./modules/subscription/subscription.module";
+import { CustomerModule } from "./modules/customer/customer.module";
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { SendgridModule } from './modules/sendgrid/sendgrid.module';
     SubscriptionPlanModule,
     PackageModule,
     SendgridModule,
+    SubscriptionModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [

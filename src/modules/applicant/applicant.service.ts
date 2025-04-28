@@ -39,6 +39,14 @@ export class ApplicantService {
     return this.databaseService.applicant.findUnique({ where: { id } });
   }
 
+  async countNumOfApplicants(userId: string): Promise<number> {
+    return this.databaseService.applicant.count({
+      where: {
+        userId,
+      },
+    });
+  }
+
   async findOne(id: string, userId: string) {
     const result = await this.databaseService.applicant.findUnique({
       where: {
