@@ -487,7 +487,7 @@ model Package {
   currency    MonriCurrency
   description String?       @db.Text
   payments    Payment[]     @relation("packagePayments")
-  // features   String[]
+  features   String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

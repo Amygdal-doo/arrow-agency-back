@@ -300,22 +300,44 @@ async function main() {
 
   const packages = [
     {
-      name: "GOOD",
-      description: "Display current logo etc.",
-      price: "58.00",
-      currency: MonriCurrency.USD,
+      name: "Basic Plan",
+      price: "50.00",
+      currency: MonriCurrency.USD, // Assuming you are using USD, adjust if needed
+      description:
+        "1 job post per month, 7-day listing duration, Standard CV matching",
+      features: [
+        "1 job post per month",
+        "7-day listing duration",
+        "Standard CV matching",
+      ],
     },
     {
-      name: "BETTER",
-      description: "Display current logo etc.",
-      price: "98.00",
+      name: "Pro Plan",
+      price: "120.00",
       currency: MonriCurrency.USD,
+      description:
+        "3 job posts per month, 14-day listing duration, Enhanced CV matching, Priority customer support",
+      features: [
+        "3 job posts per month",
+        "14-day listing duration",
+        "Enhanced CV matching",
+        "Priority customer support",
+      ],
     },
     {
-      name: "BEST",
-      description: "Display current logo etc.",
-      price: "149.00",
+      name: "Enterprise Plan",
+      price: "250.00",
       currency: MonriCurrency.USD,
+      description:
+        "10 job posts per month, 30-day listing duration, Advanced CV matching, Featured job listing, Analytics dashboard, Dedicated support",
+      features: [
+        "10 job posts per month",
+        "30-day listing duration",
+        "Advanced CV matching",
+        "Featured job listing",
+        "Analytics dashboard",
+        "Dedicated support",
+      ],
     },
   ];
 
@@ -348,9 +370,7 @@ async function main() {
   }
   console.log("Subscriptions created...");
 
-  for (const package_ of packages) {
-    await prisma.package.create({ data: package_ });
-  }
+  await prisma.package.createMany({ data: packages });
   console.log("Packages created...");
 
   for (const category of jobCategories) {
