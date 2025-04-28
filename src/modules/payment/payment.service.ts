@@ -170,7 +170,7 @@ export class PaymentService {
   }
 
   async createSubscription(args: ICreateSubPayment) {
-    const { amount, currency, customerId, tx } = args;
+    const { amount, currency, customerId, subscriptionId, tx } = args;
     const prisma = tx || this.databaseService;
     const data: Prisma.PaymentCreateInput = {
       // jobId,
@@ -178,6 +178,7 @@ export class PaymentService {
       currency,
       paymentType: PaymentType.SUBSCRIPTION,
       status: PaymentStatus.PENDING,
+      subscription: { connect: { id: subscriptionId } },
       customer: { connect: { id: customerId } },
     };
     const result = await prisma.payment.create({
@@ -1103,6 +1104,7 @@ export class PaymentService {
     // });
     const dueSubscriptions = await this.subscriptionService.dueSubscriptions();
     this.logger.log("Subscriptions to be processed: ", dueSubscriptions.length);
+    console.log({ dueSubscriptions });
 
     for (const sub of dueSubscriptions) {
       this.logger.log(
@@ -1113,6 +1115,7 @@ export class PaymentService {
         amount,
         currency: sub.plan.currency,
         customerId: sub.customerId,
+        subscriptionId: sub.id,
       });
       const amountInCents = Number(toCents(Number(amount)));
 
