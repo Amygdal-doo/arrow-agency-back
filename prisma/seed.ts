@@ -363,6 +363,21 @@ async function main() {
       period: SUBSCRIPTION_PERIOD.month,
       currency: MonriCurrency.USD,
     },
+    {
+      name: "HR Subscription",
+      description:
+        "HR Subscription Plan for multiple CVs: Unlimited CV storage, access to CV tools, edits, job postings, and advanced candidate search.",
+      price: "99.00",
+      currency: MonriCurrency.USD,
+      features: {
+        unlimitedCVStorage: true,
+        unlimitedCVScanningTools: true,
+        unlimitedCVEdits: true,
+        accessToAllJobPostings: true,
+        advancedCandidateFilteringAndSearch: true,
+      },
+      period: SUBSCRIPTION_PERIOD.month,
+    },
   ];
 
   for (const subPlan of subPlans) {
