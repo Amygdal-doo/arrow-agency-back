@@ -304,7 +304,7 @@ export class MonriService {
         ch_phone: data.customer.phone,
         ch_zip: data.customer.zip,
         currency: data.currency,
-        tkn_cit_id: data.tkn_cit_id,
+        cit_id: `tkn_${data.cit_id}`,
         digest: "",
         order_number: data.order_number,
         authenticity_token: this.MONRI_AUTHENTICITY_TOKEN,

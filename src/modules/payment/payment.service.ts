@@ -1127,7 +1127,7 @@ export class PaymentService {
         pan_token: sub.panToken,
         order_number: payment.id,
         plan_name: sub.plan.name,
-        tkn_cit_id: sub.customer.cITId,
+        cit_id: sub.customer.cITId,
       }); // monriService.chargeSavedCard(sub.userId, payment); // pseudocode
       this.logger.log(
         `Payment result for subscription: ${sub.id}, success: ${result.success}`
