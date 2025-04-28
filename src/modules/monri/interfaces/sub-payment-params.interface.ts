@@ -6,6 +6,7 @@ export interface ISubPaymentParams {
   currency: string;
   customer: Customer;
   pan_token: string;
+  tkn_cit_id: string | null;
   order_number: string;
   plan_name: string;
 }
