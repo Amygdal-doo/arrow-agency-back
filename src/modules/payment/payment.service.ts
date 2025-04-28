@@ -979,9 +979,7 @@ export class PaymentService {
               order.subscription.id,
               {
                 status: SUBSCRIPTION_STATUS.ACTIVE,
-                nextBillingDate: getFirstDayOfNextMonth(
-                  order.subscription.startDate
-                ),
+                nextBillingDate: addMonths(new Date(), 1),
                 panToken: body.pan_token,
                 cITId: body.cit_id ? body.cit_id : undefined,
               },
@@ -1148,7 +1146,7 @@ export class PaymentService {
           `Payment successful for subscription: ${sub.id}, updating subscription status`
         );
         await this.subscriptionService.update(sub.id, {
-          nextBillingDate: addMonths(sub.nextBillingDate, 1), // use date-fns or dayjs
+          nextBillingDate: addMonths(sub.nextBillingDate, 1),
         });
       } else {
         // Handle payment failure
@@ -1159,7 +1157,7 @@ export class PaymentService {
         });
 
         await this.subscriptionService.update(sub.id, {
-          status: SUBSCRIPTION_STATUS.PAST_DUE, // use date-fns or dayjs
+          status: SUBSCRIPTION_STATUS.PAST_DUE,
         });
       }
     }

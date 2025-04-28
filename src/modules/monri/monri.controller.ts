@@ -7,9 +7,9 @@ import { MonriService } from "./monri.service";
 export class MonriController {
   constructor(private readonly monriService: MonriService) {}
 
-  @Post("create-customer-subscription")
-  @ApiOperation({ summary: "Create a customer and subscribe to a plan" })
-  async createCustomerSubscription() {
-    return this.monriService.createCustomerSubscription();
-  }
+  // @Post("create-customer-subscription")
+  // @ApiOperation({ summary: "Create a customer and subscribe to a plan" })
+  // async createCustomerSubscription() {
+  //   return this.monriService.createCustomerSubscription();
+  // }
 }
