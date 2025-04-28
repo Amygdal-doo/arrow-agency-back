@@ -1140,6 +1140,9 @@ export class PaymentService {
       });
 
       if (result.success) {
+        this.logger.log(
+          `Payment successful for subscription: ${sub.id}, updating subscription status`
+        );
         await this.subscriptionService.update(sub.id, {
           nextBillingDate: addMonths(sub.nextBillingDate, 1), // use date-fns or dayjs
         });
