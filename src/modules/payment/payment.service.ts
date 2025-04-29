@@ -887,7 +887,11 @@ export class PaymentService {
           // Update order status
           await this.update(
             order.id,
-            { status: PaymentStatus.COMPLETED, transactionResponse },
+            {
+              status: PaymentStatus.COMPLETED,
+              transactionResponse,
+              monriTransactionId: body.id,
+            }, // should i take the new id from the transaction
             tx
           );
           console.log(body);
