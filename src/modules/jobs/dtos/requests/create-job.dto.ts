@@ -21,21 +21,21 @@ import {
 } from "class-validator";
 
 export class CreateJobDto {
-  @ApiProperty({
-    example: false,
+  @ApiPropertyOptional({
+    example: true,
     description: "Whether the job is available worldwide or not",
   })
   @IsBoolean()
-  @IsNotEmpty()
-  worldwide: boolean;
+  @IsOptional()
+  worldwide?: boolean;
 
-  @ApiProperty({
-    example: false,
+  @ApiPropertyOptional({
+    example: true,
     description: "Whether the job is available for B2B or not",
   })
   @IsBoolean()
-  @IsNotEmpty()
-  workWithB2b: boolean;
+  @IsOptional()
+  workWithB2b?: boolean;
 
   @ApiProperty({
     example: false,
