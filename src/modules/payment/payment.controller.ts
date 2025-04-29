@@ -287,4 +287,16 @@ export class PaymentController {
     // console.log(body);
     // return this.paymentService.paymentCallback(body);
   }
+
+  @Post("subscribe/customer/cancel")
+  @ApiOperation({
+    summary: "Cancel Subscription",
+    description: "Cancel Subscription",
+  })
+  @ApiBearerAuth("Access Token")
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(AccessTokenGuard)
+  async cancelSubscription(@UserLogged() loggedUserInfoDto: ILoggedUserInfo) {
+    return this.paymentService.cancelSubscription(loggedUserInfoDto);
+  }
 }
