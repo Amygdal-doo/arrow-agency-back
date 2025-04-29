@@ -152,6 +152,8 @@ export class PaymentService {
           customer: { connect: { id: customerId } },
           ammount: amount,
           startDate,
+          // customerCancelled: false,
+          // cancelledAt: null,
           panToken: "",
           cITId: "",
         },
@@ -1170,5 +1172,26 @@ export class PaymentService {
         });
       }
     }
+  }
+
+  async cancelSubscription(loggedUserInfoDto: ILoggedUserInfo) {
+    const customer = await this.customerService.findByUserId(
+      loggedUserInfoDto.id
+    );
+    if (!customer) throw new NotFoundException("Customer not found");
+
+    const subscription = await this.subscriptionService.findActiveByCustomerId(
+      customer.id
+    );
+    if (!subscription) throw new NotFoundException("Subscription not found");
+
+    if (subscription.customerCancelled)
+      throw new BadRequestException("Subscription already cancelled");
+
+    return this.subscriptionService.update(subscription.id, {
+      status: SUBSCRIPTION_STATUS.CANCELED,
+      customerCancelled: true,
+      cancelledAt: new Date(),
+    });
   }
 }
