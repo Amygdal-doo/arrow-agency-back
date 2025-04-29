@@ -355,6 +355,8 @@ export class MonriService {
 
       const { status } = response.data;
 
+      console.log("status", status);
+
       return {
         success: status === "approved",
         status: status,
