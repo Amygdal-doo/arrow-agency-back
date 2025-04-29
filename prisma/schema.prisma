@@ -379,8 +379,8 @@ model Organization {
 
 model Job {
   id                     String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  worldwide              Boolean
-  remote                 Boolean
+  worldwide              Boolean             @default(true)
+  remote                 Boolean             @default(true)
   workWithB2b            Boolean
   experienceRequired     JobExperienceLevel?
   payment                Payment?            @relation("jobPayments")
