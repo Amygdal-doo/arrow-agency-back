@@ -1097,7 +1097,6 @@ export class PaymentService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async cronJobSubscription() {
-    this.logger.log("Subscription Cron job started...");
     // const subscriptions = await this.subscriptionService.findAll({
     //   where: {
     //     status: SUBSCRIPTION_STATUS.ACTIVE,
@@ -1108,6 +1107,7 @@ export class PaymentService {
     // });
     const dueSubscriptions = await this.subscriptionService.dueSubscriptions();
     if (dueSubscriptions.length > 0) {
+      this.logger.log("Subscription Cron job started...");
       this.logger.log(
         "Subscriptions to be processed: ",
         dueSubscriptions.length
@@ -1119,6 +1119,14 @@ export class PaymentService {
       this.logger.log(
         `Processing subscription for user: ${sub.customer.userId}, plan: ${sub.plan.name}`
       );
+
+      if (sub.customerCancelled) {
+        await this.subscriptionService.update(sub.id, {
+          status: SUBSCRIPTION_STATUS.CANCELED,
+          cancelledAt: new Date(),
+        });
+      }
+
       const amount = sub.plan.price.toString();
       const payment = await this.createSubscription({
         amount,
