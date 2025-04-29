@@ -353,13 +353,11 @@ export class MonriService {
       );
       console.log("1221", response.data);
 
-      const { status } = response.data;
-
       console.log("status", status);
 
       return {
-        success: status === "approved",
-        status: status,
+        success: response.data.status === "approved",
+        status: response.data.status,
         monriTransactionId: response.data.id,
         rawResponse: response.data,
       };
