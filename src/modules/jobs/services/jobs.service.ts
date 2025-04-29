@@ -134,6 +134,14 @@ export class JobsService {
       throw new NotFoundException("Job Skills not found");
 
     const query: Prisma.JobUncheckedCreateInput = {
+      workWithB2b:
+        data.workWithB2b === true || data.workWithB2b === false
+          ? data.workWithB2b
+          : false,
+      worldwide:
+        data.worldwide === true || data.worldwide === false
+          ? data.worldwide
+          : false,
       // userId: loggedUserInfo?.id,
       ...rest,
       createdBy: loggedUserInfo ? CreatedBy.LOGGED_USER : CreatedBy.NOT_LOGGED,
