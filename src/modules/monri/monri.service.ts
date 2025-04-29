@@ -353,13 +353,13 @@ export class MonriService {
       );
       console.log("1221", response.data);
 
-      console.log("status", status);
+      const transaction = response.data.transaction;
 
       return {
-        success: response.data.status === "approved",
-        status: response.data.status,
-        monriTransactionId: response.data.id,
-        rawResponse: response.data,
+        success: transaction.status === "approved",
+        status: transaction.status,
+        monriTransactionId: transaction.id,
+        rawResponse: transaction,
       };
     } catch (error) {
       //   this.logger.error(
