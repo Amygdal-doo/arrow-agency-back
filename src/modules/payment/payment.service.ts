@@ -1101,8 +1101,13 @@ export class PaymentService {
     //   },
     // });
     const dueSubscriptions = await this.subscriptionService.dueSubscriptions();
-    this.logger.log("Subscriptions to be processed: ", dueSubscriptions.length);
-    console.log({ dueSubscriptions });
+    if (dueSubscriptions.length > 0) {
+      this.logger.log(
+        "Subscriptions to be processed: ",
+        dueSubscriptions.length
+      );
+      // console.log({ dueSubscriptions });
+    }
 
     for (const sub of dueSubscriptions) {
       this.logger.log(
