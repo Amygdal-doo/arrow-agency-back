@@ -353,7 +353,7 @@ export class MonriService {
       );
       console.log("1221", response.data);
 
-      const transaction = response.data.transaction;
+      const transaction: Transaction = response.data.transaction;
 
       return {
         success: transaction.status === "approved",

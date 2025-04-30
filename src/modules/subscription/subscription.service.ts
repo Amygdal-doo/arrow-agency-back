@@ -23,6 +23,23 @@ export class SubscriptionService {
     });
   }
 
+  async findActiveByCustomerId(
+    customerId: string,
+    tx?: Prisma.TransactionClient
+  ) {
+    const prisma = tx || this.databaseService;
+    return prisma.subscription.findFirst({
+      where: {
+        customerId,
+        status: SUBSCRIPTION_STATUS.ACTIVE,
+      },
+      include: {
+        plan: true,
+        customer: true,
+      },
+    });
+  }
+
   async dueSubscriptions() {
     return this.databaseService.subscription.findMany({
       where: {

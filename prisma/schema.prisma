@@ -450,6 +450,8 @@ model Subscription {
   panToken            String
   cITId               String?
   ammount             Decimal             @db.Money
+  customerCancelled   Boolean             @default(false)
+  cancelledAt         DateTime?
   // organization        Organization  @relation(fields: [organizationId], references: [id])
   plan                SubscriptionPlan    @relation(fields: [planId], references: [id])
   payments            Payment[]           @relation("subscriptionPayments")
