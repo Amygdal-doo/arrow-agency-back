@@ -442,7 +442,7 @@ export class CvService {
       phone: cv.phone,
       summary: cv.summary,
       companyName: cv.companyName,
-      companyLogoUrl: cv.companyLogo.url,
+      companyLogoUrl: cv.companyLogo?.url ? cv.companyLogo.url : "",
       primaryColor: cv.primaryColor,
       secondaryColor: cv.secondaryColor,
       tertiaryColor: cv.tertiaryColor,
