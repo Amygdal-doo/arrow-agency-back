@@ -343,26 +343,21 @@ async function main() {
 
   const subPlans = [
     {
-      name: "Basic Plan",
-      description: "Monthly subscription plan",
-      price: "11.99",
-      period: SUBSCRIPTION_PERIOD.month,
+      name: "Free Plan",
+      description:
+        "Perfect for individuals getting started with AI recruitment",
+      price: "0",
       currency: MonriCurrency.USD,
-    },
-    {
-      name: "Great Plan",
-      description: "Monthly subscription plan",
-      price: "24.99",
+      features: {
+        unlimitedCVEdits: false,
+        unlimitedCVStorage: false,
+        accessToAllJobPostings: true,
+        unlimitedCVScanningTools: false,
+        advancedCandidateFilteringAndSearch: false,
+      },
       period: SUBSCRIPTION_PERIOD.month,
-      currency: MonriCurrency.USD,
     },
-    {
-      name: "Super Plan",
-      description: "Monthly subscription plan",
-      price: "50.00",
-      period: SUBSCRIPTION_PERIOD.month,
-      currency: MonriCurrency.USD,
-    },
+
     {
       name: "HR Subscription",
       description:
@@ -374,6 +369,21 @@ async function main() {
         unlimitedCVScanningTools: true,
         unlimitedCVEdits: true,
         accessToAllJobPostings: true,
+        advancedCandidateFilteringAndSearch: true,
+      },
+      period: SUBSCRIPTION_PERIOD.month,
+    },
+    {
+      name: "Enterprise",
+      description:
+        "Custom solutions for large organizations and special requirements",
+      price: "199.00",
+      currency: MonriCurrency.USD,
+      features: {
+        unlimitedCVEdits: true,
+        unlimitedCVStorage: true,
+        accessToAllJobPostings: true,
+        unlimitedCVScanningTools: true,
         advancedCandidateFilteringAndSearch: true,
       },
       period: SUBSCRIPTION_PERIOD.month,
