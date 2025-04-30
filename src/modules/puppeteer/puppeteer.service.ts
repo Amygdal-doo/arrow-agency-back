@@ -128,7 +128,7 @@ export class PuppeteerService {
       const pdf = await page.pdf({
         format: "A4",
         printBackground: true,
-        margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
+        margin: { top: "1cm", right: "0cm", bottom: "1cm", left: "0cm" },
       });
       return Buffer.from(pdf);
     } catch (error) {
