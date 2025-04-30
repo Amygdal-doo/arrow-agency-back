@@ -205,7 +205,7 @@ export class ApplicantController {
     )
     file?: Express.Multer.File
   ) {
-    if (loggedUserInfo.role !== Role.USER) {
+    if (loggedUserInfo.role == Role.USER) {
       const numberOfApplicants =
         await this.applicantService.countNumOfApplicants(loggedUserInfo.id);
       if (numberOfApplicants >= 1) {
