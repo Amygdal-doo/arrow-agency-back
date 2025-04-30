@@ -40,7 +40,7 @@
         background: white;
         box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
         border-radius: 12px;
-        overflow: hidden;
+        /* overflow: hidden; */
       }
 
       .header {
@@ -196,6 +196,7 @@
         text-decoration: none;
         font-size: var(--text-sm);
         margin-top: 0.25rem;
+        word-break: break-all;
       }
 
       .item-link:hover {
@@ -487,7 +488,12 @@
             <h2>Social Links</h2>
             <div class="social-links">
               {{#each socials}}
-              <a href="{{url}}" target="_blank" rel="noopener noreferrer"
+
+              <a
+                class="item-link"
+                href="{{url}}"
+                target="_blank"
+                rel="noopener noreferrer"
                 >{{url}}</a
               >
               {{/each}}
