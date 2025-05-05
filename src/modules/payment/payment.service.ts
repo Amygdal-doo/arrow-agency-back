@@ -1123,7 +1123,7 @@ export class PaymentService {
       if (sub.customerCancelled) {
         await this.subscriptionService.update(sub.id, {
           status: SUBSCRIPTION_STATUS.CANCELED,
-          cancelledAt: new Date(),
+          // cancelledAt: new Date(),
         });
       }
 
@@ -1196,10 +1196,15 @@ export class PaymentService {
     if (subscription.customerCancelled)
       throw new BadRequestException("Subscription already cancelled");
 
-    return this.subscriptionService.update(subscription.id, {
-      status: SUBSCRIPTION_STATUS.CANCELED,
+    await this.subscriptionService.update(subscription.id, {
+      // status: SUBSCRIPTION_STATUS.CANCELED,
       customerCancelled: true,
       cancelledAt: new Date(),
     });
+
+    return {
+      status: "success",
+      message: `Subscription cancelled for plan ${subscription.plan.name}`,
+    };
   }
 }

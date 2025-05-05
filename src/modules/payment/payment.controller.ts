@@ -15,6 +15,7 @@ import { PaymentService } from "./payment.service";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -35,6 +36,7 @@ import { PayByLinkResponseDto } from "./dtos/response/pay-by-link.response.dto";
 import { PaymentCallbackResponseDto } from "./dtos/response/payment_callback.response.dto";
 import { PaymentCallbackDto } from "./dtos/requests/callback-payment.dto";
 import { SubscribeDto } from "./dtos/requests/susbscribe.dto";
+import { SubCanceledResponseDto } from "./dtos/response/sub_canceled.response.dto";
 
 @ApiTags("Payment")
 @Controller("payment")
@@ -296,6 +298,11 @@ export class PaymentController {
   @ApiBearerAuth("Access Token")
   @UseFilters(new HttpExceptionFilter())
   @UseGuards(AccessTokenGuard)
+  @ApiOkResponse({ type: SubCanceledResponseDto })
+  @ApiNotFoundResponse()
+  @ApiBadRequestResponse()
+  @ApiUnauthorizedResponse()
+  @Serialize(SubCanceledResponseDto)
   async cancelSubscription(@UserLogged() loggedUserInfoDto: ILoggedUserInfo) {
     return this.paymentService.cancelSubscription(loggedUserInfoDto);
   }

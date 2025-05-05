@@ -34,6 +34,7 @@ enum SUBSCRIPTION_STATUS {
   PAST_DUE
   CANCELED
   PENDING
+  FAILED
 }
 
 enum PaymentType {
