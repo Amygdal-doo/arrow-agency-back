@@ -70,7 +70,7 @@ export class SubscriptionService {
       },
       include: {
         plan: true,
-        customer: true,
+        // customer: true,
       },
     });
 
