@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma, SUBSCRIPTION_STATUS } from "@prisma/client";
 import { DatabaseService } from "src/database/database.service";
+import { ILoggedUserInfo } from "../auth/interfaces/logged-user-info.interface";
+import { NotFoundException } from "src/common/exceptions/errors/common/not-found.exception.filter";
 
 @Injectable()
 export class SubscriptionService {
@@ -57,5 +59,29 @@ export class SubscriptionService {
         },
       },
     });
+  }
+
+  async subcriptionStatus(loggedUserInfoDto: ILoggedUserInfo) {
+    const subscription = await this.databaseService.subscription.findFirst({
+      where: {
+        customer: {
+          userId: loggedUserInfoDto.id,
+        },
+      },
+      include: {
+        plan: true,
+        customer: true,
+      },
+    });
+
+    if (!subscription) throw new NotFoundException();
+
+    return {
+      ...subscription,
+      plan: {
+        ...subscription.plan,
+        price: subscription.plan.price.toString(),
+      },
+    };
   }
 }
