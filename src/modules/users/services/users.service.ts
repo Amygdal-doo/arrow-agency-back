@@ -26,6 +26,7 @@ export class UsersService {
   async findByEmail(email: string) {
     const result = await this.userModel.findUnique({
       where: { email },
+      include: { customer: { include: { subscriptions: true } } },
     });
     return result;
   }

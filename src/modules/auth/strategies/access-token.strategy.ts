@@ -31,16 +31,21 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, "jwt") {
   }
 
   async validate(payload: IJwtPayload): Promise<ILoggedUserInfo> {
-    const user = await this.userService.findById(payload.id);
+    const user = await this.userService.findByEmail(payload.email);
 
     if (!user) {
       throw new UnauthorizedException("User not found or token invalid");
     }
 
+    const subId = user.customer?.subscriptions?.length
+      ? user.customer.subscriptions[0].id
+      : null;
+
     return {
       id: user.id,
       email: user.email,
       role: user.role,
+      subId,
     };
   }
 }

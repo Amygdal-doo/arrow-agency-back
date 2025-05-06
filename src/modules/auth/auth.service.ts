@@ -66,10 +66,15 @@ export class AuthService {
 
     //maybe check for update in role ?
 
+    const subId = user.customer?.subscriptions?.length
+      ? user.customer.subscriptions[0].id
+      : null;
+
     return {
       id: user.id,
       email: user.email,
       role: user.role,
+      subId,
     };
   }
   async login(payload: ILoggedUserInfo): Promise<LoginResponseDto> {
