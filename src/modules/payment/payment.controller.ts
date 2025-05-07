@@ -306,4 +306,41 @@ export class PaymentController {
   async cancelSubscription(@UserLogged() loggedUserInfoDto: ILoggedUserInfo) {
     return this.paymentService.cancelSubscription(loggedUserInfoDto);
   }
+
+  @Get("subscribe/success")
+  @ApiOperation({
+    summary: "Subscription Success",
+    description:
+      "Handles subscription success callback and renders a success HTML page.",
+  })
+  @UseFilters(new HttpExceptionFilter())
+  @ApiOkResponse(paymentSuccessSwagger)
+  @HttpCode(HttpStatus.OK)
+  async subscriptionSuccess(@Query() query: any, @Res() res: Response) {
+    console.log("________________________________Payment success", query);
+
+    return res.render("successful_subscription", {
+      order_id: query.order_number,
+      status: "approved", // should be dynamic
+      amount: Number(query.amount) / 100,
+      currency: query.currency,
+    });
+  }
+
+  @Get("subscribe/cancel")
+  @ApiOperation({
+    summary: "Subscription Cancelled",
+    description:
+      "Handles payment cancellation callback and renders a cancellation HTML page.",
+  })
+  @UseFilters(new HttpExceptionFilter())
+  @ApiOkResponse(paymentCanceledSwagger)
+  @HttpCode(HttpStatus.OK)
+  async subscriptionCancel(@Query() query: any, @Res() res: Response) {
+    console.log("_____________________________Payment Cancel", query);
+    return res.render("cancel_subscription", {
+      order_id: query.order_number,
+      status: "cancelled", // should be dynamic
+    });
+  }
 }
