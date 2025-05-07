@@ -37,8 +37,8 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, "jwt") {
       throw new UnauthorizedException("User not found or token invalid");
     }
 
-    const subId = user.customer?.subscriptions?.length
-      ? user.customer.subscriptions[0].id
+    const subId = user.customer?.subscriptions
+      ? user.customer.subscriptions.id
       : null;
 
     return {

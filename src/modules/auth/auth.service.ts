@@ -66,8 +66,8 @@ export class AuthService {
 
     //maybe check for update in role ?
 
-    const subId = user.customer?.subscriptions?.length
-      ? user.customer.subscriptions[0].id
+    const subId = user.customer?.subscriptions
+      ? user.customer.subscriptions.id
       : null;
 
     return {
