@@ -835,8 +835,8 @@ export class PaymentService {
             tokenize_pan: true,
             supported_payment_methods: [...user.pan_tokens, "card"],
             future_usage: "recurring",
-            success_url_override: `${url}/api/payment/success`,
-            cancel_url_override: `${url}/api/payment/cancel`,
+            success_url_override: `${url}/api/payment/subscribe/success`,
+            cancel_url_override: `${url}/api/payment/subscribe/cancel`,
             callback_url_override: `${url}/api/payment/subscribe/callback`,
             moto: false,
           };
