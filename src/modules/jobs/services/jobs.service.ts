@@ -24,6 +24,7 @@ import { CvService } from "src/modules/cv/services/cv.service";
 import { SendgridService } from "src/modules/sendgrid/sendgrid.service";
 import { isValidEmail } from "src/common/helper/is_email.helper";
 import { ConfigService } from "@nestjs/config";
+import { IEasyApplyTemplateData } from "src/modules/sendgrid/interfaces/easy_apply_template_data.interface";
 
 @Injectable()
 export class JobsService {
@@ -355,7 +356,17 @@ export class JobsService {
     const cv = await this.cvService.findById(cvId, loggedUserInfo.id);
     if (!cv) throw new NotFoundException("CV not found");
     const cvUrl = `${this.configService.get<string>("FRONTEND_URL")}/public-cv/${cv.id}`;
-    await this.sendgridService.easyApply(job.applicationLinkOrEmail, cvUrl);
+
+    const templateData: IEasyApplyTemplateData = {
+      cvUrl,
+      employerName: job.organization.name,
+      jobTitle: job.name,
+    };
+
+    await this.sendgridService.easyApply(
+      job.applicationLinkOrEmail,
+      templateData
+    );
     return { status: "success", message: "Job applied successfully" };
   }
 }
