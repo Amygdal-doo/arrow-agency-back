@@ -442,11 +442,11 @@ model Subscription {
   id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   // organizationId      String           @db.Uuid
   planId              String              @db.Uuid
-  status              SUBSCRIPTION_STATUS // e.g., "active", "canceled", "past_due"
+  status              SUBSCRIPTION_STATUS
   startDate           DateTime
   nextBillingDate     DateTime?
   monriSubscriptionId String? // Monri's subscription identifier
-  customerId          String              @db.Uuid
+  customerId          String              @db.Uuid @unique
   customer            Customer            @relation(fields: [customerId], references: [id])
   panToken            String
   cITId               String?
@@ -508,7 +508,7 @@ model Customer {
   cITId         String? 
   userId        String?        @unique @db.Uuid
   user          User?          @relation(fields: [userId], references: [id])
-  subscriptions Subscription[]
+  subscriptions Subscription?
   payments      Payment[]      @relation("customerPayments")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

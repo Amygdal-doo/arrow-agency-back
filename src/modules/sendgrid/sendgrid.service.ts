@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import * as sgMail from "@sendgrid/mail";
 import { ConfigService } from "@nestjs/config";
 import { template_easy_apply } from "./template/template_easy_apply";
+import { IEasyApplyTemplateData } from "./interfaces/easy_apply_template_data.interface";
 
 @Injectable()
 export class SendgridService {
@@ -30,12 +31,17 @@ export class SendgridService {
     }
   }
 
-  async easyApply(email: string, cvUrl: string) {
+  async easyApply(email: string, dynamicTemplateData: IEasyApplyTemplateData) {
+    const templateId = this.configService.get<string>(
+      "SENDGRID_EASY_APPLY_TEMPLATE_ID"
+    );
     const mail: sgMail.MailDataRequired = {
       subject: "Easy Apply - Arrow agency",
       to: email,
       from: this.FROM,
-      html: template_easy_apply({ cvUrl }),
+      // html: template_easy_apply({ cvUrl }),
+      templateId,
+      dynamicTemplateData,
       //   templateId,
       //   dynamicTemplateData,
     };
