@@ -85,6 +85,27 @@ export class SubscriptionResponseDto implements Subscription {
 
   @ApiProperty({
     example: null,
+    description: "Subscription end date",
+  })
+  @Expose()
+  endDate: Date | null;
+
+  @ApiProperty({
+    example: null,
+    description: "Trial start date",
+  })
+  @Expose()
+  trialStartDate: Date | null;
+
+  @ApiProperty({
+    example: null,
+    description: "Trial end date",
+  })
+  @Expose()
+  trialEndDate: Date | null;
+
+  @ApiProperty({
+    example: null,
     description: "Subscription cancellation date",
   })
   @Expose()

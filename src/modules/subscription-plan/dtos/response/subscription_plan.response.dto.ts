@@ -59,6 +59,12 @@ export class SubscriptionPlanResponseDto implements SubscriptionPlan {
   period: SUBSCRIPTION_PERIOD;
 
   @ApiProperty({
+    example: false,
+    description: "Is the Subscription Plan default/free",
+  })
+  isDefault: boolean;
+
+  @ApiProperty({
     example: "2023-02-01T12:00:00.000Z",
     description: "The creation date of the Subscription Plan",
   })
