@@ -28,6 +28,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { SendgridModule } from "./modules/sendgrid/sendgrid.module";
 import { SubscriptionModule } from "./modules/subscription/subscription.module";
 import { CustomerModule } from "./modules/customer/customer.module";
+import { SubscriptionUsageModule } from './modules/subscription_usage/subscription_usage.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { CustomerModule } from "./modules/customer/customer.module";
     SendgridModule,
     SubscriptionModule,
     CustomerModule,
+    SubscriptionUsageModule,
   ],
   controllers: [AppController],
   providers: [
