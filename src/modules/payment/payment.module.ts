@@ -9,6 +9,7 @@ import { UsersModule } from "../users/users.module";
 import { SubscriptionModule } from "../subscription/subscription.module";
 import { CustomerModule } from "../customer/customer.module";
 import { MonriModule } from "../monri/monri.module";
+import { SubscriptionUsageModule } from "../subscription_usage/subscription_usage.module";
 
 @Module({
   imports: [
@@ -20,8 +21,10 @@ import { MonriModule } from "../monri/monri.module";
     SubscriptionModule,
     CustomerModule,
     MonriModule,
+    SubscriptionUsageModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],
+  exports: [PaymentService],
 })
 export class PaymentModule {}

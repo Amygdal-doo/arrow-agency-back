@@ -13,6 +13,7 @@ import {
   verifyPassword,
 } from "src/common/helper/hash-password.helper";
 import { WrongCredidentialsException } from "src/common/exceptions/errors/auth/wrong-credidentials.exception";
+import { PaymentService } from "../payment/payment.service";
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,8 @@ export class AuthService {
     private readonly userService: UsersService,
     private readonly userRefreshTokenService: UserRefreshTokenService,
     private readonly jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private readonly paymentService: PaymentService
   ) {}
 
   async getAccessAndRefreshTokens(
@@ -51,6 +53,8 @@ export class AuthService {
     data.password = hashedPw;
 
     const user = await this.userService.create(data);
+
+    await this.paymentService.createDefaultSubscription(user.id);
 
     return user;
   }

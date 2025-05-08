@@ -54,6 +54,7 @@ import { getFirstDayOfNextMonth } from "src/common/helper/first_of_next_month.he
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { MonriService } from "../monri/monri.service";
 import { addMonths } from "date-fns";
+import { SubscriptionUsageService } from "../subscription_usage/subscription_usage.service";
 
 @Injectable()
 export class PaymentService {
@@ -67,7 +68,8 @@ export class PaymentService {
     private readonly userService: UsersService,
     private readonly subscriptionService: SubscriptionService,
     private readonly customerService: CustomerService,
-    private readonly monriService: MonriService
+    private readonly monriService: MonriService,
+    private readonly susbcriptionUsageService: SubscriptionUsageService
   ) {}
   private readonly paymentModel = this.databaseService.payment;
 
@@ -723,11 +725,11 @@ export class PaymentService {
         user: { connect: { id: user.id } },
         email: user.email,
         fullName: `${user.firstName} ${user.lastName}`,
-        address: user.profile?.address ? user.profile?.address : "",
-        city: "",
-        zip: "",
-        country: "",
-        phone: user.profile?.phoneNumber ? user.profile?.phoneNumber : "",
+        address: user.profile?.address ? user.profile?.address : "N/A",
+        city: "N/A",
+        zip: "00000",
+        country: "N/A",
+        phone: user.profile?.phoneNumber ? user.profile?.phoneNumber : "N/A",
       });
       customerId = newCustomer.id;
     } else {
@@ -1206,5 +1208,42 @@ export class PaymentService {
       status: "success",
       message: `Subscription cancelled for plan ${subscription.plan.name}`,
     };
+  }
+
+  //defaultSubscription
+
+  async createDefaultSubscription(userId: string) {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException("User not found");
+
+    const customer = await this.customerService.create({
+      user: { connect: { id: user.id } },
+      email: user.email,
+      fullName: `${user.firstName} ${user.lastName}`,
+      address: user.profile?.address ? user.profile?.address : "",
+      city: "",
+      zip: "",
+      country: "",
+      phone: user.profile?.phoneNumber ? user.profile?.phoneNumber : "",
+    });
+
+    const defaultPlan = await this.subscriptionPlanService.findDefaultPlan();
+    if (!defaultPlan)
+      throw new NotFoundException("Subscription plan not found");
+
+    const subscription = await this.subscriptionService.defaultSubscription(
+      customer.id,
+      defaultPlan.id
+    );
+
+    await this.susbcriptionUsageService.create({
+      subscription: { connect: { id: subscription.id } },
+      user: { connect: { id: user.id } },
+      cvCreationsUsed: 0,
+      cvEditsUsed: 0,
+      jobUploadsUsed: 0,
+    });
+
+    return subscription;
   }
 }

@@ -8,9 +8,40 @@ import { NotFoundException } from "src/common/exceptions/errors/common/not-found
 export class SubscriptionService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  create(data: Prisma.SubscriptionCreateInput, tx?: Prisma.TransactionClient) {
+  async create(
+    data: Prisma.SubscriptionCreateInput,
+    tx?: Prisma.TransactionClient
+  ) {
     const prisma = tx || this.databaseService;
-    return prisma.subscription.create({ data });
+    return await prisma.subscription.create({ data });
+  }
+
+  async defaultSubscription(
+    customerId: string,
+    planId: string,
+    tx?: Prisma.TransactionClient
+  ) {
+    // const prisma = tx || this.databaseService;
+    return await this.create(
+      {
+        customer: {
+          connect: {
+            id: customerId,
+          },
+        },
+        plan: {
+          connect: {
+            id: planId,
+          },
+        },
+        status: SUBSCRIPTION_STATUS.FREE,
+        // nextBillingDate: new Date(),
+        startDate: new Date(),
+        panToken: "",
+        ammount: "0.00",
+      },
+      tx
+    );
   }
 
   async update(
