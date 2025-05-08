@@ -8,6 +8,7 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { IJwtPayload } from "../interfaces/jwt-payload.interface";
 import { UsersService } from "src/modules/users/services/users.service";
 import { ILoggedUserInfo } from "../interfaces/logged-user-info.interface";
+import { SUBSCRIPTION_STATUS } from "@prisma/client";
 
 // type JwtPayload = {
 //   sub: string;
@@ -37,9 +38,10 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, "jwt") {
       throw new UnauthorizedException("User not found or token invalid");
     }
 
-    const subId = user.customer?.subscriptions
-      ? user.customer.subscriptions.id
-      : null;
+    const subId =
+      user.customer?.subscriptions?.find(
+        (sub) => sub.status === SUBSCRIPTION_STATUS.ACTIVE
+      )?.id || null;
 
     return {
       id: user.id,

@@ -5,7 +5,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { ILoggedUserInfo } from "./interfaces/logged-user-info.interface";
 import { LoginResponseDto } from "./dtos/responses/login-response.dto";
-import { Prisma } from "@prisma/client";
+import { Prisma, SUBSCRIPTION_STATUS } from "@prisma/client";
 import { ExistingUserException } from "src/common/exceptions/errors/user/existing-user.exception";
 import { ExistingUsernameException } from "src/common/exceptions/errors/user/existing-username.exception";
 import {
@@ -65,10 +65,10 @@ export class AuthService {
     if (!isMatch) throw new WrongCredidentialsException();
 
     //maybe check for update in role ?
-
-    const subId = user.customer?.subscriptions
-      ? user.customer.subscriptions.id
-      : null;
+    const subId =
+      user.customer?.subscriptions?.find(
+        (sub) => sub.status === SUBSCRIPTION_STATUS.ACTIVE
+      )?.id || null;
 
     return {
       id: user.id,

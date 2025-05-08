@@ -13,6 +13,7 @@ import { ConfigService } from "@nestjs/config";
 import { UsersService } from "src/modules/users/services/users.service";
 import { ILoggedUserInfoRefresh } from "../interfaces/logged-user-info.interface";
 import { IJwtPayload } from "../interfaces/jwt-payload.interface";
+import { SUBSCRIPTION_STATUS } from "@prisma/client";
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -38,7 +39,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     req: Request,
     payload: IJwtPayload
   ): Promise<ILoggedUserInfoRefresh> {
-    const user = await this.userService.findById(payload.id);
+    const user = await this.userService.findByEmail(payload.id);
 
     if (!user) {
       throw new UnauthorizedException("User not found or token invalid");
@@ -50,6 +51,13 @@ export class RefreshTokenStrategy extends PassportStrategy(
     // Update user props if changes have been made ß
     payload.role = user?.role;
     payload.email = user?.email;
+
+    const subId =
+      user?.customer?.subscriptions?.find(
+        (sub) => sub.status === SUBSCRIPTION_STATUS.ACTIVE
+      )?.id || null;
+
+    payload.subId = subId;
 
     return {
       id: payload.id,
