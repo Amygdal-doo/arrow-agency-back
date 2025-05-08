@@ -3,6 +3,7 @@ import {
   PrismaClient,
   Role,
   SUBSCRIPTION_PERIOD,
+  SUBSCRIPTION_STATUS,
 } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -13,69 +14,6 @@ const USER_EMAIL = "user@user.com";
 const DEV_PASSWORD =
   "38ff6f3322dd5b9b2e0d8bef6204ccca:d9c45851f96108d2da4282687c6cde4d1afca0de7b89991b6da702f3ab16b182deb4d317950a77d83b6c7732e43dd8d9088aad46b13fd619ffcf81b30f2e7364";
 async function main() {
-  const SUPER_ADMIN = await prisma.user.upsert({
-    where: { email: SUPER_ADMIN_EMAIL },
-    update: {},
-    create: {
-      email: SUPER_ADMIN_EMAIL,
-      firstName: "Harun",
-      lastName: "Ibrahimovic",
-      role: Role.SUPER_ADMIN,
-      password: DEV_PASSWORD,
-      profile: {
-        create: {
-          address: "Istanbul",
-          phoneNumber: "1234567890",
-        },
-      },
-      customer: {
-        create: {
-          email: SUPER_ADMIN_EMAIL,
-          fullName: "Harun Ibrahimovic",
-          address: "Istanbul",
-          city: "Istanbul",
-          zip: "34197",
-          country: "Turkey",
-          phone: "1234567890",
-        },
-      },
-      // isEmailConfirmed: true,
-    },
-  });
-  console.log("User created with id: ", SUPER_ADMIN.id);
-
-  const USER = await prisma.user.upsert({
-    where: { email: USER_EMAIL },
-    update: {},
-    create: {
-      email: USER_EMAIL,
-      firstName: "Aisa",
-      lastName: "Bektas",
-      role: Role.USER,
-      password: DEV_PASSWORD,
-      profile: {
-        create: {
-          address: "Istanbul",
-          phoneNumber: "1234567890",
-        },
-      },
-      customer: {
-        create: {
-          email: USER_EMAIL,
-          fullName: "Aisa Bektas",
-          address: "Istanbul",
-          city: "Istanbul",
-          zip: "34197",
-          country: "Turkey",
-          phone: "1234567890",
-        },
-      },
-      // isEmailConfirmed: true,
-    },
-  });
-
-  console.log("User created with id: ", USER.id);
-
   // Seed JobCategory
   const jobCategories = [
     {
@@ -346,17 +284,18 @@ async function main() {
       name: "Free Plan",
       description:
         "Perfect for individuals getting started with AI recruitment",
-      price: "0",
+      price: "0.00",
       currency: MonriCurrency.USD,
       features: {
-        cvCreations: 2,
+        cvCreations: 1,
         jobUploads: 0,
-        cvEdits: 10,
+        cvEdits: 3,
         accessToAllJobPostings: false,
         advancedCandidateFilteringAndSearch: false,
         unlimitedCVScanningTools: false,
         unlimitedCVStorage: false,
       },
+      isDefault: true,
       period: SUBSCRIPTION_PERIOD.month,
     },
 
@@ -376,6 +315,7 @@ async function main() {
         unlimitedCVStorage: true,
       },
       period: SUBSCRIPTION_PERIOD.month,
+      isDefault: true,
     },
     {
       name: "Enterprise",
@@ -393,6 +333,7 @@ async function main() {
         unlimitedCVStorage: true,
       },
       period: SUBSCRIPTION_PERIOD.month,
+      isDefault: true,
     },
   ];
 
@@ -413,6 +354,124 @@ async function main() {
     data: skillsList.map((skill) => ({ name: skill })),
   });
   console.log("Skills created...");
+
+  const SUPER_ADMIN = await prisma.user.upsert({
+    where: { email: SUPER_ADMIN_EMAIL },
+    update: {},
+    create: {
+      email: SUPER_ADMIN_EMAIL,
+      firstName: "Harun",
+      lastName: "Ibrahimovic",
+      role: Role.SUPER_ADMIN,
+      password: DEV_PASSWORD,
+      profile: {
+        create: {
+          address: "Istanbul",
+          phoneNumber: "1234567890",
+        },
+      },
+      customer: {
+        create: {
+          email: SUPER_ADMIN_EMAIL,
+          fullName: "Harun Ibrahimovic",
+          address: "Istanbul",
+          city: "Istanbul",
+          zip: "34197",
+          country: "Turkey",
+          phone: "1234567890",
+        },
+      },
+
+      // isEmailConfirmed: true,
+    },
+    include: {
+      customer: true,
+    },
+  });
+  console.log("User created with id: ", SUPER_ADMIN.id);
+
+  const USER = await prisma.user.upsert({
+    where: { email: USER_EMAIL },
+    update: {},
+    create: {
+      email: USER_EMAIL,
+      firstName: "Aisa",
+      lastName: "Bektas",
+      role: Role.USER,
+      password: DEV_PASSWORD,
+      profile: {
+        create: {
+          address: "Istanbul",
+          phoneNumber: "1234567890",
+        },
+      },
+      customer: {
+        create: {
+          email: USER_EMAIL,
+          fullName: "Aisa Bektas",
+          address: "Istanbul",
+          city: "Istanbul",
+          zip: "34197",
+          country: "Turkey",
+          phone: "1234567890",
+        },
+      },
+      // isEmailConfirmed: true,
+    },
+    include: {
+      customer: true,
+    },
+  });
+
+  console.log("User created with id: ", USER.id);
+
+  const defaultPlan = await prisma.subscriptionPlan.findFirst({
+    where: { isDefault: true },
+  });
+
+  const UserSubDefault = await prisma.subscription.create({
+    data: {
+      customerId: USER.customer.id,
+      planId: defaultPlan.id,
+      status: SUBSCRIPTION_STATUS.FREE,
+      startDate: new Date(),
+      panToken: "",
+      ammount: "0.00",
+    },
+  });
+
+  const Super_adminSubDefault = await prisma.subscription.create({
+    data: {
+      customerId: SUPER_ADMIN.customer.id,
+      planId: defaultPlan.id,
+      status: SUBSCRIPTION_STATUS.FREE,
+      startDate: new Date(),
+      panToken: "",
+      ammount: "0.00",
+    },
+  });
+
+  await prisma.subscriptionUsage.createMany({
+    data: [
+      {
+        userId: USER.id,
+        cvCreationsUsed: 0,
+        jobUploadsUsed: 0,
+        cvEditsUsed: 0,
+        subscriptionId: UserSubDefault.id,
+      },
+      {
+        userId: SUPER_ADMIN.id,
+        cvCreationsUsed: 0,
+        jobUploadsUsed: 0,
+        cvEditsUsed: 0,
+        subscriptionId: Super_adminSubDefault.id,
+      },
+    ],
+  });
+
+  console.log("Subscriptions created...");
+
   // Seed JobPosition
   // const jobPositions = [
   //   {
