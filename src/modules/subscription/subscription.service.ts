@@ -122,7 +122,7 @@ export class SubscriptionService {
     }
 
     return {
-      ...subscription,
+      ...sub,
       plan: {
         ...sub.plan,
         price: sub.plan.price.toString(),
