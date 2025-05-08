@@ -19,6 +19,12 @@ export class SubscriptionPlanService {
     return this.subscriptionPlanModel.findUnique({ where: { id } });
   }
 
+  async findDefaultPlan() {
+    return this.subscriptionPlanModel.findFirst({
+      where: { isDefault: true },
+    });
+  }
+
   async findAll() {
     return this.subscriptionPlanModel.findMany();
   }
