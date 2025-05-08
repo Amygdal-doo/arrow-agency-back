@@ -34,7 +34,7 @@ enum SUBSCRIPTION_STATUS {
   PAST_DUE
   CANCELED
   PENDING
-  FAILED
+  FREE
 }
 
 enum PaymentType {
@@ -95,12 +95,12 @@ enum JobStatus {
 }
 
 model User {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName     String         @db.VarChar(256)
-  lastName      String         @db.VarChar(256)
-  email         String         @unique(map: "user_email_unique") @db.VarChar(256)
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName     String              @db.VarChar(256)
+  lastName      String              @db.VarChar(256)
+  email         String              @unique(map: "user_email_unique") @db.VarChar(256)
   password      String
-  role          Role           @default(USER)
+  role          Role                @default(USER)
   refreshToken  RefreshToken?
   profile       Profile?
   applicants    Applicant[]
@@ -109,6 +109,7 @@ model User {
   jobs          Job[]
   pan_tokens    String[]
   customer      Customer?
+  usage         SubscriptionUsage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -336,7 +337,7 @@ model Social {
 }
 
 model CvLanguage {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String
   efficiency String @default("medium")
 
@@ -432,6 +433,7 @@ model SubscriptionPlan {
   currency      MonriCurrency
   features      Json? // Store features like job posting limits
   subscriptions Subscription[]
+  isDefault        Boolean             @default(false)
   // mostPopular   Boolean
   period        SUBSCRIPTION_PERIOD @default(month)
   createdAt     DateTime            @default(now())
@@ -446,19 +448,25 @@ model Subscription {
   startDate           DateTime
   nextBillingDate     DateTime?
   monriSubscriptionId String? // Monri's subscription identifier
-  customerId          String              @db.Uuid @unique
+  customerId          String              @unique @db.Uuid
   customer            Customer            @relation(fields: [customerId], references: [id])
-  panToken            String
-  cITId               String?
-  ammount             Decimal             @db.Money
-  customerCancelled   Boolean             @default(false)
-  cancelledAt         DateTime?
+
+  endDate             DateTime? // When subscription ends (optional)
+  trialStartDate      DateTime? // Trial period start
+  trialEndDate        DateTime?
+
+  panToken          String
+  cITId             String?
+  ammount           Decimal             @db.Money
+  customerCancelled Boolean             @default(false)
+  cancelledAt       DateTime?
   // organization        Organization  @relation(fields: [organizationId], references: [id])
-  plan                SubscriptionPlan    @relation(fields: [planId], references: [id])
-  payments            Payment[]           @relation("subscriptionPayments")
+  plan              SubscriptionPlan    @relation(fields: [planId], references: [id])
+  payments          Payment[]           @relation("subscriptionPayments")
+  subscriptionUsage SubscriptionUsage[]
   // jobs                Job[]         @relation("jobSubscription")
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 }
 
 // Transaction
@@ -490,7 +498,7 @@ model Package {
   currency    MonriCurrency
   description String?       @db.Text
   payments    Payment[]     @relation("packagePayments")
-  features   String[]
+  features    String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -505,10 +513,10 @@ model Customer {
   zip           String
   country       String
   phone         String
-  cITId         String? 
+  cITId         String?
   userId        String?        @unique @db.Uuid
   user          User?          @relation(fields: [userId], references: [id])
-  subscriptions Subscription?
+  subscriptions Subscription[]
   payments      Payment[]      @relation("customerPayments")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -516,28 +524,16 @@ model Customer {
   @@index([userId], map: "customer_User_Id_Index")
 }
 
-// model Subscription { 
-//   id Int @id @default(autoincrement()) 
-//   customerId Int @db.Uuid
-//   customer Customer @relation(fields: [customerId], references: [id]) 
-//   panToken String 
-//   amount Int 
-//   currency String @default("BAM") 
-//   status String @default("active") // active, canceled 
-//   createdAt DateTime @default(now()) 
-//   updatedAt DateTime @updatedAt 
-//   transactions Transaction[] 
-//   }
-
-// model Transaction { 
-//   id Int @id @default(autoincrement()) 
-//   subscriptionId String  
-//   subscription Subscription @relation(fields: [subscriptionId], references: [id]) 
-//   customerId String 
-//   customer Customer @relation(fields: [customerId], references: [id]) 
-//   orderNumber String @unique 
-//   status String // approved, declined, invalid 
-//   amount Int 
-//   currency String 
-//   createdAt DateTime @default(now()) 
-//   }
+model SubscriptionUsage {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subscriptionId  String       @db.Uuid
+  userId          String       @db.Uuid
+  cvCreationsUsed Int          @default(0) // Example usage metric
+  jobUploadsUsed  Int          @default(0) // Example usage metric
+  // jobViewsUsed    Int          @default(0) // Example usage metric
+  cvEditsUsed     Int          @default(0) // Example usage metric
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}

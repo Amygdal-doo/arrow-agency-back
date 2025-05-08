@@ -2,7 +2,7 @@
 CREATE TYPE "SUBSCRIPTION_PERIOD" AS ENUM ('day', 'week', 'month', 'half_year', 'year');
 
 -- CreateEnum
-CREATE TYPE "SUBSCRIPTION_STATUS" AS ENUM ('approved', 'invalid_request', 'error');
+CREATE TYPE "SUBSCRIPTION_STATUS" AS ENUM ('ACTIVE', 'PAST_DUE', 'CANCELED', 'PENDING', 'FREE');
 
 -- CreateEnum
 CREATE TYPE "PaymentType" AS ENUM ('ONE_TIME', 'SUBSCRIPTION');
@@ -39,6 +39,7 @@ CREATE TABLE "User" (
     "email" VARCHAR(256) NOT NULL,
     "password" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
+    "pan_tokens" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -50,6 +51,10 @@ CREATE TABLE "Profile" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "phoneNumber" VARCHAR(50),
     "address" TEXT,
+    "countryOrigin" TEXT,
+    "preferredWorkCountries" TEXT[],
+    "nonPreferredWorkCountries" TEXT[],
+    "nonPreferredProjects" TEXT[],
     "userId" UUID NOT NULL,
 
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
@@ -75,6 +80,7 @@ CREATE TABLE "Applicant" (
     "phone" TEXT,
     "technologies" TEXT[],
     "templateId" TEXT NOT NULL,
+    "publicCv" BOOLEAN NOT NULL DEFAULT false,
     "cvId" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -115,6 +121,7 @@ CREATE TABLE "Cv" (
     "primaryColor" TEXT NOT NULL,
     "secondaryColor" TEXT NOT NULL,
     "tertiaryColor" TEXT NOT NULL,
+    "fontSize" TEXT NOT NULL DEFAULT '12px',
     "showPersonalInfo" BOOLEAN NOT NULL DEFAULT false,
     "showCompanyInfo" BOOLEAN NOT NULL DEFAULT false,
     "companyName" TEXT NOT NULL,
@@ -129,7 +136,8 @@ CREATE TABLE "Cv" (
 CREATE TABLE "Skills" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
-    "efficiency" TEXT NOT NULL DEFAULT 'null',
+    "efficiency" TEXT NOT NULL DEFAULT 'medium',
+    "efficiencyTypeNumber" BOOLEAN NOT NULL DEFAULT false,
     "cvId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -142,7 +150,7 @@ CREATE TABLE "Experience" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "position" TEXT NOT NULL,
     "company" TEXT NOT NULL,
-    "startDate" TEXT NOT NULL,
+    "startDate" TEXT,
     "endDate" TEXT,
     "description" TEXT NOT NULL,
     "cvId" UUID NOT NULL,
@@ -157,7 +165,7 @@ CREATE TABLE "Project" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "startDate" TEXT NOT NULL,
+    "startDate" TEXT,
     "endDate" TEXT,
     "url" TEXT,
     "cvId" UUID NOT NULL,
@@ -173,7 +181,7 @@ CREATE TABLE "Education" (
     "institution" TEXT NOT NULL,
     "degree" TEXT NOT NULL,
     "field" TEXT NOT NULL,
-    "startDate" TEXT NOT NULL,
+    "startDate" TEXT,
     "endDate" TEXT,
     "cvId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -202,7 +210,7 @@ CREATE TABLE "Course" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "url" TEXT NOT NULL,
-    "startDate" TEXT NOT NULL,
+    "startDate" TEXT,
     "endDate" TEXT,
     "cvId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -227,7 +235,7 @@ CREATE TABLE "Social" (
 CREATE TABLE "CvLanguage" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
-    "efficiency" TEXT NOT NULL,
+    "efficiency" TEXT NOT NULL DEFAULT 'medium',
     "cvId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -268,8 +276,9 @@ CREATE TABLE "Organization" (
 -- CreateTable
 CREATE TABLE "Job" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "worldwide" BOOLEAN NOT NULL,
-    "remote" BOOLEAN NOT NULL,
+    "worldwide" BOOLEAN NOT NULL DEFAULT true,
+    "remote" BOOLEAN NOT NULL DEFAULT true,
+    "workWithB2b" BOOLEAN NOT NULL,
     "experienceRequired" "JobExperienceLevel",
     "name" VARCHAR(100) NOT NULL,
     "description" TEXT,
@@ -314,12 +323,11 @@ CREATE TABLE "SubscriptionPlan" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
-    "price" INTEGER NOT NULL,
+    "price" MONEY NOT NULL,
     "currency" "MonriCurrency" NOT NULL,
     "features" JSONB,
-    "monriPlanId" INTEGER NOT NULL,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "period" "SUBSCRIPTION_PERIOD" NOT NULL DEFAULT 'month',
-    "status" "SUBSCRIPTION_STATUS" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -329,12 +337,20 @@ CREATE TABLE "SubscriptionPlan" (
 -- CreateTable
 CREATE TABLE "Subscription" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "organizationId" UUID NOT NULL,
     "planId" UUID NOT NULL,
-    "status" TEXT NOT NULL,
+    "status" "SUBSCRIPTION_STATUS" NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "nextBillingDate" TIMESTAMP(3),
     "monriSubscriptionId" TEXT,
+    "customerId" UUID NOT NULL,
+    "endDate" TIMESTAMP(3),
+    "trialStartDate" TIMESTAMP(3),
+    "trialEndDate" TIMESTAMP(3),
+    "panToken" TEXT NOT NULL,
+    "cITId" TEXT,
+    "ammount" MONEY NOT NULL,
+    "customerCancelled" BOOLEAN NOT NULL DEFAULT false,
+    "cancelledAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -344,19 +360,66 @@ CREATE TABLE "Subscription" (
 -- CreateTable
 CREATE TABLE "Payment" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "userId" UUID,
-    "jobId" UUID,
-    "subscriptionId" UUID,
-    "paymentType" "PaymentType" NOT NULL,
     "amount" MONEY NOT NULL,
+    "paymentType" "PaymentType" NOT NULL,
     "currency" "MonriCurrency" NOT NULL,
     "status" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
     "monriTransactionId" INTEGER,
     "transactionResponse" JSONB,
+    "jobId" UUID,
+    "subscriptionId" UUID,
+    "packageId" UUID,
+    "customerId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Package" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "name" VARCHAR(100) NOT NULL,
+    "price" MONEY NOT NULL,
+    "currency" "MonriCurrency" NOT NULL,
+    "description" TEXT,
+    "features" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Package_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Customer" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "email" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "zip" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "cITId" TEXT,
+    "userId" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Customer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SubscriptionUsage" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "subscriptionId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "cvCreationsUsed" INTEGER NOT NULL DEFAULT 0,
+    "jobUploadsUsed" INTEGER NOT NULL DEFAULT 0,
+    "cvEditsUsed" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SubscriptionUsage_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -444,7 +507,19 @@ CREATE UNIQUE INDEX "Skill_name_key" ON "Skill"("name");
 CREATE UNIQUE INDEX "SubscriptionPlan_name_key" ON "SubscriptionPlan"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Subscription_customerId_key" ON "Subscription"("customerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Payment_jobId_key" ON "Payment"("jobId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Package_name_key" ON "Package"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Customer_userId_key" ON "Customer"("userId");
+
+-- CreateIndex
+CREATE INDEX "customer_User_Id_Index" ON "Customer"("userId");
 
 -- AddForeignKey
 ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -516,13 +591,28 @@ ALTER TABLE "JobSkill" ADD CONSTRAINT "JobSkill_jobId_fkey" FOREIGN KEY ("jobId"
 ALTER TABLE "JobSkill" ADD CONSTRAINT "JobSkill_skillId_fkey" FOREIGN KEY ("skillId") REFERENCES "Skill"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_planId_fkey" FOREIGN KEY ("planId") REFERENCES "SubscriptionPlan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_planId_fkey" FOREIGN KEY ("planId") REFERENCES "SubscriptionPlan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_packageId_fkey" FOREIGN KEY ("packageId") REFERENCES "Package"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Customer" ADD CONSTRAINT "Customer_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SubscriptionUsage" ADD CONSTRAINT "SubscriptionUsage_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SubscriptionUsage" ADD CONSTRAINT "SubscriptionUsage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
