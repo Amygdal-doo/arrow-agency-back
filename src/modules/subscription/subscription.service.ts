@@ -93,10 +93,13 @@ export class SubscriptionService {
   }
 
   async subcriptionStatus(loggedUserInfoDto: ILoggedUserInfo) {
-    const subscription = await this.databaseService.subscription.findFirst({
+    const subscription = await this.databaseService.subscription.findMany({
       where: {
         customer: {
           userId: loggedUserInfoDto.id,
+        },
+        status: {
+          in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.FREE],
         },
       },
       include: {
@@ -105,13 +108,24 @@ export class SubscriptionService {
       },
     });
 
-    if (!subscription) throw new NotFoundException();
+    if (!subscription || subscription.length === 0) {
+      throw new NotFoundException("Subscription not found");
+    }
+
+    // Check if the subscription is active then return the active one otherwise  return the free one
+    let sub = subscription.find(
+      (sub) => sub.status === SUBSCRIPTION_STATUS.ACTIVE
+    );
+
+    if (!sub) {
+      sub = subscription.find((sub) => sub.status === SUBSCRIPTION_STATUS.FREE);
+    }
 
     return {
       ...subscription,
       plan: {
-        ...subscription.plan,
-        price: subscription.plan.price.toString(),
+        ...sub.plan,
+        price: sub.plan.price.toString(),
       },
     };
   }
