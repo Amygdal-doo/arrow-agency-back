@@ -4,8 +4,8 @@ import {
   ArgumentsHost,
   HttpException,
   Logger,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
+} from "@nestjs/common";
+import { Request, Response } from "express";
 
 interface ValidatorExceptionResponse {
   error?: string;
@@ -16,34 +16,67 @@ interface ValidatorExceptionResponse {
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   logger = new Logger();
+
+  // Add try/catch to handle any potential errors in the filter itself
   catch(exception: HttpException, host: ArgumentsHost) {
-    //In case we throw exceptions we created, we may need these objects
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
-    const status = exception.getStatus();
-    const message = exception.message;
-    const name = exception.name;
+    try {
+      //In case we throw exceptions we created, we may need these objects
+      const ctx = host.switchToHttp();
+      const response = ctx.getResponse<Response>();
+      const request = ctx.getRequest<Request>();
+      const status = exception.getStatus();
+      const message = exception.message;
+      const name = exception.name;
 
-    //For handling class-validator package errors we need this approach
+      //For handling class-validator package errors we need this approach
+      const exceptionResponse = exception.getResponse();
 
-    const validatorException =
-      exception.getResponse() as ValidatorExceptionResponse;
+      let errorType = name;
+      let errorList: string[] = [];
+      let statusCode = status;
 
-    const errorType = validatorException['error'];
-    const errorList = validatorException['message'];
-    const statusCode = validatorException['statusCode'];
+      // Check if the exception response is an object (for validator exceptions)
+      if (typeof exceptionResponse === "object") {
+        const validatorException =
+          exceptionResponse as ValidatorExceptionResponse;
+        errorType = validatorException["error"] || name;
+        statusCode = validatorException["statusCode"] || status;
 
-    // logging
+        // Convert message to array regardless of type
+        if (validatorException["message"]) {
+          if (Array.isArray(validatorException["message"])) {
+            errorList = validatorException["message"];
+          } else {
+            errorList = [validatorException["message"] as string];
+          }
+        }
+      }
 
-    this.logger.error(
-      `${request.method} ${request.originalUrl} ${status} error: ${exception.message}`,
-    );
+      // If errorList is still empty, use the exception message
+      if (errorList.length === 0) {
+        errorList = [message];
+      }
 
-    return response.status(statusCode ?? status).json({
-      statusCode: statusCode ?? status,
-      errors: errorList ?? [message],
-      type: errorType ?? name,
-    });
+      // logging
+      this.logger.error(
+        `${request.method} ${request.originalUrl} ${status} error: ${exception.message}`
+      );
+
+      console.log({ errorList, message });
+
+      return response.status(statusCode).json({
+        statusCode: statusCode,
+        errors: errorList, // Now always an array
+        type: errorType,
+      });
+    } catch (error) {
+      this.logger.error(`Exception filter failed: ${error.message}`);
+      const response = host.switchToHttp().getResponse<Response>();
+      return response.status(500).json({
+        statusCode: 500,
+        errors: ["Internal server error"],
+        type: "InternalServerError",
+      });
+    }
   }
 }
