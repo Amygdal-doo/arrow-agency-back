@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from "@nestjs/common";
 import { UserRefreshTokenService } from "../users/services/user-refresh-token.service";
 import { UsersService } from "../users/services/users.service";
 import { JwtService } from "@nestjs/jwt";
