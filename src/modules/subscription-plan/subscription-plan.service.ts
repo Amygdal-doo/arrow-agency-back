@@ -26,7 +26,9 @@ export class SubscriptionPlanService {
   }
 
   async findAll() {
-    return this.subscriptionPlanModel.findMany();
+    return this.subscriptionPlanModel.findMany({
+      orderBy: { createdAt: "asc" },
+    });
   }
 
   async create(data: Prisma.SubscriptionPlanCreateInput) {
