@@ -315,7 +315,7 @@ async function main() {
         unlimitedCVStorage: true,
       },
       period: SUBSCRIPTION_PERIOD.month,
-      isDefault: true,
+      isDefault: false,
     },
     {
       name: "Enterprise",
@@ -333,7 +333,7 @@ async function main() {
         unlimitedCVStorage: true,
       },
       period: SUBSCRIPTION_PERIOD.month,
-      isDefault: true,
+      isDefault: false,
     },
   ];
 
