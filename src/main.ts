@@ -7,6 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { ValidationPipe } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { resolve } from "path";
+import { HttpExceptionFilter } from "./common/exceptions/http-exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -25,6 +26,9 @@ async function bootstrap() {
       transform: true,
     })
   );
+
+  // Register the filter globally
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   //Enabling swagger
   const document = SwaggerModule.createDocument(app, configSwagger, {
